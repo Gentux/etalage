@@ -32,6 +32,14 @@ def main(argv = None):
     print 'Categories:', len(ramdb.categories_by_slug)
     print 'pois_id_by_category_slug:', len(ramdb.pois_id_by_category_slug)
 
+    print "ramdb.iter_pois_id()"
+    print "===================="
+    print
+    start_time = time.time()
+    print len(list(ramdb.iter_pois_id()))
+    print time.time() - start_time
+    print
+
     print "ramdb.iter_pois_id(category_slug = u'mairie')"
     print "============================================="
     print
@@ -41,7 +49,7 @@ def main(argv = None):
     print
 
     print "ramdb.iter_pois_id(term = u'Mairie')"
-    print "============================================="
+    print "===================================="
     print
     start_time = time.time()
     print len(ramdb.iter_pois_id(term = u'Mairie'))
