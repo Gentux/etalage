@@ -75,7 +75,7 @@ def iter_pois_id(category_slug = None, term = None, territory_kind_code = None):
     # returns an empty set.
     found_pois_id = intersection_set(intersected_sets)
     if found_pois_id is None:
-        return pois_by_id.iterkeys()
+        return ram_pois_by_id.iterkeys()
     return found_pois_id
 
 
