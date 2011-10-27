@@ -1,0 +1,8 @@
+build
+cache
+development-*local.ini
+dist
+*.egg-info
+*.pyc
+*.pyo
+*~
