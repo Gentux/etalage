@@ -59,6 +59,7 @@ def load_environment(global_conf, app_conf):
         'package_name': 'poiscasse',
         'static_files': True, # Whether this application serves its own static files
         'static_files_dir': os.path.join(app_dir, 'static'),
+        'territories_collection': 'territories',
         })
     conf.update(global_conf)
     conf.update(app_conf)

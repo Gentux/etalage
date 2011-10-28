@@ -29,7 +29,10 @@
 
 from biryani.baseconv import *
 from biryani.objectconv import *
+from biryani.frconv import *
 from biryani import states, strings
+
+from territoria2.conv import str_to_postal_distribution
 
 
 default_state = states.default_state
@@ -46,3 +49,6 @@ def bson_to_ram_poi(bson, state = default_state):
 
 
 ram_poi_to_bson = object_to_clean_dict
+
+
+str_to_slug = make_str_to_slug()
