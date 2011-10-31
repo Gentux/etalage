@@ -31,7 +31,6 @@ import itertools
 import logging
 
 from biryani import strings
-from territoria2 import territories
 
 from . import contexts, conf, conv, model, pois, ramdb, templates, urls, wsgihelpers
 
@@ -78,7 +77,7 @@ def index(req):
     if error is not None:
         raise wsgihelpers.not_found(ctx, explanation = ctx._('Territory Error: {0}').format(error))
     elif ctx.postal_distribution:
-        found_territories = list(territories.Territory.find({
+        found_territories = list(model.Territory.find({
             'main_postal_distribution.postal_code': ctx.postal_distribution[0],
             'main_postal_distribution.postal_routing': ctx.postal_distribution[1],
             }).limit(2))

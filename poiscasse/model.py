@@ -27,6 +27,8 @@
 """The application's model objects"""
 
 
+from territoria2.territories import *
+
 from .pois import *
 from .rampois import *
 

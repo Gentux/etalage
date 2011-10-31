@@ -28,7 +28,7 @@
 import markupsafe
 import uuid
 
-from territoria2 import territories
+from poiscasse import model, ramdb
 %>\
 
 
@@ -203,7 +203,7 @@ rel="external">Google Maps</a>
                 ## FIXME : Ne pas utiliser ncc
                 (territory.ncc, territory.name)
                 for territory in (
-                    territories.Territory.find_one(dict(code = territory_kind_code['code'], kind = territory_kind_code['kind']))
+                    model.Territory.find_one(dict(code = territory_kind_code['code'], kind = territory_kind_code['kind']))
                     for territory_kind_code in value
                     )
                 if territory is not None
