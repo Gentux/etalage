@@ -33,7 +33,7 @@ import logging
 from biryani import strings
 from territoria2 import territories
 
-from . import contexts, conf, conv, model, ramdb, templates, urls, wsgihelpers
+from . import contexts, conf, conv, model, pois, ramdb, templates, urls, wsgihelpers
 
 
 log = logging.getLogger(__name__)
@@ -54,7 +54,7 @@ def index(req):
     params = dict(
         category = params.get('category'),
         page = params.get('page'),
-        term = params.get('q'),
+        term = params.get('term'),
         territory = params.get('territory'),
         )
 
@@ -74,13 +74,13 @@ def index(req):
     if error is not None:
         raise wsgihelpers.not_found(ctx, explanation = ctx._('Research Terms Error: {0}').format(error))
 
-    postal_distribution, error = conv.str_to_postal_distribution(params['territory'], state = ctx)
+    ctx.postal_distribution, error = conv.str_to_postal_distribution(params['territory'], state = ctx)
     if error is not None:
         raise wsgihelpers.not_found(ctx, explanation = ctx._('Territory Error: {0}').format(error))
-    elif postal_distribution:
+    elif ctx.postal_distribution:
         found_territories = list(territories.Territory.find({
-            'main_postal_distribution.postal_code': postal_distribution[0],
-            'main_postal_distribution.postal_routing': postal_distribution[1],
+            'main_postal_distribution.postal_code': ctx.postal_distribution[0],
+            'main_postal_distribution.postal_routing': ctx.postal_distribution[1],
             }).limit(2))
         if not found_territories:
             error = u'Territoire inconnu'
@@ -90,14 +90,14 @@ def index(req):
             raise wsgihelpers.not_found(ctx, explanation = ctx._('Territory Error: {0}').format(error))
         else:
             territory_dict = found_territories[0].new_kind_code()
-            territory = (territory_dict['kind'], territory_dict['code'])
+            territory_kind_code = (territory_dict['kind'], territory_dict['code'])
     else:
-        territory = None
+        territory_kind_code = None
 
     page_size = 20
     pois_infos = []
     for poi_id in itertools.islice(
-            ramdb.iter_pois_id(category_slug = category, term = term, territory_kind_code = territory),
+            ramdb.iter_pois_id(category_slug = category, term = term, territory_kind_code = territory_kind_code),
             (page_number - 1) * page_size,
             page_number * page_size,
             ):
@@ -109,6 +109,7 @@ def index(req):
             ))
 
     return templates.render(ctx, '/index.mako',
+        category = category,
         page_number = page_number,
         page_size = page_size,
         pois_count = len(ramdb.ram_pois_by_id),
@@ -122,7 +123,26 @@ def make_router():
     return urls.make_router(
         ('GET', '^/?$', index),
         ('GET', '^/a-propos/?$', about),
+        ('GET', '^/poi/(?P<poi_id>[a-z0-9]{24})/?$', poi),
         )
+
+
+@wsgihelpers.wsgify
+@ramdb.ramdb_based
+def poi(req):
+    ctx = contexts.Ctx(req)
+
+    params = req.params
+    params = dict(
+        poi_id = req.urlvars.get('poi_id'),
+        )
+
+    poi_id, error = conv.str_to_object_id(params['poi_id'], ctx)
+    if error is not None:
+        raise wsgihelpers.not_found(ctx, explanation = ctx._('Poi ID Error: {0}').format(error))
+
+    poi = pois.Poi.find_one({"_id": poi_id})
+    return templates.render(ctx, '/poi.mako', poi = poi)
 
 
 @wsgihelpers.wsgify

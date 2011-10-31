@@ -30,17 +30,20 @@
 <fieldset>
     <form>
         <label for="category">Catégorie</label>
-        <input id="category" name="category" type="text"/>
+        <input id="category" name="category" type="text" value="${category if category else ''}"/>
 
         <br />
 
         <label for="term">Text libre</label>
-        <input id="term" name="term" type="text"/>
+        <input id="term" name="term" type="text" value="${term if term else ''}"/>
 
         <br />
 
+<%
+    postal_distribution = u'{pd[0]} {pd[1]}'.format(pd = ctx.postal_distribution) if ctx.postal_distribution else u''
+%>
         <label for="territory">Territoire</label>
-        <input id="territory" name="territory" type="text"/>
+        <input id="territory" name="territory" type="text" value="${postal_distribution}"/>
 
         <br />
 
@@ -68,7 +71,7 @@
 % for poi in pois_infos:
     <tr>
         <td>${poi['_id']}</td>
-        <td>${poi['name']}</td>
+        <td><a data-rel="external" href="/poi/${poi['_id']}">${poi['name']}</a></td>
         <td>${poi['geo']}</td>
     </tr>
 % endfor

@@ -28,6 +28,7 @@
 
 
 from biryani.baseconv import *
+from biryani.bsonconv import *
 from biryani.objectconv import *
 from biryani.frconv import *
 from biryani import states, strings
@@ -52,3 +53,4 @@ ram_poi_to_bson = object_to_clean_dict
 
 
 str_to_slug = make_str_to_slug()
+
