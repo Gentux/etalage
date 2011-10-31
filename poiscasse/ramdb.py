@@ -102,8 +102,6 @@ def iter_pois_id(categories_slug = None, term = None, territory_kind_code = None
         assert isinstance(territory_kind_code, tuple) and len(territory_kind_code) == 2, territory_kind_code
         intersected_sets.append(pois_id_by_territory_kind_code.get(territory_kind_code))
 
-    # Note: Brackets below are mandatory. Without then iter_prefixes_based_territories_id([u'MILON', u'CHAPELLE'])))
-    # returns an empty set.
     found_pois_id = intersection_set(intersected_sets)
     if found_pois_id is None:
         return ram_pois_by_id.iterkeys()
