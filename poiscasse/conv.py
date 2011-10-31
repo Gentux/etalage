@@ -45,14 +45,6 @@ def bson_to_poi(bson, state = default_state):
     return make_dict_to_object(pois.Poi)(bson, state = state)
 
 
-def bson_to_ram_poi(bson, state = default_state):
-    from . import rampois
-    return make_dict_to_object(rampois.RamPoi)(bson, state = state)
-
-
-ram_poi_to_bson = object_to_clean_dict
-
-
 str_to_slug = make_str_to_slug()
 def str_to_category_slug(value, state = default_state):
     from . import ramdb

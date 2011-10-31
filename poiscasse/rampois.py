@@ -43,10 +43,8 @@ log = logging.getLogger(__name__)
 
 class RamPoi(representations.UserRepresentable):
     _id = None
-    from_bson = staticmethod(conv.check(conv.bson_to_ram_poi))
     geo = None
     name = None
-    to_bson = conv.check(conv.ram_poi_to_bson)
 
     def __init__(self, **attributes):
         if attributes:
