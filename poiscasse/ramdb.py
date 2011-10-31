@@ -104,6 +104,7 @@ def load():
     for poi in model.Poi.find({'metadata.deleted': {'$exists': False}},
             ['geo', 'metadata.categories-index', 'metadata.territories-index', 'metadata.title']).limit(1000):
         metadata = poi.metadata
+
         ram_poi = model.RamPoi(
             _id = poi._id,
             geo = poi.geo[0] if poi.geo is not None else None,

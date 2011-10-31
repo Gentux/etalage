@@ -53,7 +53,7 @@ from poiscasse import conf
     <script src="${conf['jquery-ui.js']}"></script>
     <script src="${conf['leaflet.js']}"></script>
 <!--[if lt IE 10]>
-    <script src="${conf['PIE.js']}"></script>
+    <script src="${conf['pie.js']}"></script>
 <![endif]-->
 
     <script src="/js/map.js"></script>

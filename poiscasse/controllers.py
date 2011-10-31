@@ -147,6 +147,7 @@ def index(req):
     params = dict(
         base_category = params.get('base_category'),
         category = params.get('category'),
+        mode = req.urlvars.get('mode'),
         page = params.get('page'),
         term = params.get('term'),
         territory = params.get('territory'),
@@ -207,8 +208,10 @@ def index(req):
             name = poi.name,
             ))
 
-    return templates.render(ctx, '/index.mako',
+    template = '/map.mako' if params['mode'] == 'map' else '/index.mako'
+    return templates.render(ctx, template,
         category_slug = category_slug,
+        mode = params['mode'],
         page_number = page_number,
         page_size = page_size,
         pois_count = len(ramdb.ram_pois_by_id),
@@ -285,7 +288,7 @@ def init_ctx(ctx, params):
 def make_router():
     """Return a WSGI application that dispatches requests to controllers """
     return urls.make_router(
-        ('GET', '^/?$', index),
+        ('GET', '^/(?P<mode>(list|map))?$', index),
         ('GET', '^/a-propos/?$', about),
         ('GET', '^/organismes/(?P<poi_id>[a-z0-9]{24})/?$', poi),
         ('GET', '^/api/v1/geojson/organismes/?$', export_geojson),

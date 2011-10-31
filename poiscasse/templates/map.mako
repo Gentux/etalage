@@ -28,13 +28,13 @@
 
 
 <fieldset>
-    <form action="${'/map' if mode == 'map' else '/'}" id="search-form" method="get">
+    <form action="/" method="get">
         <label for="category">Catégorie</label>
-        <input id="category" name="category" type="text" value="${category_slug or ''}"/>
+        <input id="category" name="category" type="text" value="${category if category else ''}">
 
         <br>
 
-        <label for="term">Intitulé</label>
+        <label for="term">Text libre</label>
         <input id="term" name="term" type="text" value="${term if term else ''}">
 
         <br>
@@ -55,26 +55,14 @@
     Résultat de ${((page_number - 1) * page_size) + 1} à ${page_number * page_size} <br>
     Nombre de résultat par page : ${page_size}
     % if page_number > 1:
-    <a href='/list?page=${page_number - 1}'>Précédent</a>
+    <a href='/map?page=${page_number - 1}'>Précédent</a>
     % endif
     % if page_number < pois_count / page_size:
-    <a href='/list?page=${page_number + 1}'>Suivant</a>
+    <a href='/map?page=${page_number + 1}'>Suivant</a>
     % endif
-    <a href='/map?page=${page_number}'>Voir sur une carte</a>
+    <a href='/list?page=${page_number}'>Voir dans une liste</a>
 </div>
 
-<table style="border: solid black 1px;">
-    <tr>
-        <th>ID</th>
-        <th>Name</th>
-        <th>Place</th>
-    </tr>
-% for poi in pois_infos:
-    <tr>
-        <td>${poi['_id']}</td>
-        <td><a data-rel="external" href="/organismes/${poi['_id']}">${poi['name']}</a></td>
-        <td>${poi['geo']}</td>
-    </tr>
-% endfor
-</table>
+<div id="map" style="height: 400px;">
+</div>
 
