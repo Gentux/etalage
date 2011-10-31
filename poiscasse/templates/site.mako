@@ -56,6 +56,7 @@ from poiscasse import conf
     <script src="${conf['pie.js']}"></script>
 <![endif]-->
 
+    <script src="/js/categories.js"></script>
     <script src="/js/map.js"></script>
     <script src="/js/territories.js"></script>
     <script src="/js/poiscasse.js"></script>

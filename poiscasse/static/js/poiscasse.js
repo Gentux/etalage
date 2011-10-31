@@ -22,11 +22,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+
 var etalage = etalage || {};
 
 
 etalage.init = function() {
-    etalage.map.createMap("map");
-    etalage.territories.createTerritoriesAutocompleter("#territory");
+    etalage.categories.createAutocompleter($('#category'));
+    etalage.map.createMap('map');
+    etalage.territories.createAutocompleter($('#territory'));
 };
 
