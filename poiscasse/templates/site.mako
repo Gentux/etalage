@@ -25,45 +25,59 @@
 
 
 <%!
+import urlparse
+
 from poiscasse import conf
 %>
 
 
 <%def name="css()" filter="trim">
     <link rel="stylesheet" href="${conf['leaflet.css']}" />
-    <link rel="stylesheet" href="${conf['leaflet.ie.css']}" />
+<!--[if lte IE 8]>
+    <link rel="stylesheet" href="${conf['leaflet.ie.css']}">
+<![endif]-->
     <link rel="stylesheet" href="${conf['jquery-ui.css']}" />
 </%def>
 
 
-<%def name="head_content()" filter="trim">
-    <%next:css/>
-    <%next:meta/>
-    <title>Open Data POIs portal</title>
-    <%next:script/>
-</%def>
-
-
-<%def name="meta()" filter="trim">
+<%def name="metas()" filter="trim">
     <meta charset="utf-8" />
 </%def>
 
 
-<%def name="script()" filter="trim">
+<%def name="scripts()" filter="trim">
     <script src="${conf['jquery.js']}"></script>
     <script src="${conf['jquery-ui.js']}"></script>
     <script src="${conf['leaflet.js']}"></script>
+    <script>
+var etalage = etalage || {};
+etalage.territoryAutocompleterUrl = ${urlparse.urljoin(conf['territoria_url'],
+    '/api/v1/autocomplete-territory') | n, js};
+    </script>
     <script src="/js/poiscasse.js"></script>
+</%def>
+
+
+<%def name="title()" filter="trim">
+Open Data POIs Portal
+</%def>
+
+
+<%def name="trackers()" filter="trim">
 </%def>
 
 
 <!DOCTYPE html>
 <html lang="fr">
-    <head>
-        <%next:head_content/>
-    </head>
-    <body>
-        ${capture(next.body) | n, trim}
-    </body>
+<head>
+    <%self:metas/>
+    <title>${self.title()}</title>
+    <%self:css/>
+    <%self:scripts/>
+</head>
+<body>
+    ${capture(next.body) | n, trim}
+    <%self:trackers/>
+</body>
 </html>
 
