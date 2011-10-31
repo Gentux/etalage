@@ -258,29 +258,28 @@ def index(req):
     if error is not None:
         raise wsgihelpers.not_found(ctx, explanation = ctx._('Page Number Error: {0}').format(error))
 
-    term, error = conv.str_to_slug(params['term'], state = ctx)
-    if error is not None:
-        raise wsgihelpers.not_found(ctx, explanation = ctx._('Research Terms Error: {0}').format(error))
-
-    ctx.postal_distribution, error = conv.str_to_postal_distribution(params['territory'], state = ctx)
+    postal_distribution, error = conv.str_to_postal_distribution(params['territory'], state = ctx)
     if error is not None:
         raise wsgihelpers.not_found(ctx, explanation = ctx._('Territory Error: {0}').format(error))
-    elif ctx.postal_distribution:
+    if postal_distribution is not None:
         found_territories = list(model.Territory.find({
-            'main_postal_distribution.postal_code': ctx.postal_distribution[0],
-            'main_postal_distribution.postal_routing': ctx.postal_distribution[1],
+            'main_postal_distribution.postal_code': postal_distribution[0],
+            'main_postal_distribution.postal_routing': postal_distribution[1],
             }).limit(2))
         if not found_territories:
             error = u'Territoire inconnu'
             raise wsgihelpers.not_found(ctx, explanation = ctx._('Territory Error: {0}').format(error))
-        elif len(found_territories) > 1:
+        if len(found_territories) > 1:
             error = u'Territoire ambigu'
             raise wsgihelpers.not_found(ctx, explanation = ctx._('Territory Error: {0}').format(error))
-        else:
-            territory_dict = found_territories[0].new_kind_code()
-            territory_kind_code = (territory_dict['kind'], territory_dict['code'])
+        territory_kind_code_dict = found_territories[0].new_kind_code()
+        territory_kind_code = (territory_kind_code_dict['kind'], territory_kind_code_dict['code'])
     else:
         territory_kind_code = None
+
+    term, error = conv.str_to_slug(params['term'], state = ctx)
+    if error is not None:
+        raise wsgihelpers.not_found(ctx, explanation = ctx._('Research Terms Error: {0}').format(error))
 
     page_size = 20
     pois_infos = []

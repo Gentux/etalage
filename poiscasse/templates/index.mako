@@ -44,21 +44,21 @@ import urllib
 <fieldset>
     <form action="${'/map' if mode == 'map' else '/'}" id="search-form" method="get">
         <label for="category">Catégorie</label>
-        <input id="category" name="category" type="text" value="${category_slug or ''}"/>
+        <input id="category" name="category" type="text" value="${params.get('category') or ''}"/>
 
         <br>
 
         <label for="term">Intitulé</label>
-        <input id="term" name="term" type="text" value="${term or ''}">
+        <input id="term" name="term" type="text" value="${params.get('term') or ''}">
 
         <br>
 
         <label for="territory">Territoire</label>
-        <input id="territory" name="territory" type="text" value="${territory}">
+        <input id="territory" name="territory" type="text" value="${params.get('territory') or ''}">
 
         <br>
 
-        <input id="submit" name="submit" type="submit" value"Rechercher">
+        <input id="submit" name="submit" type="submit" value="Rechercher">
     </form>
 </fieldset>
 
