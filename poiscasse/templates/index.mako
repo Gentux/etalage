@@ -28,13 +28,13 @@
 
 
 <fieldset>
-    <form>
+    <form id="search-form">
         <label for="category">Catégorie</label>
-        <input id="category" name="category" type="text" value="${category if category else ''}"/>
+        <input id="category" name="category" type="text" value="${category_slug or ''}"/>
 
         <br />
 
-        <label for="term">Text libre</label>
+        <label for="term">Intitulé</label>
         <input id="term" name="term" type="text" value="${term if term else ''}"/>
 
         <br />

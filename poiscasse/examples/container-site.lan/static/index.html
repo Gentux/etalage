@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <title>Sample Site Containing an Etalage Gadget</title>
+    <style type="text/css">
+div.fixed-width {
+    width: 600px;
+    margin: 20px auto;
+}
+    </style>
+</head>
+<body>
+    <h1>Sample Site Containing an Etalage Gadget</h1>
+    <div class="fixed-width">Au dessus</div>
+
+    <!-- Debut du composant : Etalage -->
+    <div class="fixed-width" id="gadget-etalage"></div>
+    <script type="text/javascript" src="http://localhost:7002/integration.js"></script>
+    <script type="text/javascript">
+        comarquage.gadgets.init();
+        comarquage.gadgets.renderEtalageGadget({
+            container: "gadget-etalage",
+            id: 832,
+            params: {
+                base_category: 'justice'
+            },
+            remote: 'http://localhost:8091/',
+            props: {
+                style: {
+                }
+            }
+        });
+    </script>
+    <noscript>
+        <iframe src="http://localhost:8091/TODO?gadget=832" height="3500" width="100%">
+            Votre navigateur ne permet pas d'afficher l'&Eacute;talage &agrave; l'int&eacute;rieur de ce site. 
+            Cliquez sur <a href="http://localhost:8091/TODO?gadget=832">ce lien</a> pour y acc&eacute;der.
+        </iframe>
+    </noscript>
+    <!-- Fin du composant -->
+
+    <div class="fixed-width">En dessous</div>
+</body>
+</html>

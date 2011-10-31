@@ -29,6 +29,7 @@
 
 import itertools
 import logging
+import urlparse
 
 from biryani import strings
 
@@ -41,6 +42,9 @@ log = logging.getLogger(__name__)
 @wsgihelpers.wsgify
 def about(req):
     ctx = contexts.Ctx(req)
+
+    params = req.GET
+    init_ctx(ctx, params)
     return templates.render(ctx, '/about.mako')
 
 
@@ -50,14 +54,20 @@ def index(req):
     ctx = contexts.Ctx(req)
 
     params = req.GET
+    init_ctx(ctx, params)
     params = dict(
+        base_category = params.get('base_category'),
         category = params.get('category'),
         page = params.get('page'),
         term = params.get('term'),
         territory = params.get('territory'),
         )
 
-    category, error = conv.str_to_slug(params['category'], state = ctx)
+    base_category_slug, error = conv.str_to_slug(params['base_category'], state = ctx)
+    if error is not None:
+        raise wsgihelpers.not_found(ctx, explanation = ctx._('Base Category Error: {0}').format(error))
+
+    category_slug, error = conv.str_to_slug(params['category'], state = ctx)
     if error is not None:
         raise wsgihelpers.not_found(ctx, explanation = ctx._('Category Error: {0}').format(error))
 
@@ -96,7 +106,8 @@ def index(req):
     page_size = 20
     pois_infos = []
     for poi_id in itertools.islice(
-            ramdb.iter_pois_id(category_slug = category, term = term, territory_kind_code = territory_kind_code),
+            ramdb.iter_pois_id(categories_slug = [base_category_slug, category_slug], term = term,
+                territory_kind_code = territory_kind_code),
             (page_number - 1) * page_size,
             page_number * page_size,
             ):
@@ -108,13 +119,78 @@ def index(req):
             ))
 
     return templates.render(ctx, '/index.mako',
-        category = category,
+        category_slug = category_slug,
         page_number = page_number,
         page_size = page_size,
         pois_count = len(ramdb.ram_pois_by_id),
         term = params['term'],
         pois_infos = pois_infos,
         )
+
+
+def init_ctx(ctx, params):
+    container_base_url = params.get('container_base_url') or None
+    if container_base_url is None:
+        container_hostname = None
+    else:
+        container_hostname = urlparse.urlsplit(container_base_url).hostname or None
+    try:
+        gadget_id = int(params.get('gadget'))
+    except (TypeError, ValueError):
+        gadget_id = None
+    if gadget_id is None:
+        if container_base_url is not None:
+            # Ignore container site when no gadget ID is given.
+            container_base_url = None
+            container_hostname = None
+#    else:
+#        subscriber = Subscriber.retrieve_by_subscription_id(ctx, gadget_id)
+#        if subscriber is None:
+#            ctx.front_office = True
+#            return wsgihelpers.bad_request(ctx, body = htmlhelpers.modify_html(ctx, templates.render(ctx,
+#                '/error-invalid-gadget-id.mako', gadget_id = gadget_id)))
+#        for site in subscriber.sites or []:
+#            for subscription in site.get('subscriptions') or []:
+#                if subscription['id'] == gadget_id:
+#                    break
+#            else:
+#                continue
+#            break
+#        else:
+#            ctx.front_office = True
+#            return wsgihelpers.bad_request(ctx, body = htmlhelpers.modify_html(ctx, templates.render(ctx,
+#                '/error-invalid-gadget-id.mako', gadget_id = gadget_id)))
+#        ctx.subscriber = subscriber
+#        if gadget_id is not None and container_base_url is None and subscription.get('url') is not None:
+#            # When in gadget mode but without a container_base_url, we are accessed through the noscript iframe or by a
+#            # search engine. We need to retrieve the URL of page containing gadget to do a JavaScript redirection (in
+#            # publication.mako).
+#            container_base_url = subscription['url'] or None
+#            container_hostname = urlparse.urlsplit(container_base_url).hostname or None
+    ctx.container_base_url = container_base_url
+    ctx.gadget_id = gadget_id
+
+#    base_territory_type = req.urlvars.get('base_territory_type')
+#    base_territory_code = req.urlvars.get('base_territory_code')
+#    if base_territory_type is not None and base_territory_code is not None:
+#        base_territory_kind = urls.territories_kind[base_territory_type]
+#        ctx.base_territory = Territory.kind_to_class(base_territory_kind).get(base_territory_code)
+#        if ctx.base_territory is None:
+#            return wsgihelpers.not_found(ctx, body = htmlhelpers.modify_html(ctx, templates.render(ctx,
+#                '/error-unknown-territory.mako', territory_code = base_territory_code,
+#                territory_kind = base_territory_kind)))
+#        if ctx.subscriber is not None:
+#            subscriber_territory = ctx.subscriber.territory
+#            if subscriber_territory._id not in ctx.base_territory.ancestors_id:
+#                return wsgihelpers.not_found(ctx, body = htmlhelpers.modify_html(ctx, templates.render(ctx,
+#                    '/error-invalid-territory.mako', parent_territory = subscriber_territory,
+#                    territory = ctx.base_territory)))
+#    if ctx.base_territory is None and user is not None and user.territory is not None:
+#        ctx.base_territory = Territory.get_variant_class(user.territory['kind']).get(user.territory['code'])
+#        if ctx.base_territory is None:
+#            return wsgihelpers.not_found(ctx, body = htmlhelpers.modify_html(ctx, templates.render(ctx,
+#                '/error-unknown-territory.mako', territory_code = user.territory['code'],
+#                territory_kind = user.territory['kind'])))
 
 
 def make_router():
@@ -132,6 +208,7 @@ def poi(req):
     ctx = contexts.Ctx(req)
 
     params = req.params
+    init_ctx(ctx, params)
     params = dict(
         poi_id = req.urlvars.get('poi_id'),
         )
@@ -144,37 +221,37 @@ def poi(req):
     return templates.render(ctx, '/poi.mako', poi = poi)
 
 
-@wsgihelpers.wsgify
-@ramdb.ramdb_based
-def territory(req):
-    ctx = contexts.Ctx(req)
+#@wsgihelpers.wsgify
+#@ramdb.ramdb_based
+#def territory(req):
+#    ctx = contexts.Ctx(req)
 
-    params = req.GET
-    params = dict(
-        postal_distribution = req.urlvars.get('postal_distribution'),
-        type = req.urlvars.get('type'),
-        )
+#    params = req.GET
+#    params = dict(
+#        postal_distribution = req.urlvars.get('postal_distribution'),
+#        type = req.urlvars.get('type'),
+#        )
 
-    territory_kind, error = conv.pipe(
-        conv.str_to_slug,
-        conv.slug_plural_fr_to_territory_kind,
-        conv.exists,
-        )(params['type'], state = ctx)
-    if error is not None:
-        raise wsgihelpers.not_found(ctx, explanation = ctx._('Territory Type Error: {0}').format(error))
+#    territory_kind, error = conv.pipe(
+#        conv.str_to_slug,
+#        conv.slug_plural_fr_to_territory_kind,
+#        conv.exists,
+#        )(params['type'], state = ctx)
+#    if error is not None:
+#        raise wsgihelpers.not_found(ctx, explanation = ctx._('Territory Type Error: {0}').format(error))
 
-    territory, error = conv.pipe(
-        conv.str_to_postal_distribution,
-        conv.make_postal_distribution_to_territory_id(guess = True, kinds = [territory_kind]),
-        conv.id_to_territory,
-        conv.exists,
-        )(params['postal_distribution'], state = ctx)
-    if error is not None:
-        raise wsgihelpers.not_found(ctx, explanation = ctx._('Territory Error: {0}').format(error))
+#    territory, error = conv.pipe(
+#        conv.str_to_postal_distribution,
+#        conv.make_postal_distribution_to_territory_id(guess = True, kinds = [territory_kind]),
+#        conv.id_to_territory,
+#        conv.exists,
+#        )(params['postal_distribution'], state = ctx)
+#    if error is not None:
+#        raise wsgihelpers.not_found(ctx, explanation = ctx._('Territory Error: {0}').format(error))
 
-    territory_full_url = urls.get_full_url(ctx, territory.ref)
-    if req.url != territory_full_url:
-        raise wsgihelpers.redirect(ctx, location = territory_full_url)
+#    territory_full_url = urls.get_full_url(ctx, territory.ref)
+#    if req.url != territory_full_url:
+#        raise wsgihelpers.redirect(ctx, location = territory_full_url)
 
-    return templates.render(ctx, '/territory.mako', territory = territory)
+#    return templates.render(ctx, '/territory.mako', territory = territory)
 

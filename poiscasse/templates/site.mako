@@ -49,10 +49,35 @@ from poiscasse import conf
     <script src="${conf['jquery.js']}"></script>
     <script src="${conf['jquery-ui.js']}"></script>
     <script src="${conf['leaflet.js']}"></script>
+    % if ctx.container_base_url is not None and ctx.gadget_id is not None:
+    <script src="${conf['easyxdm.js']}"></script>
+    <script>
+easyXDM.DomHelper.requiresJSON('${conf['json2.js']}');
+var rpc = new easyXDM.Rpc({
+    swf: '${conf['easyxdm.swf']}'
+},
+{
+    remote: {
+        adjustHeight: {},
+        requestNavigateTo: {}
+    }
+});
+    </script>
+    % endif
     <script>
 var etalage = etalage || {};
 etalage.territoryAutocompleterUrl = ${urlparse.urljoin(conf['territoria_url'],
     '/api/v1/autocomplete-territory') | n, js};
+
+
+    % if ctx.container_base_url is not None and ctx.gadget_id is not None:
+$(function () {
+    $('#search-form').submit(function () {
+        console.log('submit');
+        return false;
+    });
+});
+    % endif
     </script>
     <script src="/js/poiscasse.js"></script>
 </%def>

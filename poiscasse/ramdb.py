@@ -47,10 +47,11 @@ pois_id_by_word = None
 ram_pois_by_id = None
 
 
-def iter_pois_id(category_slug = None, term = None, territory_kind_code = None):
+def iter_pois_id(categories_slug = None, term = None, territory_kind_code = None):
     intersected_sets = []
-    if category_slug is not None:
-        intersected_sets.append(pois_id_by_category_slug.get(category_slug))
+    for category_slug in set(categories_slug or []):
+        if category_slug is not None:
+            intersected_sets.append(pois_id_by_category_slug.get(category_slug))
     if term:
         prefixes = strings.slugify(term).split(u'-')
         iterables_by_prefix = {}
@@ -101,7 +102,7 @@ def load():
         new_indexes['categories_by_slug'][category_infos['code']] = category_infos['title']
 
     for poi in model.Poi.find({'metadata.deleted': {'$exists': False}},
-            ['geo', 'metadata.categories-index', 'metadata.territories-index', 'metadata.title']):
+            ['geo', 'metadata.categories-index', 'metadata.territories-index', 'metadata.title']).limit(1000):
         metadata = poi.metadata
         ram_poi = model.RamPoi(
             _id = poi._id,

@@ -40,11 +40,11 @@ def main(argv = None):
     print time.time() - start_time
     print
 
-    print "ramdb.iter_pois_id(category_slug = u'mairie')"
-    print "============================================="
+    print "ramdb.iter_pois_id(categories_slug = [u'mairie'])"
+    print "================================================="
     print
     start_time = time.time()
-    print len(ramdb.iter_pois_id(category_slug = u'mairie'))
+    print len(ramdb.iter_pois_id(categories_slug = [u'mairie']))
     print time.time() - start_time
     print
 
@@ -64,27 +64,28 @@ def main(argv = None):
     print time.time() - start_time
     print
 
-    print "ramdb.iter_pois_id(category_slug = u'mairie', term = u'Mairie')"
-    print "==============================================================="
+    print "ramdb.iter_pois_id(categories_slug = [u'mairie'], term = u'Mairie')"
+    print "==================================================================="
     print
     start_time = time.time()
-    print len(ramdb.iter_pois_id(category_slug = u'mairie', term = u'Mairie'))
+    print len(ramdb.iter_pois_id(categories_slug = [u'mairie'], term = u'Mairie'))
     print time.time() - start_time
     print
 
-    print "ramdb.iter_pois_id(category_slug = u'mairie', term = u'Préf')"
-    print "============================================================="
+    print "ramdb.iter_pois_id(categories_slug = [u'mairie'], term = u'Préf')"
+    print "================================================================="
     print
     start_time = time.time()
-    print len(ramdb.iter_pois_id(category_slug = u'mairie', term = u'Préf'))
+    print len(ramdb.iter_pois_id(categories_slug = [u'mairie'], term = u'Préf'))
     print time.time() - start_time
     print
 
-    print "ramdb.iter_pois_id(category_slug = u'mairie', term = u'Mairie', territory_kind_code = (u'DepartmentOfFrance', u'92'))"
-    print "====================================================================================================================="
+    print "ramdb.iter_pois_id(categories_slug = [u'mairie'], term = u'Mairie', territory_kind_code = (u'DepartmentOfFrance', u'92'))"
+    print "========================================================================================================================="
     print
     start_time = time.time()
-    print len(ramdb.iter_pois_id(category_slug = u'mairie', term = u'Mairie', territory_kind_code = (u'DepartmentOfFrance', u'92')))
+    print len(ramdb.iter_pois_id(categories_slug = [u'mairie'], term = u'Mairie',
+        territory_kind_code = (u'DepartmentOfFrance', u'92')))
     print time.time() - start_time
     print
 
