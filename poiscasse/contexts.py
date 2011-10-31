@@ -44,6 +44,8 @@ class Ctx(object):
         _lang = None,
         _scopes = UnboundLocalError,
         _translator = None,
+        base_categories_slug = None,
+        category_tags_slug = None,
         container_base_url = None,
         controller_name = None,
         gadget_id = None,

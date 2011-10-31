@@ -39,6 +39,7 @@ from . import contexts, conf, conv, model, pois, ramdb, templates, urls, wsgihel
 
 
 log = logging.getLogger(__name__)
+N_ = lambda message: message
 
 
 @wsgihelpers.wsgify
@@ -62,6 +63,7 @@ def autocomplete_category(req):
         context = params.get('context'),
         jsonp = params.get('jsonp'),
         page = params.get('page'),
+        tag = params.getall('tag'),
         term = params.get('term'),
         )
     data, errors = conv.pipe(
@@ -72,11 +74,13 @@ def autocomplete_category(req):
                     conv.make_greater_or_equal(1),
                     conv.default(1),
                     ),
+                tag = conv.uniform_sequence(conv.str_to_category_slug),
                 term = conv.make_str_to_slug(separator = u' ', transform = strings.upper),
                 ),
             default = 'ignore',
             ),
         conv.rename_item('page', 'page_number'),
+        conv.rename_item('tag', 'tags_slug'),
         )(params, state = ctx)
     if errors is not None:
         raise wsgihelpers.respond_json(ctx,
@@ -103,9 +107,12 @@ def autocomplete_category(req):
 
     page_size = 20
     categories_json = [
-        ramdb.categories_by_slug[category_slug]
+        ramdb.categories_by_slug[category_slug].name
         for category_slug in itertools.islice(
-            sorted(ramdb.iter_categories_slug(term = data.get('term'))),
+            sorted(ramdb.iter_categories_slug(
+                tags_slug = data.get('tags_slug'),
+                term = data.get('term'),
+                )),
             (data['page_number'] - 1) * page_size,
             data['page_number'] * page_size,
             )
@@ -139,7 +146,6 @@ def export_geojson(req):
     params = req.GET
     init_ctx(ctx, params)
     params = dict(
-        base_category = params.get('base_category'),
         category = params.get('category'),
         jsonp = params.get('jsonp'),
         page = params.get('page'),
@@ -147,11 +153,7 @@ def export_geojson(req):
         territory = params.get('territory'),
         )
 
-    base_category_slug, error = conv.str_to_slug(params['base_category'], state = ctx)
-    if error is not None:
-        raise wsgihelpers.not_found(ctx, explanation = ctx._('Base Category Error: {0}').format(error))
-
-    category_slug, error = conv.str_to_slug(params['category'], state = ctx)
+    category, error = conv.str_to_slug(params['category'], state = ctx)
     if error is not None:
         raise wsgihelpers.not_found(ctx, explanation = ctx._('Category Error: {0}').format(error))
 
@@ -194,8 +196,7 @@ def export_geojson(req):
         "features": [],
         }
     for poi_id in itertools.islice(
-            ramdb.iter_pois_id(categories_slug = [base_category_slug, category_slug], term = term,
-                territory_kind_code = territory_kind_code),
+            ramdb.iter_pois_id(category_slug = category.slug, term = term, territory_kind_code = territory_kind_code),
             (page_number - 1) * page_size,
             page_number * page_size,
             ):
@@ -233,7 +234,6 @@ def index(req):
     params = req.GET
     init_ctx(ctx, params)
     params = dict(
-        base_category = params.get('base_category'),
         category = params.get('category'),
         mode = req.urlvars.get('mode'),
         page = params.get('page'),
@@ -241,11 +241,12 @@ def index(req):
         territory = params.get('territory'),
         )
 
-    base_category_slug, error = conv.str_to_slug(params['base_category'], state = ctx)
-    if error is not None:
-        raise wsgihelpers.not_found(ctx, explanation = ctx._('Base Category Error: {0}').format(error))
-
-    category_slug, error = conv.str_to_slug(params['category'], state = ctx)
+    category, error = conv.pipe(
+        conv.str_to_category_slug,
+        conv.function(lambda slug: ramdb.categories_by_slug[slug]),
+        conv.make_test(lambda category: (category.tags_slug or set()).issuperset(ctx.category_tags_slug or []),
+            error = N_(u'Missing required tags to category')),
+        )(params['category'], state = ctx)
     if error is not None:
         raise wsgihelpers.not_found(ctx, explanation = ctx._('Category Error: {0}').format(error))
 
@@ -261,13 +262,13 @@ def index(req):
     if error is not None:
         raise wsgihelpers.not_found(ctx, explanation = ctx._('Research Terms Error: {0}').format(error))
 
-    postal_distribution, error = conv.str_to_postal_distribution(params['territory'], state = ctx)
+    ctx.postal_distribution, error = conv.str_to_postal_distribution(params['territory'], state = ctx)
     if error is not None:
         raise wsgihelpers.not_found(ctx, explanation = ctx._('Territory Error: {0}').format(error))
-    elif postal_distribution:
+    elif ctx.postal_distribution:
         found_territories = list(model.Territory.find({
-            'main_postal_distribution.postal_code': postal_distribution[0],
-            'main_postal_distribution.postal_routing': postal_distribution[1],
+            'main_postal_distribution.postal_code': ctx.postal_distribution[0],
+            'main_postal_distribution.postal_routing': ctx.postal_distribution[1],
             }).limit(2))
         if not found_territories:
             error = u'Territoire inconnu'
@@ -283,8 +284,11 @@ def index(req):
 
     page_size = 20
     pois_infos = []
+    categories_slug = set(ctx.base_categories_slug or [])
+    if category is not None:
+        categories_slug.add(category.slug)
     for poi_id in itertools.islice(
-            ramdb.iter_pois_id(categories_slug = [base_category_slug, category_slug], term = term,
+            ramdb.iter_pois_id(categories_slug = categories_slug, term = term,
                 territory_kind_code = territory_kind_code),
             (page_number - 1) * page_size,
             page_number * page_size,
@@ -296,21 +300,30 @@ def index(req):
             name = poi.name,
             ))
 
-    # use startswith instead of '==' because of optional '/' at the end of url
-    template = '/map.mako' if params['mode'] and params['mode'].startswith('map') else '/index.mako'
+    template = '/map.mako' if params['mode'] == 'map' else '/index.mako'
     return templates.render(ctx, template,
-        category_slug = category_slug,
         mode = params['mode'],
         page_number = page_number,
         page_size = page_size,
+        params = params,
         pois_count = len(ramdb.ram_pois_by_id),
-        postal_distribution = postal_distribution,
-        term = params['term'],
         pois_infos = pois_infos,
         )
 
 
 def init_ctx(ctx, params):
+    ctx.base_categories_slug, error = conv.uniform_sequence(
+        conv.str_to_category_slug,
+        )(params.getall('base_category'), state = ctx)
+    if error is not None:
+        raise wsgihelpers.bad_request(ctx, explanation = ctx._('Base Categories Error: {0}').format(error))
+
+    ctx.category_tags_slug, error = conv.uniform_sequence(
+        conv.str_to_category_slug,
+        )(params.getall('category_tag'), state = ctx)
+    if error is not None:
+        raise wsgihelpers.bad_request(ctx, explanation = ctx._('Category Tags Error: {0}').format(error))
+
     container_base_url = params.get('container_base_url') or None
     if container_base_url is None:
         container_hostname = None

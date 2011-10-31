@@ -37,6 +37,7 @@ from territoria2.conv import str_to_postal_distribution
 
 
 default_state = states.default_state
+N_ = lambda message: message
 
 
 def bson_to_poi(bson, state = default_state):
@@ -53,4 +54,10 @@ ram_poi_to_bson = object_to_clean_dict
 
 
 str_to_slug = make_str_to_slug()
+def str_to_category_slug(value, state = default_state):
+    from . import ramdb
+    return pipe(
+        str_to_slug,
+        make_test(lambda slug: slug in ramdb.categories_by_slug, error = N_(u'Invalid category')),
+        )(value, state = state)
 

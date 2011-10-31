@@ -38,6 +38,7 @@ from .ramindexes import *
 
 
 categories_by_slug = None
+categories_slug_by_tag_slug = None
 categories_slug_by_word = None
 dogpile = SyncReaderDogpile(24 * 3600) # Cache timeout can be very high, because it is not needed. TODO: Remove it.
 inited = False
@@ -48,8 +49,11 @@ pois_id_by_word = None
 ram_pois_by_id = None
 
 
-def iter_categories_slug(term = None):
+def iter_categories_slug(tags_slug = None, term = None):
     intersected_sets = []
+    for tag_slug in set(tags_slug or []):
+        if tag_slug is not None:
+            intersected_sets.append(categories_slug_by_tag_slug.get(tag_slug))
     if term:
         prefixes = strings.slugify(term).split(u'-')
         iterables_by_prefix = {}
@@ -118,6 +122,7 @@ def load():
 
     new_indexes = dict(
         categories_by_slug = {},
+        categories_slug_by_tag_slug = {},
         categories_slug_by_word = {},
         pois_id_by_category_slug = {},
         pois_id_by_territory_kind_code = {},
@@ -125,13 +130,16 @@ def load():
         ram_pois_by_id = {},
         )
 
-    for category_infos in model.db[conf['categories_collection']].find(None, ['code', 'title']):
-        new_indexes['categories_by_slug'][category_infos['code']] = category_infos['title']
+    for category_infos in model.db[conf['categories_collection']].find(None, ['code', 'tags_code', 'title']):
+        category = model.Category(
+            name = category_infos['title'],
+            tags_slug = set(category_infos.get('tags_code') or []) or None,
+            )
+        category.add_to_ramdb(new_indexes)
 
     for poi in model.Poi.find({'metadata.deleted': {'$exists': False}},
             ['geo', 'metadata.categories-index', 'metadata.territories-index', 'metadata.title']).limit(1000):
         metadata = poi.metadata
-
         ram_poi = model.RamPoi(
             _id = poi._id,
             geo = poi.geo[0] if poi.geo is not None else None,
@@ -144,23 +152,25 @@ def load():
             ) if metadata.get('territories-index') is not None else None
         ram_poi.add_to_ramdb(new_indexes, metadata.get('categories-index'), territories_kind_code)
 
-    # Remove unused categories.
-    for category_slug in new_indexes['categories_by_slug'].keys():
-        if category_slug not in new_indexes['pois_id_by_category_slug']:
-            log.warning('Ignoring category "{0}" not used by any POI.'.format(category_slug))
-            del new_indexes['categories_by_slug'][category_slug]
-    for category_slug in new_indexes['pois_id_by_category_slug'].keys():
-        if category_slug not in new_indexes['categories_by_slug']:
-            log.warning('Ignoring category "{0}" not defined in categories collection.'.format(category_slug))
-            del new_indexes['pois_id_by_category_slug'][category_slug]
+#    # Remove unused categories.
+#    for category_slug in new_indexes['categories_by_slug'].keys():
+#        if category_slug not in new_indexes['pois_id_by_category_slug']:
+#            log.warning('Ignoring category "{0}" not used by any POI.'.format(category_slug))
+#            del new_indexes['categories_by_slug'][category_slug]
+#    for category_slug in new_indexes['pois_id_by_category_slug'].keys():
+#        if category_slug not in new_indexes['categories_by_slug']:
+#            log.warning('Ignoring category "{0}" not defined in categories collection.'.format(category_slug))
+#            del new_indexes['pois_id_by_category_slug'][category_slug]
 
-    for category_slug in new_indexes['categories_by_slug']:
-        for word in category_slug.split(u'-'):
-            new_indexes['categories_slug_by_word'].setdefault(word, set()).add(category_slug)
+##    for category_slug in new_indexes['categories_by_slug'].iterkeys():
+#        for word in category_slug.split(u'-'):
+#            new_indexes['categories_slug_by_word'].setdefault(word, set()).add(category_slug)
 
     with dogpile.acquire_write_lock():
         global categories_by_slug
         categories_by_slug = new_indexes['categories_by_slug']
+        global categories_slug_by_tag_slug
+        categories_slug_by_tag_slug = new_indexes['categories_slug_by_tag_slug']
         global categories_slug_by_word
         categories_slug_by_word = new_indexes['categories_slug_by_word']
         global pois_id_by_category_slug

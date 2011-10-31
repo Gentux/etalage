@@ -78,6 +78,7 @@ var rpc = new easyXDM.Rpc({
     <script>
 var etalage = etalage || {};
 etalage.map.organismsUrl = 'http://localhost:5001/api/v1/geojson/organismes/';
+etalage.categories.tags = ${ctx.category_tags_slug | n, js};
 etalage.territories.autocompleterUrl = ${urlparse.urljoin(conf['territoria_url'],
     '/api/v1/autocomplete-territory') | n, js};
 

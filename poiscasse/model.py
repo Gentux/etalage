@@ -29,6 +29,7 @@
 
 from territoria2.territories import *
 
+from .categories import *
 from .pois import *
 from .rampois import *
 
