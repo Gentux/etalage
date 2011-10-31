@@ -55,7 +55,6 @@ from poiscasse import conf
 <!--[if lt IE 10]>
     <script src="${conf['pie.js']}"></script>
 <![endif]-->
-
     <script src="/js/categories.js"></script>
     <script src="/js/map.js"></script>
     <script src="/js/territories.js"></script>
