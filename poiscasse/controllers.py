@@ -52,6 +52,87 @@ def about(req):
 
 @wsgihelpers.wsgify
 @ramdb.ramdb_based
+def autocomplete_category(req):
+    ctx = contexts.Ctx(req)
+    ctx.controller_name = 'autocomplete_category'
+
+    headers = []
+    params = req.GET
+    params = dict(
+        context = params.get('context'),
+        jsonp = params.get('jsonp'),
+        page = params.get('page'),
+        term = params.get('term'),
+        )
+    data, errors = conv.pipe(
+        conv.struct(
+            dict(
+                page = conv.pipe(
+                    conv.str_to_int,
+                    conv.make_greater_or_equal(1),
+                    conv.default(1),
+                    ),
+                term = conv.make_str_to_slug(separator = u' ', transform = strings.upper),
+                ),
+            default = 'ignore',
+            ),
+        conv.rename_item('page', 'page_number'),
+        )(params, state = ctx)
+    if errors is not None:
+        raise wsgihelpers.respond_json(ctx,
+            dict(
+                apiVersion = '1.0',
+                context = params['context'],
+                error = dict(
+                    code = 400, # Bad Request
+                    errors = [
+                        dict(
+                            location = key,
+                            message = error,
+                            )
+                        for key, error in sorted(errors.iteritems())
+                        ],
+                    # message will be automatically defined.
+                    ),
+                method = ctx.controller_name,
+                params = params,
+                ),
+            headers = headers,
+            jsonp = params['jsonp'],
+            )
+
+    page_size = 20
+    categories_json = [
+        ramdb.categories_by_slug[category_slug]
+        for category_slug in itertools.islice(
+            sorted(ramdb.iter_categories_slug(term = data.get('term'))),
+            (data['page_number'] - 1) * page_size,
+            data['page_number'] * page_size,
+            )
+        ]
+    return wsgihelpers.respond_json(ctx,
+        dict(
+            apiVersion = '1.0',
+            context = params['context'],
+            data = dict(
+                currentItemCount = len(categories_json),
+                items = categories_json,
+                itemsPerPage = page_size,
+                pageIndex = data['page_number'],
+                startIndex = (data['page_number'] - 1) * page_size + 1,
+                # totalItems = pager.item_count,
+                # totalPages = pager.page_count,
+                ),
+            method = ctx.controller_name,
+            params = params,
+            ),
+        headers = headers,
+        jsonp = params['jsonp'],
+        )
+
+
+@wsgihelpers.wsgify
+@ramdb.ramdb_based
 def export_geojson(req):
     ctx = contexts.Ctx(req)
 
@@ -288,10 +369,11 @@ def init_ctx(ctx, params):
 def make_router():
     """Return a WSGI application that dispatches requests to controllers """
     return urls.make_router(
-        ('GET', '^/(?P<mode>(list|map))?$', index),
+        ('GET', '^/(?P<mode>(list|map)/?)?$', index),
         ('GET', '^/a-propos/?$', about),
-        ('GET', '^/organismes/(?P<poi_id>[a-z0-9]{24})/?$', poi),
         ('GET', '^/api/v1/geojson/organismes/?$', export_geojson),
+        ('GET', '^/api/v1/autocomplete-category/?$', autocomplete_category),
+        ('GET', '^/organismes/(?P<poi_id>[a-z0-9]{24})/?$', poi),
         )
 
 
@@ -312,39 +394,3 @@ def poi(req):
 
     poi = pois.Poi.find_one({"_id": poi_id})
     return templates.render(ctx, '/poi.mako', poi = poi)
-
-
-#@wsgihelpers.wsgify
-#@ramdb.ramdb_based
-#def territory(req):
-#    ctx = contexts.Ctx(req)
-
-#    params = req.GET
-#    params = dict(
-#        postal_distribution = req.urlvars.get('postal_distribution'),
-#        type = req.urlvars.get('type'),
-#        )
-
-#    territory_kind, error = conv.pipe(
-#        conv.str_to_slug,
-#        conv.slug_plural_fr_to_territory_kind,
-#        conv.exists,
-#        )(params['type'], state = ctx)
-#    if error is not None:
-#        raise wsgihelpers.not_found(ctx, explanation = ctx._('Territory Type Error: {0}').format(error))
-
-#    territory, error = conv.pipe(
-#        conv.str_to_postal_distribution,
-#        conv.make_postal_distribution_to_territory_id(guess = True, kinds = [territory_kind]),
-#        conv.id_to_territory,
-#        conv.exists,
-#        )(params['postal_distribution'], state = ctx)
-#    if error is not None:
-#        raise wsgihelpers.not_found(ctx, explanation = ctx._('Territory Error: {0}').format(error))
-
-#    territory_full_url = urls.get_full_url(ctx, territory.ref)
-#    if req.url != territory_full_url:
-#        raise wsgihelpers.redirect(ctx, location = territory_full_url)
-
-#    return templates.render(ctx, '/territory.mako', territory = territory)
-

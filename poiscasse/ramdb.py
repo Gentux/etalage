@@ -38,6 +38,7 @@ from .ramindexes import *
 
 
 categories_by_slug = None
+categories_slug_by_word = None
 dogpile = SyncReaderDogpile(24 * 3600) # Cache timeout can be very high, because it is not needed. TODO: Remove it.
 inited = False
 log = logging.getLogger(__name__)
@@ -45,6 +46,31 @@ pois_id_by_category_slug = None
 pois_id_by_territory_kind_code = None
 pois_id_by_word = None
 ram_pois_by_id = None
+
+
+def iter_categories_slug(term = None):
+    intersected_sets = []
+    if term:
+        prefixes = strings.slugify(term).split(u'-')
+        iterables_by_prefix = {}
+        for prefix in prefixes:
+            if prefix in iterables_by_prefix:
+                # TODO? Handle categories with several words sharing the same prefix?
+                continue
+            iterables_by_prefix[prefix] = (
+                category_slug
+                for word, category_slug in categories_slug_by_word.iteritems()
+                if word.startswith(prefix)
+                )
+        intersected_sets.extend(
+            union_set(iterables_by_prefix.get(prefix))
+            for prefix in prefixes
+            )
+
+    categories_slug = intersection_set(intersected_sets)
+    if categories_slug is None:
+        return categories_by_slug.iterkeys()
+    return categories_slug
 
 
 def iter_pois_id(categories_slug = None, term = None, territory_kind_code = None):
@@ -92,6 +118,7 @@ def load():
 
     new_indexes = dict(
         categories_by_slug = {},
+        categories_slug_by_word = {},
         pois_id_by_category_slug = {},
         pois_id_by_territory_kind_code = {},
         pois_id_by_word = {},
@@ -117,19 +144,25 @@ def load():
             ) if metadata.get('territories-index') is not None else None
         ram_poi.add_to_ramdb(new_indexes, metadata.get('categories-index'), territories_kind_code)
 
+    # Remove unused categories.
     for category_slug in new_indexes['categories_by_slug'].keys():
         if category_slug not in new_indexes['pois_id_by_category_slug']:
             log.warning('Ignoring category "{0}" not used by any POI.'.format(category_slug))
             del new_indexes['categories_by_slug'][category_slug]
-
     for category_slug in new_indexes['pois_id_by_category_slug'].keys():
         if category_slug not in new_indexes['categories_by_slug']:
             log.warning('Ignoring category "{0}" not defined in categories collection.'.format(category_slug))
             del new_indexes['pois_id_by_category_slug'][category_slug]
 
+    for category_slug in new_indexes['categories_by_slug']:
+        for word in category_slug.split(u'-'):
+            new_indexes['categories_slug_by_word'].setdefault(word, set()).add(category_slug)
+
     with dogpile.acquire_write_lock():
         global categories_by_slug
         categories_by_slug = new_indexes['categories_by_slug']
+        global categories_slug_by_word
+        categories_slug_by_word = new_indexes['categories_slug_by_word']
         global pois_id_by_category_slug
         pois_id_by_category_slug = new_indexes['pois_id_by_category_slug']
         global pois_id_by_territory_kind_code
