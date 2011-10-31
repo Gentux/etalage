@@ -82,15 +82,15 @@ etalage.territories.autocompleterUrl = ${urlparse.urljoin(conf['territoria_url']
     '/api/v1/autocomplete-territory') | n, js};
 
 
-    % if ctx.container_base_url is not None and ctx.gadget_id is not None:
 $(function () {
+    % if ctx.container_base_url is not None and ctx.gadget_id is not None:
     $('#search-form').submit(function () {
         console.log('submit');
         return false;
     });
+    % endif
     etalage.init();
 });
-    % endif
     </script>
 </%def>
 
