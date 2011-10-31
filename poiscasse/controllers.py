@@ -137,7 +137,9 @@ def export_geojson(req):
     ctx = contexts.Ctx(req)
 
     params = req.GET
+    init_ctx(ctx, params)
     params = dict(
+        base_category = params.get('base_category'),
         category = params.get('category'),
         jsonp = params.get('jsonp'),
         page = params.get('page'),
@@ -145,7 +147,11 @@ def export_geojson(req):
         territory = params.get('territory'),
         )
 
-    category, error = conv.str_to_slug(params['category'], state = ctx)
+    base_category_slug, error = conv.str_to_slug(params['base_category'], state = ctx)
+    if error is not None:
+        raise wsgihelpers.not_found(ctx, explanation = ctx._('Base Category Error: {0}').format(error))
+
+    category_slug, error = conv.str_to_slug(params['category'], state = ctx)
     if error is not None:
         raise wsgihelpers.not_found(ctx, explanation = ctx._('Category Error: {0}').format(error))
 
@@ -161,13 +167,13 @@ def export_geojson(req):
     if error is not None:
         raise wsgihelpers.not_found(ctx, explanation = ctx._('Research Terms Error: {0}').format(error))
 
-    ctx.postal_distribution, error = conv.str_to_postal_distribution(params['territory'], state = ctx)
+    postal_distribution, error = conv.str_to_postal_distribution(params['territory'], state = ctx)
     if error is not None:
         raise wsgihelpers.not_found(ctx, explanation = ctx._('Territory Error: {0}').format(error))
-    elif ctx.postal_distribution:
+    elif postal_distribution:
         found_territories = list(model.Territory.find({
-            'main_postal_distribution.postal_code': ctx.postal_distribution[0],
-            'main_postal_distribution.postal_routing': ctx.postal_distribution[1],
+            'main_postal_distribution.postal_code': postal_distribution[0],
+            'main_postal_distribution.postal_routing': postal_distribution[1],
             }).limit(2))
         if not found_territories:
             error = u'Territoire inconnu'
@@ -188,7 +194,8 @@ def export_geojson(req):
         "features": [],
         }
     for poi_id in itertools.islice(
-            ramdb.iter_pois_id(category_slug = category, term = term, territory_kind_code = territory_kind_code),
+            ramdb.iter_pois_id(categories_slug = [base_category_slug, category_slug], term = term,
+                territory_kind_code = territory_kind_code),
             (page_number - 1) * page_size,
             page_number * page_size,
             ):
@@ -254,13 +261,13 @@ def index(req):
     if error is not None:
         raise wsgihelpers.not_found(ctx, explanation = ctx._('Research Terms Error: {0}').format(error))
 
-    ctx.postal_distribution, error = conv.str_to_postal_distribution(params['territory'], state = ctx)
+    postal_distribution, error = conv.str_to_postal_distribution(params['territory'], state = ctx)
     if error is not None:
         raise wsgihelpers.not_found(ctx, explanation = ctx._('Territory Error: {0}').format(error))
-    elif ctx.postal_distribution:
+    elif postal_distribution:
         found_territories = list(model.Territory.find({
-            'main_postal_distribution.postal_code': ctx.postal_distribution[0],
-            'main_postal_distribution.postal_routing': ctx.postal_distribution[1],
+            'main_postal_distribution.postal_code': postal_distribution[0],
+            'main_postal_distribution.postal_routing': postal_distribution[1],
             }).limit(2))
         if not found_territories:
             error = u'Territoire inconnu'
@@ -289,13 +296,15 @@ def index(req):
             name = poi.name,
             ))
 
-    template = '/map.mako' if params['mode'] == 'map' else '/index.mako'
+    # use startswith instead of '==' because of optional '/' at the end of url
+    template = '/map.mako' if params['mode'] and params['mode'].startswith('map') else '/index.mako'
     return templates.render(ctx, template,
         category_slug = category_slug,
         mode = params['mode'],
         page_number = page_number,
         page_size = page_size,
         pois_count = len(ramdb.ram_pois_by_id),
+        postal_distribution = postal_distribution,
         term = params['term'],
         pois_infos = pois_infos,
         )

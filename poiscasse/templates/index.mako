@@ -24,9 +24,23 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
+<%!
+import urllib
+%>
+
+
 <%inherit file="/site.mako"/>
 
 
+<%
+    territory = u'{pd[0]} {pd[1]}'.format(pd = postal_distribution) if postal_distribution else u''
+
+    url_params = urllib.urlencode({
+        "category": category_slug or '',
+        "term": term or '',
+        "territory": territory,
+        })
+%>
 <fieldset>
     <form action="${'/map' if mode == 'map' else '/'}" id="search-form" method="get">
         <label for="category">Catégorie</label>
@@ -35,15 +49,12 @@
         <br>
 
         <label for="term">Intitulé</label>
-        <input id="term" name="term" type="text" value="${term if term else ''}">
+        <input id="term" name="term" type="text" value="${term or ''}">
 
         <br>
 
-<%
-    postal_distribution = u'{pd[0]} {pd[1]}'.format(pd = ctx.postal_distribution) if ctx.postal_distribution else u''
-%>
         <label for="territory">Territoire</label>
-        <input id="territory" name="territory" type="text" value="${postal_distribution}">
+        <input id="territory" name="territory" type="text" value="${territory}">
 
         <br>
 
@@ -55,12 +66,12 @@
     Résultat de ${((page_number - 1) * page_size) + 1} à ${page_number * page_size} <br>
     Nombre de résultat par page : ${page_size}
     % if page_number > 1:
-    <a href='/list?page=${page_number - 1}'>Précédent</a>
+    <a href='/list?page=${page_number - 1}&${url_params}'>Précédent</a>
     % endif
     % if page_number < pois_count / page_size:
-    <a href='/list?page=${page_number + 1}'>Suivant</a>
+    <a href='/list?page=${page_number + 1}&${url_params}'>Suivant</a>
     % endif
-    <a href='/map?page=${page_number}'>Voir sur une carte</a>
+    <a href='/map?page=${page_number}&${url_params}'>Voir sur une carte</a>
 </div>
 
 <table style="border: solid black 1px;">

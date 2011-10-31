@@ -27,8 +27,10 @@ var etalage = etalage || {};
 
 
 etalage.init = function() {
+	if ($('#map').length > 0) {
+    	etalage.map.createMap('map');
+	}
     etalage.categories.createAutocompleter($('#category'));
-    etalage.map.createMap('map');
     etalage.territories.createAutocompleter($('#territory'));
 };
 

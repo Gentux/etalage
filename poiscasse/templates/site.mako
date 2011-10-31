@@ -85,7 +85,6 @@ etalage.territories.autocompleterUrl = ${urlparse.urljoin(conf['territoria_url']
 $(function () {
     % if ctx.container_base_url is not None and ctx.gadget_id is not None:
     $('#search-form').submit(function () {
-        console.log('submit');
         return false;
     });
     % endif

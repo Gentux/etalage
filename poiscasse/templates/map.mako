@@ -24,26 +24,37 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
+<%!
+import urllib
+%>
+
+
 <%inherit file="/site.mako"/>
 
 
-<fieldset>
-    <form action="/" method="get">
-        <label for="category">Catégorie</label>
-        <input id="category" name="category" type="text" value="${category if category else ''}">
-
-        <br>
-
-        <label for="term">Text libre</label>
-        <input id="term" name="term" type="text" value="${term if term else ''}">
-
-        <br>
-
 <%
-    postal_distribution = u'{pd[0]} {pd[1]}'.format(pd = ctx.postal_distribution) if ctx.postal_distribution else u''
+    territory = u'{pd[0]} {pd[1]}'.format(pd = postal_distribution) if postal_distribution else u''
+
+    url_params = urllib.urlencode({
+        "category": category_slug or '',
+        "term": term or '',
+        "territory": territory,
+        })
 %>
+<fieldset>
+    <form action="${'/map' if mode == 'map' else '/'}" id="search-form" method="get">
+        <label for="category">Catégorie</label>
+        <input id="category" name="category" type="text" value="${category_slug or ''}"/>
+
+        <br>
+
+        <label for="term">Intitulé</label>
+        <input id="term" name="term" type="text" value="${term or ''}">
+
+        <br>
+
         <label for="territory">Territoire</label>
-        <input id="territory" name="territory" type="text" value="${postal_distribution}">
+        <input id="territory" name="territory" type="text" value="${territory}">
 
         <br>
 
@@ -55,12 +66,12 @@
     Résultat de ${((page_number - 1) * page_size) + 1} à ${page_number * page_size} <br>
     Nombre de résultat par page : ${page_size}
     % if page_number > 1:
-    <a href='/map?page=${page_number - 1}'>Précédent</a>
+    <a href='/map?page=${page_number - 1}&${url_params}'>Précédent</a>
     % endif
     % if page_number < pois_count / page_size:
-    <a href='/map?page=${page_number + 1}'>Suivant</a>
+    <a href='/map?page=${page_number + 1}&${url_params}'>Suivant</a>
     % endif
-    <a href='/list?page=${page_number}'>Voir dans une liste</a>
+    <a href='/list?page=${page_number}&${url_params}'>Voir dans une liste</a>
 </div>
 
 <div id="map" style="height: 400px;">
