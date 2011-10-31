@@ -32,16 +32,19 @@ from poiscasse import conf
 
 
 <%def name="css()" filter="trim">
-    <link rel="stylesheet" href="${conf['leaflet.css']}" />
+    <link rel="stylesheet" href="${conf['leaflet.css']}">
 <!--[if lte IE 8]>
     <link rel="stylesheet" href="${conf['leaflet.ie.css']}">
 <![endif]-->
-    <link rel="stylesheet" href="${conf['jquery-ui.css']}" />
+    <link rel="stylesheet" href="${conf['jquery-ui.css']}">
+
+    <link rel="stylesheet" href="/css/poi.css">
+    <link rel="stylesheet" href="/css/site.css">
 </%def>
 
 
 <%def name="metas()" filter="trim">
-    <meta charset="utf-8" />
+    <meta charset="utf-8">
 </%def>
 
 
@@ -49,6 +52,13 @@ from poiscasse import conf
     <script src="${conf['jquery.js']}"></script>
     <script src="${conf['jquery-ui.js']}"></script>
     <script src="${conf['leaflet.js']}"></script>
+<!--[if lt IE 10]>
+    <script src="${conf['PIE.js']}"></script>
+<![endif]-->
+
+    <script src="/js/map.js"></script>
+    <script src="/js/territories.js"></script>
+    <script src="/js/poiscasse.js"></script>
     % if ctx.container_base_url is not None and ctx.gadget_id is not None:
     <script src="${conf['easyxdm.js']}"></script>
     <script>
@@ -66,7 +76,8 @@ var rpc = new easyXDM.Rpc({
     % endif
     <script>
 var etalage = etalage || {};
-etalage.territoryAutocompleterUrl = ${urlparse.urljoin(conf['territoria_url'],
+etalage.map.organismsUrl = 'http://localhost:5001/api/v1/geojson/organismes/';
+etalage.territories.autocompleterUrl = ${urlparse.urljoin(conf['territoria_url'],
     '/api/v1/autocomplete-territory') | n, js};
 
 
@@ -76,10 +87,10 @@ $(function () {
         console.log('submit');
         return false;
     });
+    etalage.init();
 });
     % endif
     </script>
-    <script src="/js/poiscasse.js"></script>
 </%def>
 
 

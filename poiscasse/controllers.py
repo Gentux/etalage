@@ -27,8 +27,10 @@
 """Controllers for territories"""
 
 
+import datetime
 import itertools
 import logging
+import simplejson as json
 import urlparse
 
 from biryani import strings
@@ -46,6 +48,93 @@ def about(req):
     params = req.GET
     init_ctx(ctx, params)
     return templates.render(ctx, '/about.mako')
+
+
+@wsgihelpers.wsgify
+@ramdb.ramdb_based
+def export_geojson(req):
+    ctx = contexts.Ctx(req)
+
+    params = req.GET
+    params = dict(
+        category = params.get('category'),
+        jsonp = params.get('jsonp'),
+        page = params.get('page'),
+        term = params.get('term'),
+        territory = params.get('territory'),
+        )
+
+    category, error = conv.str_to_slug(params['category'], state = ctx)
+    if error is not None:
+        raise wsgihelpers.not_found(ctx, explanation = ctx._('Category Error: {0}').format(error))
+
+    page_number, error = conv.pipe(
+        conv.str_to_int,
+        conv.make_greater_or_equal(1),
+        conv.default(1),
+        )(params['page'], state = ctx)
+    if error is not None:
+        raise wsgihelpers.not_found(ctx, explanation = ctx._('Page Number Error: {0}').format(error))
+
+    term, error = conv.str_to_slug(params['term'], state = ctx)
+    if error is not None:
+        raise wsgihelpers.not_found(ctx, explanation = ctx._('Research Terms Error: {0}').format(error))
+
+    ctx.postal_distribution, error = conv.str_to_postal_distribution(params['territory'], state = ctx)
+    if error is not None:
+        raise wsgihelpers.not_found(ctx, explanation = ctx._('Territory Error: {0}').format(error))
+    elif ctx.postal_distribution:
+        found_territories = list(model.Territory.find({
+            'main_postal_distribution.postal_code': ctx.postal_distribution[0],
+            'main_postal_distribution.postal_routing': ctx.postal_distribution[1],
+            }).limit(2))
+        if not found_territories:
+            error = u'Territoire inconnu'
+            raise wsgihelpers.not_found(ctx, explanation = ctx._('Territory Error: {0}').format(error))
+        elif len(found_territories) > 1:
+            error = u'Territoire ambigu'
+            raise wsgihelpers.not_found(ctx, explanation = ctx._('Territory Error: {0}').format(error))
+        else:
+            territory_dict = found_territories[0].new_kind_code()
+            territory_kind_code = (territory_dict['kind'], territory_dict['code'])
+    else:
+        territory_kind_code = None
+
+    page_size = 20
+    pois_geojson = {
+        "type": "FeatureCollection",
+        "properties": {"date": unicode(datetime.datetime.now())},
+        "features": [],
+        }
+    for poi_id in itertools.islice(
+            ramdb.iter_pois_id(category_slug = category, term = term, territory_kind_code = territory_kind_code),
+            (page_number - 1) * page_size,
+            page_number * page_size,
+            ):
+        poi = ramdb.ram_pois_by_id[poi_id]
+        pois_geojson['features'].append({
+            "geometry": {
+                "type": "Point",
+                "coordinates": [poi.geo[1], poi.geo[0]],
+                },
+            "type": "Feature",
+            "properties": {
+                "id": unicode(poi._id),
+                "name": poi.name,
+                },
+            })
+
+    response = json.dumps(
+        pois_geojson,
+        encoding = 'utf-8',
+        ensure_ascii = False,
+        )
+    if params['jsonp']:
+        req.response.content_type = 'application/javascript; charset=utf-8'
+        return u'{0}({1})'.format(params['jsonp'], response)
+    else:
+        req.response.content_type = 'application/json; charset=utf-8'
+        return response
 
 
 @wsgihelpers.wsgify
@@ -198,7 +287,8 @@ def make_router():
     return urls.make_router(
         ('GET', '^/?$', index),
         ('GET', '^/a-propos/?$', about),
-        ('GET', '^/poi/(?P<poi_id>[a-z0-9]{24})/?$', poi),
+        ('GET', '^/organismes/(?P<poi_id>[a-z0-9]{24})/?$', poi),
+        ('GET', '^/api/v1/geojson/organismes/?$', export_geojson),
         )
 
 

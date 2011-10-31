@@ -34,7 +34,6 @@ import simplejson
 
 % if poi.metadata['positions']:
     % for field_id in poi.metadata['positions']:
-##${field(id = field_id, label = poi.metadata[field_id].pop(0)['label'], value = poi.__getattribute__(field_id).pop(0))}
 <%poi_lib:field field id="${field_id}" label="${poi.metadata[field_id].pop(0)}" value="${getattr(poi, field_id).pop(0)}"/>
     % endfor
 % endif

@@ -22,37 +22,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
 var etalage = etalage || {};
 
 
-$(function () {
-    $('#territory').autocomplete({
-        source: function(request, response) {
-            $.ajax({
-                url: etalage.territoryAutocompleterUrl + '?jsonp=?',
-                dataType: 'jsonp',
-                data: {
-                    term: request.term
-                },
-                success: function (data) {
-                    response($.map(data.data.items, function(item) {
-                        var label = item.main_postal_distribution;
-                        if (item.main_postal_distribution != item.nearest_postal_distribution) {
-                            label += ' (' + item.nearest_postal_distribution + ')';
-                        }
-                        if (item.type_name != 'Arrondissement municipal' && item.type_name != 'Commune'
-                                && item.type_name != 'Commune associée') {
-                            label += ' (' + item.type_name + ')';
-                        }
-                        return {
-                            label: label,
-                            value: item.main_postal_distribution
-                        };
-                    }));
-                }
-            });
-        }
-    });
-});
+etalage.init = function() {
+    etalage.map.createMap("map");
+    etalage.territories.createTerritoriesAutocompleter("#territory");
+};
 

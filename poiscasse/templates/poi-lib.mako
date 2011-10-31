@@ -125,12 +125,10 @@ from poiscasse import model, ramdb
     </div>
     % elif id == 'geo':
         <div class="field-value">
-<%
-        map_id = u'map-{0}'.format(uuid.uuid4())
-%>\
-            <div class="single-marker-map" id="${map_id}" style="height: 500px;"></div>
+            <div class="single-marker-map" id="map-poi" style="height: 500px;"></div>
             <script type="text/javascript">
-                singleMarkerMap("${map_id}", ${value[0]}, ${value[1]});
+var etalage = etalage || {};
+etalage.map.singleMarkerMap("map-poi", ${value[0]}, ${value[1]});
             </script>
             <div class="bigger-map-link">
                 Voir sur une carte plus grande avec

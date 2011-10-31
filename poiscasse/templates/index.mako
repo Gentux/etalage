@@ -28,37 +28,37 @@
 
 
 <fieldset>
-    <form id="search-form">
+    <form action="/" id="search-form" method="get">
         <label for="category">Catégorie</label>
         <input id="category" name="category" type="text" value="${category_slug or ''}"/>
 
-        <br />
+        <br>
 
         <label for="term">Intitulé</label>
-        <input id="term" name="term" type="text" value="${term if term else ''}"/>
+        <input id="term" name="term" type="text" value="${term if term else ''}">
 
-        <br />
+        <br>
 
 <%
     postal_distribution = u'{pd[0]} {pd[1]}'.format(pd = ctx.postal_distribution) if ctx.postal_distribution else u''
 %>
         <label for="territory">Territoire</label>
-        <input id="territory" name="territory" type="text" value="${postal_distribution}"/>
+        <input id="territory" name="territory" type="text" value="${postal_distribution}">
 
-        <br />
+        <br>
 
-        <input id="submit" name="submit" type="submit"/>
+        <input id="submit" name="submit" type="submit" value"Rechercher">
     </form>
 </fieldset>
 
 <div>
-    Page ${page_number} / ${pois_count / page_size}
+    Résultat de ${((page_number - 1) * page_size) + 1} à ${page_number * page_size} <br>
     Nombre de résultat par page : ${page_size}
     % if page_number > 1:
-        <a href='/?page=${page_number - 1}'>Précédent</a>
+    <a href='/?page=${page_number - 1}'>Précédent</a>
     % endif
     % if page_number < pois_count / page_size:
-        <a href='/?page=${page_number + 1}'>Suivant</a>
+    <a href='/?page=${page_number + 1}'>Suivant</a>
     % endif
 </div>
 
@@ -71,7 +71,7 @@
 % for poi in pois_infos:
     <tr>
         <td>${poi['_id']}</td>
-        <td><a data-rel="external" href="/poi/${poi['_id']}">${poi['name']}</a></td>
+        <td><a data-rel="external" href="/organismes/${poi['_id']}">${poi['name']}</a></td>
         <td>${poi['geo']}</td>
     </tr>
 % endfor
