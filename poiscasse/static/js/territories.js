@@ -51,7 +51,8 @@ etalage.territories = (function ($) {
                                 value: item.main_postal_distribution
                             };
                         }));
-                    }
+                    },
+                    traditional: true
                 });
             }
         });

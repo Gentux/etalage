@@ -34,6 +34,7 @@ etalage.categories = (function ($) {
                     url: '/api/v1/autocomplete-category',
                     dataType: 'json',
                     data: {
+                        tag: etalage.categories.tags,
                         term: request.term
                     },
                     success: function (data) {
@@ -42,7 +43,8 @@ etalage.categories = (function ($) {
                                 label: label
                             };
                         }));
-                    }
+                    },
+                    traditional: true
                 });
             }
         });
