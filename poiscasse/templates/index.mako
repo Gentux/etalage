@@ -137,12 +137,6 @@ $(function () {
         <div>
             Organismes ${pager.first_item_number} à ${pager.last_item_number} sur ${pager.item_count}<br>
             Nombre d'organismes par page : ${pager.page_size}
-            % if pager.page_number > 1:
-            <a href='/?page=${pager.page_number - 1}&${url_params}'>Précédent</a>
-            % endif
-            % if pager.page_number < pager.item_count / pager.page_size:
-            <a href='/?page=${pager.page_number + 1}&${url_params}'>Suivant</a>
-            % endif
             <a href='/carte?page=${pager.page_number}&${url_params}'>Voir sur une carte</a>
         </div>
         <%self:results/>
