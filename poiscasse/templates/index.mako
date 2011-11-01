@@ -28,7 +28,7 @@
 import urllib
 import urlparse
 
-from poiscasse import conf
+from poiscasse import conf, urls
 %>
 
 
@@ -44,15 +44,6 @@ var etalage = etalage || {};
 etalage.categories.tags = ${ctx.category_tags_slug | n, js};
 etalage.territories.autocompleterUrl = ${urlparse.urljoin(conf['territoria_url'],
     '/api/v1/autocomplete-territory') | n, js};
-etalage.pager = ${dict(
-    # Name of items follow Google JSON Style Guide http://google-styleguide.googlecode.com/svn/trunk/jsoncstyleguide.xml
-    currentItemCount = pager.page_size,
-    itemsPerPage = pager.page_max_size,
-    pageIndex = pager.page_number,
-    startIndex = pager.first_item_number,
-    totalItems = pager.item_count,
-    totalPages = pager.page_count,
-    ) if errors is None else None | n, js};
 etalage.params = ${params | n, js};
 
 $(function () {
@@ -71,7 +62,7 @@ $(function () {
 
 <%def name="body_content()" filter="trim">
     <div class="container-fluid">
-        <form action="${'/carte' if mode == 'map' else '/'}" id="search-form" method="get">
+        <form action="${urls.get_url(ctx)}" id="search-form" method="get">
             <fieldset>
     % for name, value in params.iteritems():
 <%
@@ -117,30 +108,23 @@ $(function () {
                     </div>
                 </div>
                 <div class="actions">
-                    <input class="btn primary" type="submit" value="Rechercher">
+<%
+    buttons_mode_name_and_value = (
+        (u'annuaire', u'directory_button', u'Annuaire'),
+        (u'liste', u'list_button', u'Liste'),
+        (u'carte', u'map_button', u'Carte'),
+        (u'export', u'export_button', u'Export'),
+        )
+%>\
+    % for button_mode, button_name, button_value in buttons_mode_name_and_value:
+                    <input class="btn${' primary' if button_mode == mode else ''}" name="${\
+                            button_name}" type="submit" value="${button_value}">
+    % endfor
                 </div>
             </fieldset>
         </form>
-<%
-    url_params = urllib.urlencode(dict(
-        (name, value)
-        for name, value in params.iteritems()
-        if name != 'page' and value is not None
-        ))
-%>\
     % if errors is None:
-        % if pager.item_count == 0:
-        <div>
-            <em>Aucun organisme trouvé.</em>
-        </div>
-        % else:
-        <div>
-            Organismes ${pager.first_item_number} à ${pager.last_item_number} sur ${pager.item_count}<br>
-            Nombre d'organismes par page : ${pager.page_size}
-            <a href='/carte?page=${pager.page_number}&${url_params}'>Voir sur une carte</a>
-        </div>
         <%self:results/>
-        % endif
     % endif
     </div>
 </%def>

@@ -28,6 +28,7 @@
 from poiscasse import urls
 %>
 
+
 <%inherit file="/index.mako"/>
 
 
@@ -43,24 +44,27 @@ from poiscasse import urls
             )
 %>\
                     <li class="prev${' disabled' if pager.page_number <= 1 else ''}">
-                        <a href="${urls.get_url(ctx, page = pager.page_number - 1, **url_args)}">&larr; ${\
+                        <a href="${urls.get_url(ctx, mode, page = pager.page_number - 1, **url_args)}">&larr; ${\
                                 _(u"Previous")}</a>
                     </li>
         % for page_number in range(max(pager.page_number - 5, 1), pager.page_number):
                     <li>
-                        <a class="page" href="${urls.get_url(ctx, page = page_number, **url_args)}">${page_number}</a>
+                        <a class="page" href="${urls.get_url(ctx, mode, page = page_number, **url_args)}">${\
+                                page_number}</a>
                     </li>
         % endfor
                     <li class="active">
-                        <a href="${urls.get_url(ctx, page = pager.page_number, **url_args)}">${pager.page_number}</a>
+                        <a href="${urls.get_url(ctx, mode, page = pager.page_number, **url_args)}">${\
+                                pager.page_number}</a>
                     </li>
         % for page_number in range(pager.page_number + 1, min(pager.page_number + 5, pager.last_page_number) + 1):
                     <li>
-                        <a class="page" href="${urls.get_url(ctx, page = page_number, **url_args)}">${page_number}</a>
+                        <a class="page" href="${urls.get_url(ctx, mode, page = page_number, **url_args)}">${\
+                                page_number}</a>
                     </li>
         % endfor
                     <li class="next${' disabled' if pager.page_number >= pager.last_page_number else ''}">
-                        <a href="${urls.get_url(ctx, page = pager.page_number + 1, **url_args)}">${\
+                        <a href="${urls.get_url(ctx, mode, page = pager.page_number + 1, **url_args)}">${\
                                 _(u"Next")} &rarr;</a>
                     </li>
                 </ul>
@@ -70,23 +74,48 @@ from poiscasse import urls
 
 
 <%def name="results()" filter="trim">
-    <%self:pagination/>
-    <table style="border: solid black 1px;">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Place</th>
-            </tr>
-        </thead>
-        <tbody>
+    % if pager.item_count == 0:
+        <div>
+            <em>Aucun organisme trouvé.</em>
+        </div>
+    % else:
+        <div>
+            Organismes ${pager.first_item_number} à ${pager.last_item_number} sur ${pager.item_count}
+        </div>
+    % endif
+        <%self:pagination/>
+        <table class="zebra-striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Place</th>
+                </tr>
+            </thead>
+            <tbody>
     % for poi in pager.items:
-            <tr>
-                <td><a data-rel="external" href="/organismes/${poi._id}">${poi.name}</a></td>
-                <td>${poi.geo}</td>
-            </tr>
+                <tr>
+                    <td><a data-rel="external" href="/organismes/${poi._id}">${poi.name}</a></td>
+                    <td>${poi.geo}</td>
+                </tr>
     % endfor
-        </tbody>
-    </table>
-    <%self:pagination/>
+            </tbody>
+        </table>
+        <%self:pagination/>
+</%def>
+
+
+<%def name="scripts()" filter="trim">
+    <%parent:scripts/>
+    <script>
+etalage.pager = ${dict(
+    # Name of items follow Google JSON Style Guide http://google-styleguide.googlecode.com/svn/trunk/jsoncstyleguide.xml
+    currentItemCount = pager.page_size,
+    itemsPerPage = pager.page_max_size,
+    pageIndex = pager.page_number,
+    startIndex = pager.first_item_number,
+    totalItems = pager.item_count,
+    totalPages = pager.page_count,
+    ) if errors is None else None | n, js};
+    </script>
 </%def>
 

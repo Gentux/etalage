@@ -153,12 +153,12 @@ def geojson(req):
         territory = params.get('territory'),
         )
 
-    pager, errors = conv.params_to_pois_pager(params, state = ctx)
+    geojson, errors = conv.conv.params_to_pois_geojson(params, state = ctx)
     if errors is not None:
         raise wsgihelpers.bad_request(ctx, explanation = ctx._('Error: {0}').format(errors))
 
     response = json.dumps(
-        conv.check(conv.pois_to_geojson)(date.items, state = ctx),
+        geojson,
         encoding = 'utf-8',
         ensure_ascii = False,
         )
@@ -175,29 +175,63 @@ def geojson(req):
 def index(req):
     ctx = contexts.Ctx(req)
 
-    mode = {
-        None: 'list',
-        'carte': 'map',
-        }[req.urlvars.get('mode')]
-
     params = req.GET
     init_ctx(ctx, params)
+
+    mode = req.urlvars.get('mode')
+    if not mode:
+        for mode, button_name in (
+                (u'annuaire', u'directory_button'),
+                (u'carte', u'map_button'),
+                (u'export', u'export_button'),
+                (u'liste', u'list_button'),
+                ):
+            if params.get(button_name):
+                break
+        else:
+            mode = u'carte'
     params = dict(
         category = params.get('category'),
-        page = params.get('page'),
         term = params.get('term'),
         territory = params.get('territory'),
         )
 
-    pager, errors = conv.params_to_pois_pager(params, state = ctx)
-
-    template = '/{0}.mako'.format(mode)
-    return templates.render(ctx, template,
-        mode = mode,
-        errors = errors,
-        pager = pager,
-        params = params,
-        )
+    if mode == u'annuaire':
+        directory, errors = conv.params_to_pois_directory(params, state = ctx)
+        return templates.render(ctx, '/directory.mako',
+            directory = directory,
+            errors = errors,
+            mode = mode,
+            params = params,
+            )
+    elif mode == u'carte':
+        geojson, errors = conv.params_to_pois_geojson(params, state = ctx)
+        return templates.render(ctx, '/map.mako',
+            errors = errors,
+            geojson = geojson,
+            mode = mode,
+            params = params,
+            )
+    elif mode == 'export':
+        export_options, errors = conv.params_to_export_options(params, state = ctx)
+        return templates.render(ctx, '/export.mako',
+            errors = errors,
+            export_options = export_options,
+            mode = mode,
+            params = params,
+            )
+    else:
+        assert mode == u'liste', 'Unexpected mode: {0}'.format(mode)
+        params.update(
+            page = params.get('page'),
+            )
+        pager, errors = conv.params_to_pois_list_pager(params, state = ctx)
+        return templates.render(ctx, '/list.mako',
+            errors = errors,
+            mode = mode,
+            pager = pager,
+            params = params,
+            )
 
 
 def init_ctx(ctx, params):
@@ -280,8 +314,9 @@ def init_ctx(ctx, params):
 def make_router():
     """Return a WSGI application that dispatches requests to controllers """
     return urls.make_router(
-        ('GET', '^/((?P<mode>carte)/?)?$', index),
+        ('GET', '^/?$', index),
         ('GET', '^/a-propos/?$', about),
+        ('GET', '^/(?P<mode>annuaire|carte|liste|export)/?$', index),
         ('GET', '^/api/v1/autocomplete-category/?$', autocomplete_category),
         ('GET', '^/api/v1/geojson/?$', geojson),
         ('GET', '^/organismes/(?P<poi_id>[a-z0-9]{24})/?$', poi),

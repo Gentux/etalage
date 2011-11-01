@@ -56,6 +56,7 @@ def load_environment(global_conf, app_conf):
         'global_conf': global_conf,
         'i18n_dir': os.path.join(app_dir, 'i18n'),
         'log_level': 'WARNING',
+        'organism_types_collection': 'organism_types',
         'package_name': 'poiscasse',
         'static_files': True, # Whether this application serves its own static files
         'static_files_dir': os.path.join(app_dir, 'static'),

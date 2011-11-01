@@ -38,6 +38,7 @@ from .ramindexes import *
 
 
 categories_by_slug = None
+categories_slug_by_pivot_code = None
 categories_slug_by_tag_slug = None
 categories_slug_by_word = None
 dogpile = SyncReaderDogpile(24 * 3600) # Cache timeout can be very high, because it is not needed. TODO: Remove it.
@@ -49,8 +50,10 @@ pois_id_by_word = None
 ram_pois_by_id = None
 
 
-def iter_categories_slug(tags_slug = None, term = None):
+def iter_categories_slug(organism_types_only = False, tags_slug = None, term = None):
     intersected_sets = []
+    if organism_types_only:
+        intersected_sets.append(set(categories_slug_by_pivot_code.itervalues()))
     for tag_slug in set(tags_slug or []):
         if tag_slug is not None:
             intersected_sets.append(categories_slug_by_tag_slug.get(tag_slug))
@@ -120,6 +123,7 @@ def load():
 
     new_indexes = dict(
         categories_by_slug = {},
+        categories_slug_by_pivot_code = {},
         categories_slug_by_tag_slug = {},
         categories_slug_by_word = {},
         pois_id_by_category_slug = {},
@@ -134,6 +138,12 @@ def load():
             tags_slug = set(category_infos.get('tags_code') or []) or None,
             )
         category.add_to_ramdb(new_indexes)
+
+    for organism_type_infos in model.db[conf['organism_types_collection']].find(None, ['code', 'slug']):
+        if organism_type_infos['slug'] not in new_indexes['categories_by_slug']:
+            log.warning('Ignoring organism type "{0}" without matching category.'.format(organism_type_infos['code']))
+            continue
+        new_indexes['categories_slug_by_pivot_code'][organism_type_infos['code']] = organism_type_infos['slug']
 
     for poi in model.Poi.find({'metadata.deleted': {'$exists': False}},
             ['geo', 'metadata.categories-index', 'metadata.territories-index', 'metadata.title']).limit(1000):
@@ -167,6 +177,8 @@ def load():
     with dogpile.acquire_write_lock():
         global categories_by_slug
         categories_by_slug = new_indexes['categories_by_slug']
+        global categories_slug_by_pivot_code
+        categories_slug_by_pivot_code = new_indexes['categories_slug_by_pivot_code']
         global categories_slug_by_tag_slug
         categories_slug_by_tag_slug = new_indexes['categories_slug_by_tag_slug']
         global categories_slug_by_word

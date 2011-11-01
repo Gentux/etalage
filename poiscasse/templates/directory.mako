@@ -25,44 +25,45 @@
 
 
 <%!
-from poiscasse import conf, conv
+from poiscasse import ramdb, urls
 %>
 
 
 <%inherit file="/index.mako"/>
 
 
-<%def name="css()" filter="trim">
-    <%parent:css/>
-    <link rel="stylesheet" href="${conf['leaflet.css']}">
-<!--[if lte IE 8]>
-    <link rel="stylesheet" href="${conf['leaflet.ie.css']}">
-<![endif]-->
-</%def>
-
-
 <%def name="results()" filter="trim">
-    <div id="map" style="height: 400px;"></div>
-</%def>
-
-
-<%def name="scripts()" filter="trim">
-    <%parent:scripts/>
-    <script src="${conf['leaflet.js']}"></script>
-<!--[if lt IE 10]>
-    <script src="${conf['pie.js']}"></script>
-<![endif]-->
-    <script src="/js/map.js"></script>
-    <script>
-var etalage = etalage || {};
-etalage.map.geojsonUrl = '/api/v1/geojson';
-etalage.map.markersUrl = ${conf['markers_url'].rstrip('/') | n, js};
-etalage.map.tileUrlTemplate = ${conf['tile_url_template'] | n, js};
-
-
-$(function () {
-    etalage.map.createMap('map', ${geojson if errors is None else None | n, js});
-});
-    </script>
+    % if not directory:
+        <div>
+            <em>Aucun organisme trouvé.</em>
+        </div>
+    % else:
+        <div>
+        % for category_slug, pois_id in sorted(directory.iteritems()):
+<%
+            category = ramdb.categories_by_slug[category_slug]
+%>\
+            <h3>${category.name}</h3>
+            % if not pois_id:
+            <div>
+                <em>Aucun organisme trouvé.</em>
+            </div>
+            % else:
+            <ul>
+                % for poi_id in pois_id:
+<%
+                    ram_poi = ramdb.ram_pois_by_id[poi_id]
+%>\
+                <li>
+                    <a href="${urls.get_url(ctx, 'organismes', poi_id)}">${ram_poi.name}</a>
+                </li>
+                % endfor
+            </ul>
+            % endif
+            <ul>
+            </ul>
+        % endfor
+        </div>
+    % endif
 </%def>
 

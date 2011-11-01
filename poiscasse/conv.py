@@ -46,7 +46,93 @@ def bson_to_poi(bson, state = default_state):
     return make_dict_to_object(pois.Poi)(bson, state = state)
 
 
-def params_to_pois_pager(params, state = default_state):
+def params_to_pois_directory(params, state = default_state):
+    from . import ramdb
+    data, errors = pipe(
+        struct(
+            dict(
+                category = pipe(
+                    str_to_category_slug,
+                    function(lambda slug: ramdb.categories_by_slug[slug]),
+                    make_test(lambda category: (category.tags_slug or set()).issuperset(state.category_tags_slug or []),
+                        error = N_(u'Missing required tags to category')),
+                    ),
+                term = str_to_slug,
+                territory = pipe(
+                    str_to_postal_distribution,
+                    postal_distribution_to_territory,
+                    ),
+                ),
+            default = 'ignore',
+            keep_empty = True,
+            ),
+        )(params, state = state)
+    if errors is not None:
+        return data, errors
+
+    if data.get('territory') is None:
+        territory_kind_code = None
+    else:
+        territory_kind_code = data['territory'].new_kind_code()
+        territory_kind_code = (territory_kind_code['kind'], territory_kind_code['code'])
+
+    if data.get('category') is None:
+        directory_categories_slug = set(ramdb.iter_categories_slug(organism_types_only = True,
+            tags_slug = state.category_tags_slug))
+    else:
+        directory_categories_slug = set([data['category'].slug])
+    directory = {}
+    for directory_category_slug in directory_categories_slug:
+        categories_slug = set(state.base_categories_slug or [])
+        categories_slug.add(directory_category_slug)
+        directory[directory_category_slug] = list(ramdb.iter_pois_id(categories_slug = categories_slug,
+            term = data.get('term'), territory_kind_code = territory_kind_code))[:3]
+    return directory, None
+
+
+def params_to_pois_geojson(params, state = default_state):
+    from . import pagers, ramdb
+    data, errors = pipe(
+        struct(
+            dict(
+                category = pipe(
+                    str_to_category_slug,
+                    function(lambda slug: ramdb.categories_by_slug[slug]),
+                    make_test(lambda category: (category.tags_slug or set()).issuperset(state.category_tags_slug or []),
+                        error = N_(u'Missing required tags to category')),
+                    ),
+                term = str_to_slug,
+                territory = pipe(
+                    str_to_postal_distribution,
+                    postal_distribution_to_territory,
+                    ),
+                ),
+            default = 'ignore',
+            keep_empty = True,
+            ),
+        )(params, state = state)
+    if errors is not None:
+        return data, errors
+
+    categories_slug = set(state.base_categories_slug or [])
+    if data.get('category') is not None:
+        categories_slug.add(data['category'].slug)
+    if data.get('territory') is None:
+        territory_kind_code = None
+    else:
+        territory_kind_code = data['territory'].new_kind_code()
+        territory_kind_code = (territory_kind_code['kind'], territory_kind_code['code'])
+    pois_id = list(ramdb.iter_pois_id(categories_slug = categories_slug, term = data.get('term'),
+        territory_kind_code = territory_kind_code))
+    pager = pagers.Pager(item_count = len(pois_id))
+    pois = [
+        ramdb.ram_pois_by_id[poi_id]
+        for poi_id in pois_id[pager.first_item_index:pager.last_item_number]
+        ]
+    return pois_to_geojson(pois, state = state)
+
+
+def params_to_pois_list_pager(params, state = default_state):
     from . import pagers, ramdb
     data, errors = pipe(
         struct(
