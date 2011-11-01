@@ -86,7 +86,7 @@ $(function () {
                 <div class="clearfix${' error' if error else ''}">
                     <label for="category">Catégorie</label>
                     <div class="input">
-                        <input id="category" name="category" type="text" value="${params['category'] or ''}">
+                        <input class="span6" id="category" name="category" type="text" value="${params['category'] or ''}">
     % if error:
                         <span class="help-inline">${error}</span>
     % endif
@@ -98,7 +98,7 @@ $(function () {
                 <div class="clearfix${' error' if error else ''}">
                     <label for="term">Intitulé</label>
                     <div class="input">
-                        <input id="term" name="term" type="text" value="${params['term'] or ''}">
+                        <input class="span6" id="term" name="term" type="text" value="${params['term'] or ''}">
     % if error:
                         <span class="help-inline">${error}</span>
     % endif
@@ -110,7 +110,7 @@ $(function () {
                 <div class="clearfix${' error' if error else ''}">
                     <label for="territory">Territoire</label>
                     <div class="input">
-                        <input id="territory" name="territory" type="text" value="${params['territory'] or ''}">
+                        <input class="span6" id="territory" name="territory" type="text" value="${params['territory'] or ''}">
     % if error:
                         <span class="help-inline">${error}</span>
     % endif
