@@ -28,7 +28,7 @@ var etalage = etalage || {};
 
 etalage.territories = (function ($) {
     function createAutocompleter($input) {
-        $($input).autocomplete({
+        $input.autocomplete({
             source: function(request, response) {
                 $.ajax({
                     url: etalage.territories.autocompleterUrl + '?jsonp=?',
