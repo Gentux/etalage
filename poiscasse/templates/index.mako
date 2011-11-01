@@ -70,33 +70,57 @@ $(function () {
 
 
 <%def name="body_content()" filter="trim">
-    <fieldset>
+    <div class="container">
         <form action="${'/carte' if mode == 'map' else '/'}" id="search-form" method="get">
+            <fieldset>
     % for name, value in params.iteritems():
 <%
         if name in ('category', 'page', 'term', 'territory'):
             continue
 %>\
-            <input name="${name}" type="hidden" value="${value or ''}">
+                <input name="${name}" type="hidden" value="${value or ''}">
     % endfor
-            <label for="category">Catégorie</label>
-            <input id="category" name="category" type="text" value="${params['category'] or ''}">
-
-            <br>
-
-            <label for="term">Intitulé</label>
-            <input id="term" name="term" type="text" value="${params['term'] or ''}">
-
-            <br>
-
-            <label for="territory">Territoire</label>
-            <input id="territory" name="territory" type="text" value="${params['territory'] or ''}">
-
-            <br>
-
-            <input id="submit" name="submit" type="submit" value="Rechercher">
+<%
+    error = errors.get('category') if errors is not None else None
+%>\
+                <div class="clearfix${' error' if error else ''}">
+                    <label for="category">Catégorie</label>
+                    <div class="input">
+                        <input id="category" name="category" type="text" value="${params['category'] or ''}">
+    % if error:
+                        <span class="help-inline">${error}</span>
+    % endif
+                    </div>
+                </div>
+<%
+    error = errors.get('term') if errors is not None else None
+%>\
+                <div class="clearfix${' error' if error else ''}">
+                    <label for="term">Intitulé</label>
+                    <div class="input">
+                        <input id="term" name="term" type="text" value="${params['term'] or ''}">
+    % if error:
+                        <span class="help-inline">${error}</span>
+    % endif
+                    </div>
+                </div>
+<%
+    error = errors.get('territory') if errors is not None else None
+%>\
+                <div class="clearfix${' error' if error else ''}">
+                    <label for="territory">Territoire</label>
+                    <div class="input">
+                        <input id="territory" name="territory" type="text" value="${params['territory'] or ''}">
+    % if error:
+                        <span class="help-inline">${error}</span>
+    % endif
+                    </div>
+                </div>
+                <div class="actions">
+                    <input class="btn primary" type="submit" value="Rechercher">
+                </div>
+            </fieldset>
         </form>
-    </fieldset>
 <%
     url_params = urllib.urlencode(dict(
         (name, value)
@@ -104,23 +128,26 @@ $(function () {
         if name != 'page' and value is not None
         ))
 %>\
-    % if pager is None or pager.item_count == 0:
-    <div>
-        <em>Aucun organisme trouvé.</em>
-    </div>
-    % else:
-    <div>
-        Organismes ${pager.first_item_number} à ${pager.last_item_number} sur ${pager.item_count}<br>
-        Nombre d'organismes par page : ${pager.page_size}
-        % if pager.page_number > 1:
-        <a href='/?page=${pager.page_number - 1}&${url_params}'>Précédent</a>
+    % if errors is None:
+        % if pager.item_count == 0:
+        <div>
+            <em>Aucun organisme trouvé.</em>
+        </div>
+        % else:
+        <div>
+            Organismes ${pager.first_item_number} à ${pager.last_item_number} sur ${pager.item_count}<br>
+            Nombre d'organismes par page : ${pager.page_size}
+            % if pager.page_number > 1:
+            <a href='/?page=${pager.page_number - 1}&${url_params}'>Précédent</a>
+            % endif
+            % if pager.page_number < pager.item_count / pager.page_size:
+            <a href='/?page=${pager.page_number + 1}&${url_params}'>Suivant</a>
+            % endif
+            <a href='/carte?page=${pager.page_number}&${url_params}'>Voir sur une carte</a>
+        </div>
+        <%self:results/>
         % endif
-        % if pager.page_number < pager.item_count / pager.page_size:
-        <a href='/?page=${pager.page_number + 1}&${url_params}'>Suivant</a>
-        % endif
-        <a href='/carte?page=${pager.page_number}&${url_params}'>Voir sur une carte</a>
-    </div>
-    <%self:results/>
     % endif
+    </div>
 </%def>
 

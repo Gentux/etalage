@@ -33,6 +33,7 @@ from poiscasse import conf
 
 <%def name="css()" filter="trim">
     <link rel="stylesheet" href="${conf['jquery-ui.css']}">
+    <link rel="stylesheet" href="http://twitter.github.com/bootstrap/1.3.0/bootstrap.min.css">
 </%def>
 
 
