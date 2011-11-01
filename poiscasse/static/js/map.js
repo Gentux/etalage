@@ -36,7 +36,7 @@ etalage.map = (function ($) {
             scrollWheelZoom: false
         }).addLayer(
             new L.TileLayer(etalage.map.tileUrlTemplate, {
-                attribution: 'Cartel CC-By-SA par <a href="http://openstreetmap.org/">OpenStreetMap</a>',
+                attribution: 'Fond de carte <a href="http://openstreetmap.org/">OpenStreetMap</a>',
                 maxZoom: 18
             })
         );
@@ -124,7 +124,7 @@ etalage.map = (function ($) {
             scrollWheelZoom: false
         }).addLayer(
             new L.TileLayer(etalage.map.tileUrlTemplate, {
-                attribution: 'Carte CC-By-SA par <a href="http://openstreetmap.org/">OpenStreetMap</a>',
+                attribution: 'Fond de carte <a href="http://openstreetmap.org/">OpenStreetMap</a>',
                 maxZoom: 18
             })
         );
