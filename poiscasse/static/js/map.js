@@ -106,11 +106,11 @@ etalage.map = (function ($) {
             })
         );
 
-        icon = new L.Icon("http://cdn.comarquage.fr/images/markers/map-icons-collection-2.0/numeric/redblank.png");
+        icon = new L.Icon(etalage.map.markersUrl + "/images/markers/map-icons-collection-2.0/numeric/redblank.png");
         icon.iconAnchor = new L.Point(14, 24);
         icon.iconSize = new L.Point(27, 27);
         icon.shadowSize = new L.Point(51, 27);
-        icon.shadowUrl = "http://cdn.comarquage.fr/images/markers/misc/shadow.png";
+        icon.shadowUrl = etalage.map.markersUrl + "/images/markers/misc/shadow.png";
 
         latLng = new L.LatLng(latitude, longitude);
         marker = new L.Marker(latLng);
