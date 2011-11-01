@@ -52,7 +52,7 @@ etalage.pager = ${dict(
     startIndex = pager.first_item_number,
     totalItems = pager.item_count,
     totalPages = pager.page_count,
-    ) if pager is not None else None | n, js};
+    ) if errors is None else None | n, js};
 etalage.params = ${params | n, js};
 
 $(function () {

@@ -82,7 +82,7 @@ def params_to_pois_pager(params, state = default_state):
     if data.get('territory') is None:
         territory_kind_code = None
     else:
-        territory_kind_code = territory.new_kind_code()
+        territory_kind_code = data['territory'].new_kind_code()
         territory_kind_code = (territory_kind_code['kind'], territory_kind_code['code'])
     pois_id = list(ramdb.iter_pois_id(categories_slug = categories_slug, term = data.get('term'),
         territory_kind_code = territory_kind_code))

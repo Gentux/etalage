@@ -62,7 +62,7 @@ etalage.map.tileUrlTemplate = ${conf['tile_url_template'] | n, js};
 
 $(function () {
     var geojsonData = ${conv.check(conv.pois_to_geojson)(
-        pager.items, state = ctx) if pager is not None else None | n, js};
+        pager.items, state = ctx) if errors is None else None | n, js};
     etalage.map.createMap('map', geojsonData);
 });
     </script>
