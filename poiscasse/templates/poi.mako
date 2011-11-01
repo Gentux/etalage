@@ -32,9 +32,10 @@ import simplejson
 <%namespace file="poi-lib.mako" import="*" name="poi_lib"/>
 
 
-% if poi.metadata['positions']:
-    % for field_id in poi.metadata['positions']:
-<%poi_lib:field field id="${field_id}" label="${poi.metadata[field_id].pop(0)}" value="${getattr(poi, field_id).pop(0)}"/>
-    % endfor
-% endif
-
+<%def name="body_content()" filter="trim">
+    % if poi.metadata['positions']:
+        % for field_id in poi.metadata['positions']:
+    <%poi_lib:field field id="${field_id}" label="${poi.metadata[field_id].pop(0)}" value="${getattr(poi, field_id).pop(0)}"/>
+        % endfor
+    % endif
+</%def>

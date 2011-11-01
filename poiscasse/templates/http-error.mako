@@ -27,12 +27,14 @@
 <%inherit file="/site.mako"/>
 
 
+<%def name="body_content()" filter="trim">
         <h2>${title}</h2>
         <div class="error-main">${explanation}</div>
-% if comment:
+    % if comment:
         <p>${comment}</p>
-% endif
-% if message:
+    % endif
+    % if message:
         <p>${message}</p>
-% endif
+    % endif
+</%def>
 

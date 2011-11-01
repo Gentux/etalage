@@ -26,66 +26,92 @@
 
 <%!
 import urllib
+import urlparse
+
+from poiscasse import conf
 %>
 
 
 <%inherit file="/site.mako"/>
 
 
+<%def name="scripts()" filter="trim">
+    <%parent:scripts/>
+    <script src="/js/categories.js"></script>
+    <script src="/js/territories.js"></script>
+    <script>
+var etalage = etalage || {};
+etalage.categories.tags = ${ctx.category_tags_slug | n, js};
+etalage.territories.autocompleterUrl = ${urlparse.urljoin(conf['territoria_url'],
+    '/api/v1/autocomplete-territory') | n, js};
+
+
+$(function () {
+    etalage.categories.createAutocompleter($('#category'));
+    etalage.territories.createAutocompleter($('#territory'));
+
+    % if ctx.container_base_url is not None and ctx.gadget_id is not None:
+    $('#search-form').submit(function () {
+        return false;
+    });
+    % endif
+});
+    </script>
+</%def>
+
+
+<%def name="body_content()" filter="trim">
+    <fieldset>
+        <form action="${'/carte' if mode == 'map' else '/'}" id="search-form" method="get">
+    % for name, value in params.iteritems():
 <%
-    territory = u'{pd[0]} {pd[1]}'.format(pd = postal_distribution) if postal_distribution else u''
+        if name in ('category', 'page', 'term', 'territory'):
+            continue
+%>\
+            <input name="${name}" type="hidden" value="${value or ''}">
+    % endfor
+            <label for="category">Catégorie</label>
+            <input id="category" name="category" type="text" value="${params['category'] or ''}">
 
-    url_params = urllib.urlencode({
-        "category": category_slug or '',
-        "term": term or '',
-        "territory": territory,
-        })
-%>
-<fieldset>
-    <form action="${'/map' if mode == 'map' else '/'}" id="search-form" method="get">
-        <label for="category">Catégorie</label>
-        <input id="category" name="category" type="text" value="${params.get('category') or ''}"/>
+            <br>
 
-        <br>
+            <label for="term">Intitulé</label>
+            <input id="term" name="term" type="text" value="${params['term'] or ''}">
 
-        <label for="term">Intitulé</label>
-        <input id="term" name="term" type="text" value="${params.get('term') or ''}">
+            <br>
 
-        <br>
+            <label for="territory">Territoire</label>
+            <input id="territory" name="territory" type="text" value="${params['territory'] or ''}">
 
-        <label for="territory">Territoire</label>
-        <input id="territory" name="territory" type="text" value="${params.get('territory') or ''}">
+            <br>
 
-        <br>
-
-        <input id="submit" name="submit" type="submit" value="Rechercher">
-    </form>
-</fieldset>
-
-<div>
-    Résultat de ${((page_number - 1) * page_size) + 1} à ${page_number * page_size} <br>
-    Nombre de résultat par page : ${page_size}
-    % if page_number > 1:
-    <a href='/list?page=${page_number - 1}&${url_params}'>Précédent</a>
+            <input id="submit" name="submit" type="submit" value="Rechercher">
+        </form>
+    </fieldset>
+<%
+    url_params = urllib.urlencode(dict(
+        (name, value)
+        for name, value in params.iteritems()
+        if name != 'page' and value is not None
+        ))
+%>\
+    % if pager is None:
+    <div>
+        <em>Aucun organisme trouvé.</em>
+    </div>
+    % else:
+    <div>
+        Organismes ${pager.first_item_number} à ${pager.last_item_number} sur ${pager.item_count}<br>
+        Nombre d'organismes par page : ${pager.page_size}
+        % if pager.page_number > 1:
+        <a href='/?page=${pager.page_number - 1}&${url_params}'>Précédent</a>
+        % endif
+        % if pager.page_number < pager.item_count / pager.page_size:
+        <a href='/?page=${pager.page_number + 1}&${url_params}'>Suivant</a>
+        % endif
+        <a href='/carte?page=${pager.page_number}&${url_params}'>Voir sur une carte</a>
+    </div>
+    <%self:results/>
     % endif
-    % if page_number < pois_count / page_size:
-    <a href='/list?page=${page_number + 1}&${url_params}'>Suivant</a>
-    % endif
-    <a href='/map?page=${page_number}&${url_params}'>Voir sur une carte</a>
-</div>
-
-<table style="border: solid black 1px;">
-    <tr>
-        <th>ID</th>
-        <th>Name</th>
-        <th>Place</th>
-    </tr>
-% for poi in pois_infos:
-    <tr>
-        <td>${poi['_id']}</td>
-        <td><a data-rel="external" href="/organismes/${poi['_id']}">${poi['name']}</a></td>
-        <td>${poi['geo']}</td>
-    </tr>
-% endfor
-</table>
+</%def>
 

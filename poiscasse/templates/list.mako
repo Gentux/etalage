@@ -24,43 +24,21 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-<%!
-from poiscasse import conf
-%>
-
-
 <%inherit file="/index.mako"/>
 
 
-<%def name="css()" filter="trim">
-    <%parent:css/>
-    <link rel="stylesheet" href="${conf['leaflet.css']}">
-<!--[if lte IE 8]>
-    <link rel="stylesheet" href="${conf['leaflet.ie.css']}">
-<![endif]-->
-</%def>
-
-
 <%def name="results()" filter="trim">
-    <div id="map" style="height: 400px;"></div>
-</%def>
-
-
-<%def name="scripts()" filter="trim">
-    <%parent:scripts/>
-    <script src="${conf['leaflet.js']}"></script>
-<!--[if lt IE 10]>
-    <script src="${conf['pie.js']}"></script>
-<![endif]-->
-    <script src="/js/map.js"></script>
-    <script>
-var etalage = etalage || {};
-etalage.map.organismsUrl = '/api/v1/geojson';
-
-
-$(function () {
-    etalage.map.createMap('map');
-});
-    </script>
+    <table style="border: solid black 1px;">
+        <tr>
+            <th>Name</th>
+            <th>Place</th>
+        </tr>
+    % for poi in pois:
+        <tr>
+            <td><a data-rel="external" href="/organismes/${poi._id}">${poi.name}</a></td>
+            <td>${poi.geo}</td>
+        </tr>
+    % endfor
+    </table>
 </%def>
 

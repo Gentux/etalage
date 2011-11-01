@@ -32,14 +32,7 @@ from poiscasse import conf
 
 
 <%def name="css()" filter="trim">
-    <link rel="stylesheet" href="${conf['leaflet.css']}">
-<!--[if lte IE 8]>
-    <link rel="stylesheet" href="${conf['leaflet.ie.css']}">
-<![endif]-->
     <link rel="stylesheet" href="${conf['jquery-ui.css']}">
-
-    <link rel="stylesheet" href="/css/poi.css">
-    <link rel="stylesheet" href="/css/site.css">
 </%def>
 
 
@@ -51,14 +44,6 @@ from poiscasse import conf
 <%def name="scripts()" filter="trim">
     <script src="${conf['jquery.js']}"></script>
     <script src="${conf['jquery-ui.js']}"></script>
-    <script src="${conf['leaflet.js']}"></script>
-<!--[if lt IE 10]>
-    <script src="${conf['pie.js']}"></script>
-<![endif]-->
-    <script src="/js/categories.js"></script>
-    <script src="/js/map.js"></script>
-    <script src="/js/territories.js"></script>
-    <script src="/js/poiscasse.js"></script>
     % if ctx.container_base_url is not None and ctx.gadget_id is not None:
     <script src="${conf['easyxdm.js']}"></script>
     <script>
@@ -74,23 +59,6 @@ var rpc = new easyXDM.Rpc({
 });
     </script>
     % endif
-    <script>
-var etalage = etalage || {};
-etalage.map.organismsUrl = 'http://localhost:5001/api/v1/geojson/organismes/';
-etalage.categories.tags = ${ctx.category_tags_slug | n, js};
-etalage.territories.autocompleterUrl = ${urlparse.urljoin(conf['territoria_url'],
-    '/api/v1/autocomplete-territory') | n, js};
-
-
-$(function () {
-    % if ctx.container_base_url is not None and ctx.gadget_id is not None:
-    $('#search-form').submit(function () {
-        return false;
-    });
-    % endif
-    etalage.init();
-});
-    </script>
 </%def>
 
 
@@ -112,7 +80,7 @@ Open Data POIs Portal
     <%self:scripts/>
 </head>
 <body>
-    ${capture(next.body) | n, trim}
+    <%self:body_content/>
     <%self:trackers/>
 </body>
 </html>

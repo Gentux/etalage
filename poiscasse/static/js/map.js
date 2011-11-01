@@ -124,8 +124,8 @@ etalage.map = (function ($) {
 
     function fetchPois() {
         $.ajax({
-            url: etalage.map.organismsUrl + '?jsonp=?',
-            dataType: "jsonp",
+            url: etalage.map.organismsUrl,
+            dataType: "json",
             data: {
                 term: $("#term").val(),
                 territory: $("#territory").val()

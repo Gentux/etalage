@@ -34,8 +34,8 @@ etalage.categories = (function ($) {
                     url: '/api/v1/autocomplete-category',
                     dataType: 'json',
                     data: {
-                        tag: etalage.categories.tags,
-                        term: request.term
+                        tag: etalage.categories.tags || '',
+                        term: request.term || ''
                     },
                     success: function (data) {
                         response($.map(data.data.items, function(label) {

@@ -75,6 +75,7 @@ setup(
         "Dogpile >= 0.1",
         "Mako >= 0.3.6",
         "Suq-Monpyjama >= 0.8",
+        "Suq-Pagination >= 0.1",
         "WebError >= 0.10",
         "WebOb >= 1.1",
         ],

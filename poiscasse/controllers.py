@@ -140,7 +140,7 @@ def autocomplete_category(req):
 
 @wsgihelpers.wsgify
 @ramdb.ramdb_based
-def export_geojson(req):
+def geojson(req):
     ctx = contexts.Ctx(req)
 
     params = req.GET
@@ -153,65 +153,29 @@ def export_geojson(req):
         territory = params.get('territory'),
         )
 
-    category, error = conv.str_to_slug(params['category'], state = ctx)
-    if error is not None:
-        raise wsgihelpers.not_found(ctx, explanation = ctx._('Category Error: {0}').format(error))
+    pager_and_pois, errors = conv.params_to_pager_and_pois(params, state = ctx)
+    if errors is not None:
+        raise wsgihelpers.bad_request(ctx, explanation = ctx._('Error: {0}').format(errors))
+    pager, pois = pager_and_pois
 
-    page_number, error = conv.pipe(
-        conv.str_to_int,
-        conv.make_greater_or_equal(1),
-        conv.default(1),
-        )(params['page'], state = ctx)
-    if error is not None:
-        raise wsgihelpers.not_found(ctx, explanation = ctx._('Page Number Error: {0}').format(error))
-
-    term, error = conv.str_to_slug(params['term'], state = ctx)
-    if error is not None:
-        raise wsgihelpers.not_found(ctx, explanation = ctx._('Research Terms Error: {0}').format(error))
-
-    postal_distribution, error = conv.str_to_postal_distribution(params['territory'], state = ctx)
-    if error is not None:
-        raise wsgihelpers.not_found(ctx, explanation = ctx._('Territory Error: {0}').format(error))
-    elif postal_distribution:
-        found_territories = list(model.Territory.find({
-            'main_postal_distribution.postal_code': postal_distribution[0],
-            'main_postal_distribution.postal_routing': postal_distribution[1],
-            }).limit(2))
-        if not found_territories:
-            error = u'Territoire inconnu'
-            raise wsgihelpers.not_found(ctx, explanation = ctx._('Territory Error: {0}').format(error))
-        elif len(found_territories) > 1:
-            error = u'Territoire ambigu'
-            raise wsgihelpers.not_found(ctx, explanation = ctx._('Territory Error: {0}').format(error))
-        else:
-            territory_dict = found_territories[0].new_kind_code()
-            territory_kind_code = (territory_dict['kind'], territory_dict['code'])
-    else:
-        territory_kind_code = None
-
-    page_size = 20
     pois_geojson = {
         "type": "FeatureCollection",
         "properties": {"date": unicode(datetime.datetime.now())},
-        "features": [],
+        "features": [
+            {
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [poi.geo[1], poi.geo[0]],
+                    },
+                "type": "Feature",
+                "properties": {
+                    "id": unicode(poi._id),
+                    "name": poi.name,
+                    },
+                }
+            for poi in pois
+            ],
         }
-    for poi_id in itertools.islice(
-            ramdb.iter_pois_id(category_slug = category.slug, term = term, territory_kind_code = territory_kind_code),
-            (page_number - 1) * page_size,
-            page_number * page_size,
-            ):
-        poi = ramdb.ram_pois_by_id[poi_id]
-        pois_geojson['features'].append({
-            "geometry": {
-                "type": "Point",
-                "coordinates": [poi.geo[1], poi.geo[0]],
-                },
-            "type": "Feature",
-            "properties": {
-                "id": unicode(poi._id),
-                "name": poi.name,
-                },
-            })
 
     response = json.dumps(
         pois_geojson,
@@ -231,82 +195,29 @@ def export_geojson(req):
 def index(req):
     ctx = contexts.Ctx(req)
 
+    mode = {
+        None: 'list',
+        'carte': 'map',
+        }[req.urlvars.get('mode')]
+
     params = req.GET
     init_ctx(ctx, params)
     params = dict(
         category = params.get('category'),
-        mode = req.urlvars.get('mode'),
         page = params.get('page'),
         term = params.get('term'),
         territory = params.get('territory'),
         )
 
-    category, error = conv.pipe(
-        conv.str_to_category_slug,
-        conv.function(lambda slug: ramdb.categories_by_slug[slug]),
-        conv.make_test(lambda category: (category.tags_slug or set()).issuperset(ctx.category_tags_slug or []),
-            error = N_(u'Missing required tags to category')),
-        )(params['category'], state = ctx)
-    if error is not None:
-        raise wsgihelpers.not_found(ctx, explanation = ctx._('Category Error: {0}').format(error))
+    pager_and_pois, errors = conv.params_to_pager_and_pois(params, state = ctx)
 
-    page_number, error = conv.pipe(
-        conv.str_to_int,
-        conv.make_greater_or_equal(1),
-        conv.default(1),
-        )(params['page'], state = ctx)
-    if error is not None:
-        raise wsgihelpers.not_found(ctx, explanation = ctx._('Page Number Error: {0}').format(error))
-
-    postal_distribution, error = conv.str_to_postal_distribution(params['territory'], state = ctx)
-    if error is not None:
-        raise wsgihelpers.not_found(ctx, explanation = ctx._('Territory Error: {0}').format(error))
-    if postal_distribution is not None:
-        found_territories = list(model.Territory.find({
-            'main_postal_distribution.postal_code': postal_distribution[0],
-            'main_postal_distribution.postal_routing': postal_distribution[1],
-            }).limit(2))
-        if not found_territories:
-            error = u'Territoire inconnu'
-            raise wsgihelpers.not_found(ctx, explanation = ctx._('Territory Error: {0}').format(error))
-        if len(found_territories) > 1:
-            error = u'Territoire ambigu'
-            raise wsgihelpers.not_found(ctx, explanation = ctx._('Territory Error: {0}').format(error))
-        territory_kind_code_dict = found_territories[0].new_kind_code()
-        territory_kind_code = (territory_kind_code_dict['kind'], territory_kind_code_dict['code'])
-    else:
-        territory_kind_code = None
-
-    term, error = conv.str_to_slug(params['term'], state = ctx)
-    if error is not None:
-        raise wsgihelpers.not_found(ctx, explanation = ctx._('Research Terms Error: {0}').format(error))
-
-    page_size = 20
-    pois_infos = []
-    categories_slug = set(ctx.base_categories_slug or [])
-    if category is not None:
-        categories_slug.add(category.slug)
-    for poi_id in itertools.islice(
-            ramdb.iter_pois_id(categories_slug = categories_slug, term = term,
-                territory_kind_code = territory_kind_code),
-            (page_number - 1) * page_size,
-            page_number * page_size,
-            ):
-        poi = ramdb.ram_pois_by_id[poi_id]
-        pois_infos.append(dict(
-            _id = poi._id,
-            geo = poi.geo,
-            name = poi.name,
-            ))
-
-    template = '/map.mako' if params['mode'] == 'map' else '/index.mako'
+    template = '/{0}.mako'.format(mode)
     return templates.render(ctx, template,
-        mode = params['mode'],
-        page_number = page_number,
-        page_size = page_size,
+        mode = mode,
+        errors = errors,
+        pager = pager_and_pois[0] if errors is None else None,
         params = params,
-        pois_count = len(ramdb.ram_pois_by_id),
-        pois_infos = pois_infos,
+        pois = pager_and_pois[1] if errors is None else None,
         )
 
 
@@ -390,10 +301,10 @@ def init_ctx(ctx, params):
 def make_router():
     """Return a WSGI application that dispatches requests to controllers """
     return urls.make_router(
-        ('GET', '^/(?P<mode>(list|map)/?)?$', index),
+        ('GET', '^/((?P<mode>carte)/?)?$', index),
         ('GET', '^/a-propos/?$', about),
-        ('GET', '^/api/v1/geojson/organismes/?$', export_geojson),
         ('GET', '^/api/v1/autocomplete-category/?$', autocomplete_category),
+        ('GET', '^/api/v1/geojson/?$', geojson),
         ('GET', '^/organismes/(?P<poi_id>[a-z0-9]{24})/?$', poi),
         )
 
