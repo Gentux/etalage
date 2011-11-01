@@ -85,6 +85,21 @@ etalage.map = (function ($) {
         fetchPois();
     }
 
+    function fetchPois() {
+        $.ajax({
+            url: etalage.map.geoJsonUrl,
+            dataType: 'json',
+            data: {
+                term: $('#term').val(),
+                territory: $('#territory').val()
+            },
+            success: function(data) {
+                leafletMap._geojsonLayer.addGeoJSON(data);
+                leafletMap.fitBounds(etalage.map.getBBox(data.features));
+            }
+        });
+    }
+
     function getBBox(features) {
         var featureLatLng, coordinates = [];
 
@@ -122,21 +137,6 @@ etalage.map = (function ($) {
         map.setView(latLng, map.getMaxZoom() - 3);
 
         return map;
-    }
-
-    function fetchPois() {
-        $.ajax({
-            url: etalage.map.geoJsonUrl,
-            dataType: 'json',
-            data: {
-                term: $('#term').val(),
-                territory: $('#territory').val()
-            },
-            success: function(data) {
-                leafletMap._geojsonLayer.addGeoJSON(data);
-                leafletMap.fitBounds(etalage.map.getBBox(data.features));
-            }
-        });
     }
 
     return {
