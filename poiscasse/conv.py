@@ -27,14 +27,13 @@
 """Conversion functions"""
 
 
-import itertools
+import datetime
 
 from biryani.baseconv import *
 from biryani.bsonconv import *
 from biryani.objectconv import *
 from biryani.frconv import *
 from biryani import states, strings
-from suq import paginations
 from territoria2.conv import str_to_postal_distribution
 
 
@@ -47,8 +46,8 @@ def bson_to_poi(bson, state = default_state):
     return make_dict_to_object(pois.Poi)(bson, state = state)
 
 
-def params_to_pager_and_pois(params, state = default_state):
-    from . import ramdb
+def params_to_pois_pager(params, state = default_state):
+    from . import pagers, ramdb
     data, errors = pipe(
         struct(
             dict(
@@ -87,12 +86,37 @@ def params_to_pager_and_pois(params, state = default_state):
         territory_kind_code = (territory_kind_code['kind'], territory_kind_code['code'])
     pois_id = list(ramdb.iter_pois_id(categories_slug = categories_slug, term = data.get('term'),
         territory_kind_code = territory_kind_code))
-    pager = paginations.Pager(item_count = len(pois_id), page_number = data['page_number'])
-    pois = [
+    pager = pagers.Pager(item_count = len(pois_id), page_number = data['page_number'])
+    pager.items = [
         ramdb.ram_pois_by_id[poi_id]
         for poi_id in pois_id[pager.first_item_index:pager.last_item_number]
         ]
-    return (pager, pois), None
+    return pager, None
+
+
+def pois_to_geojson(pois, state = default_state):
+    if pois is None:
+        return pois, None
+    geojson = {
+        'type': 'FeatureCollection',
+        'properties': {'date': unicode(datetime.datetime.utcnow())},
+        'features': [
+            {
+                'geometry': {
+                    'type': 'Point',
+                    'coordinates': [poi.geo[1], poi.geo[0]],
+                    },
+                'type': 'Feature',
+                'properties': {
+                    'id': str(poi._id),
+                    'name': poi.name,
+                    },
+                }
+            for poi in pois
+            if poi.geo is not None
+            ],
+        }
+    return geojson, None
 
 
 def postal_distribution_to_territory(postal_distribution, state = default_state):

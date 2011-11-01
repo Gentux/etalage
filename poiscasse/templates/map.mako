@@ -25,7 +25,7 @@
 
 
 <%!
-from poiscasse import conf
+from poiscasse import conf, conv
 %>
 
 
@@ -55,13 +55,15 @@ from poiscasse import conf
     <script src="/js/map.js"></script>
     <script>
 var etalage = etalage || {};
-etalage.map.geoJsonUrl = '/api/v1/geojson';
+etalage.map.geojsonUrl = '/api/v1/geojson';
 etalage.map.markersUrl = ${conf['markers_url'].rstrip('/') | n, js};
 etalage.map.tileUrlTemplate = ${conf['tile_url_template'] | n, js};
 
 
 $(function () {
-    etalage.map.createMap('map');
+    var geojsonData = ${conv.check(conv.pois_to_geojson)(
+        pager.items, state = ctx) if pager is not None else None | n, js};
+    etalage.map.createMap('map', geojsonData);
 });
     </script>
 </%def>

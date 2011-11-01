@@ -29,7 +29,7 @@ var etalage = etalage || {};
 etalage.map = (function ($) {
     var leafletMap;
 
-    function createMap(mapDiv) {
+    function createMap(mapDiv, geojsonData) {
         var icon;
 
         leafletMap = new L.Map(mapDiv, {
@@ -82,21 +82,22 @@ etalage.map = (function ($) {
             });
         }
 
-        fetchPois();
+        if (geojsonData) {
+            setGeoJSONData(geojsonData);
+        } else {
+            fetchPois();
+        }
     }
 
     function fetchPois() {
         $.ajax({
-            url: etalage.map.geoJsonUrl,
+            url: etalage.map.geojsonUrl,
             dataType: 'json',
             data: {
                 term: $('#term').val(),
                 territory: $('#territory').val()
             },
-            success: function(data) {
-                leafletMap._geojsonLayer.addGeoJSON(data);
-                leafletMap.fitBounds(etalage.map.getBBox(data.features));
-            }
+            success: setGeoJSONData
         });
     }
 
@@ -109,6 +110,11 @@ etalage.map = (function ($) {
         });
 
         return new L.LatLngBounds(coordinates);
+    }
+
+    function setGeoJSONData(data) {
+        leafletMap._geojsonLayer.addGeoJSON(data);
+        leafletMap.fitBounds(etalage.map.getBBox(data.features));
     }
 
     function singleMarkerMap(mapDiv, latitude, longitude) {
@@ -141,7 +147,7 @@ etalage.map = (function ($) {
 
     return {
         createMap: createMap,
-        geoJsonUrl: null,
+        geojsonUrl: null,
         getBBox: getBBox,
         markersUrl: null,
         singleMarkerMap: singleMarkerMap,

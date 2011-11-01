@@ -33,7 +33,7 @@
             <th>Name</th>
             <th>Place</th>
         </tr>
-    % for poi in pois:
+    % for poi in pager.items:
         <tr>
             <td><a data-rel="external" href="/organismes/${poi._id}">${poi.name}</a></td>
             <td>${poi.geo}</td>

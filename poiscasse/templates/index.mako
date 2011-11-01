@@ -44,7 +44,16 @@ var etalage = etalage || {};
 etalage.categories.tags = ${ctx.category_tags_slug | n, js};
 etalage.territories.autocompleterUrl = ${urlparse.urljoin(conf['territoria_url'],
     '/api/v1/autocomplete-territory') | n, js};
-
+etalage.pager = ${dict(
+    # Name of items follow Google JSON Style Guide http://google-styleguide.googlecode.com/svn/trunk/jsoncstyleguide.xml
+    currentItemCount = pager.page_size,
+    itemsPerPage = pager.page_max_size,
+    pageIndex = pager.page_number,
+    startIndex = pager.first_item_number,
+    totalItems = pager.item_count,
+    totalPages = pager.page_count,
+    ) if pager is not None else None | n, js};
+etalage.params = ${params | n, js};
 
 $(function () {
     etalage.categories.createAutocompleter($('#category'));
@@ -95,7 +104,7 @@ $(function () {
         if name != 'page' and value is not None
         ))
 %>\
-    % if pager is None:
+    % if pager is None or pager.item_count == 0:
     <div>
         <em>Aucun organisme trouvé.</em>
     </div>

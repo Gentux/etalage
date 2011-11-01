@@ -153,32 +153,12 @@ def geojson(req):
         territory = params.get('territory'),
         )
 
-    pager_and_pois, errors = conv.params_to_pager_and_pois(params, state = ctx)
+    pager, errors = conv.params_to_pois_pager(params, state = ctx)
     if errors is not None:
         raise wsgihelpers.bad_request(ctx, explanation = ctx._('Error: {0}').format(errors))
-    pager, pois = pager_and_pois
-
-    pois_geojson = {
-        "type": "FeatureCollection",
-        "properties": {"date": unicode(datetime.datetime.now())},
-        "features": [
-            {
-                "geometry": {
-                    "type": "Point",
-                    "coordinates": [poi.geo[1], poi.geo[0]],
-                    },
-                "type": "Feature",
-                "properties": {
-                    "id": unicode(poi._id),
-                    "name": poi.name,
-                    },
-                }
-            for poi in pois
-            ],
-        }
 
     response = json.dumps(
-        pois_geojson,
+        conv.check(conv.pois_to_geojson)(date.items, state = ctx),
         encoding = 'utf-8',
         ensure_ascii = False,
         )
@@ -209,15 +189,14 @@ def index(req):
         territory = params.get('territory'),
         )
 
-    pager_and_pois, errors = conv.params_to_pager_and_pois(params, state = ctx)
+    pager, errors = conv.params_to_pois_pager(params, state = ctx)
 
     template = '/{0}.mako'.format(mode)
     return templates.render(ctx, template,
         mode = mode,
         errors = errors,
-        pager = pager_and_pois[0] if errors is None else None,
+        pager = pager,
         params = params,
-        pois = pager_and_pois[1] if errors is None else None,
         )
 
 
