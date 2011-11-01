@@ -35,8 +35,8 @@ etalage.map = (function ($) {
         leafletMap = new L.Map(mapDiv, {
             scrollWheelZoom: false
         }).addLayer(
-            new L.TileLayer("http://{s}.tile.comarquage.fr/france/{z}/{x}/{y}.png", {
-                attribution: 'Donn&eacute;es CC-By-SA by <a href="http://openstreetmap.org/">OpenStreetMap</a>',
+            new L.TileLayer(etalage.map.tileUrlTemplate, {
+                attribution: 'Cartel CC-By-SA par <a href="http://openstreetmap.org/">OpenStreetMap</a>',
                 maxZoom: 18
             })
         );
@@ -54,11 +54,11 @@ etalage.map = (function ($) {
         $(".leaflet-control-zoom-out").attr("title", "Dézoomer");
 
         // Icon settings
-        icon = new L.Icon('http://cdn.comarquage.fr/images/markers/map-icons-collection-2.0/numeric/redblank.png');
+        icon = new L.Icon(etalage.map.markersUrl + '/map-icons-collection-2.0/numeric/redblank.png');
         icon.iconAnchor = new L.Point(14, 24);
         icon.iconSize = new L.Point(27, 27);
         icon.shadowSize = new L.Point(51, 27);
-        icon.shadowUrl = 'http://cdn.comarquage.fr/images/markers/misc/shadow.png';
+        icon.shadowUrl = etalage.map.markersUrl + '/misc/shadow.png';
 
         var geojson = new L.GeoJSON();
         geojson.on('featureparse', function(e) {
@@ -100,8 +100,8 @@ etalage.map = (function ($) {
         map = new L.Map(mapDiv, {
             scrollWheelZoom: false
         }).addLayer(
-            new L.TileLayer("http://{s}.tile.comarquage.fr/france/{z}/{x}/{y}.png", {
-                attribution: 'Donn&eacute;es CC-By-SA by <a href="http://openstreetmap.org/">OpenStreetMap</a>',
+            new L.TileLayer(etalage.map.tileUrlTemplate, {
+                attribution: 'Carte CC-By-SA par <a href="http://openstreetmap.org/">OpenStreetMap</a>',
                 maxZoom: 18
             })
         );
@@ -124,7 +124,7 @@ etalage.map = (function ($) {
 
     function fetchPois() {
         $.ajax({
-            url: etalage.map.organismsUrl,
+            url: etalage.map.geoJsonUrl,
             dataType: "json",
             data: {
                 term: $("#term").val(),
@@ -139,8 +139,11 @@ etalage.map = (function ($) {
 
     return {
         createMap: createMap,
+        geoJsonUrl: null,
         getBBox: getBBox,
-        singleMarkerMap: singleMarkerMap
+        markersUrl: null,
+        singleMarkerMap: singleMarkerMap,
+        tileUrlTemplate: null
     };
 })(jQuery);
 

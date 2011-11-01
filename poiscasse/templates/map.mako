@@ -55,7 +55,9 @@ from poiscasse import conf
     <script src="/js/map.js"></script>
     <script>
 var etalage = etalage || {};
-etalage.map.organismsUrl = '/api/v1/geojson';
+etalage.map.geoJsonUrl = '/api/v1/geojson';
+etalage.map.markersUrl = ${conf['markers_url'].rstrip('/') | n, js};
+etalage.map.tileUrlTemplate = ${conf['tile_url_template'] | n, js};
 
 
 $(function () {
