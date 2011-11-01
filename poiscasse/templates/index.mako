@@ -70,7 +70,7 @@ $(function () {
 
 
 <%def name="body_content()" filter="trim">
-    <div class="container">
+    <div class="container-fluid">
         <form action="${'/carte' if mode == 'map' else '/'}" id="search-form" method="get">
             <fieldset>
     % for name, value in params.iteritems():
