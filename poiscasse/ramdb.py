@@ -84,7 +84,7 @@ def iter_pois_id(categories_slug = None, term = None, territory_kind_code = None
     intersected_sets = []
     for category_slug in set(categories_slug or []):
         if category_slug is not None:
-            intersected_sets.append(pois_id_by_category_slug.get(category_slug))
+            intersected_sets.append(pois_id_by_category_slug.get(category_slug) or set())
     if term:
         prefixes = strings.slugify(term).split(u'-')
         iterables_by_prefix = {}
