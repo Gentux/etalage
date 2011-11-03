@@ -1,7 +1,7 @@
 build
 cache
 data
-development-*local.ini
+development-*local*.ini
 dist
 *.egg-info
 *.pyc
