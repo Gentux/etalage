@@ -333,6 +333,31 @@ def init_ctx(ctx, params):
 #                territory_kind = user.territory['kind'])))
 
 
+@wsgihelpers.wsgify
+@ramdb.ramdb_based
+def kml(req):
+    ctx = contexts.Ctx(req)
+
+    params = req.GET
+    init_ctx(ctx, params)
+    params = dict(
+        category = params.get('category'),
+        page = params.get('page'),
+        term = params.get('term'),
+        territory = params.get('territory'),
+        )
+
+    pager, errors = conv.params_to_pois_list_pager(params, state = ctx)
+    if errors is not None:
+        raise wsgihelpers.bad_request(ctx, explanation = ctx._('Error: {0}').format(errors))
+
+    req.response.content_type = 'application/vnd.google-earth.kml+xml; charset=utf-8'
+    return templates.render(ctx, '/kml.mako',
+        pager = pager,
+        params = params,
+        )
+
+
 def make_router():
     """Return a WSGI application that dispatches requests to controllers """
     return urls.make_router(
@@ -342,6 +367,7 @@ def make_router():
         ('GET', '^/api/v1/autocomplete-category/?$', autocomplete_category),
         ('GET', '^/api/v1/csv/?$', csv),
         ('GET', '^/api/v1/geojson/?$', geojson),
+        ('GET', '^/api/v1/kml/?$', kml),
         ('GET', '^/organismes/(?P<poi_id>[a-z0-9]{24})/?$', poi),
         )
 
