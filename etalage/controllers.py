@@ -140,6 +140,28 @@ def autocomplete_category(req):
 
 @wsgihelpers.wsgify
 @ramdb.ramdb_based
+def csv(req):
+    ctx = contexts.Ctx(req)
+
+    params = req.GET
+    init_ctx(ctx, params)
+    params = dict(
+        category = params.get('category'),
+        term = params.get('term'),
+        territory = params.get('territory'),
+        )
+
+    csv, errors = conv.params_to_pois_csv(params, state = ctx)
+    if errors is not None:
+        raise wsgihelpers.bad_request(ctx, explanation = ctx._('Error: {0}').format(errors))
+
+    req.response.content_type = 'text/csv; charset=utf-8'
+    req.response.content_disposition = 'attachment;filename=export.csv'
+    return csv
+
+
+@wsgihelpers.wsgify
+@ramdb.ramdb_based
 def geojson(req):
     ctx = contexts.Ctx(req)
 
@@ -153,7 +175,7 @@ def geojson(req):
         territory = params.get('territory'),
         )
 
-    geojson, errors = conv.conv.params_to_pois_geojson(params, state = ctx)
+    geojson, errors = conv.params_to_pois_geojson(params, state = ctx)
     if errors is not None:
         raise wsgihelpers.bad_request(ctx, explanation = ctx._('Error: {0}').format(errors))
 
@@ -318,6 +340,7 @@ def make_router():
         ('GET', '^/a-propos/?$', about),
         ('GET', '^/(?P<mode>annuaire|carte|liste|export)/?$', index),
         ('GET', '^/api/v1/autocomplete-category/?$', autocomplete_category),
+        ('GET', '^/api/v1/csv/?$', csv),
         ('GET', '^/api/v1/geojson/?$', geojson),
         ('GET', '^/organismes/(?P<poi_id>[a-z0-9]{24})/?$', poi),
         )

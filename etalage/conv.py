@@ -27,6 +27,9 @@
 """Conversion functions"""
 
 
+from cStringIO import StringIO
+import csv
+import re
 import datetime
 
 from biryani.baseconv import *
@@ -34,11 +37,48 @@ from biryani.bsonconv import *
 from biryani.objectconv import *
 from biryani.frconv import *
 from biryani import states, strings
-from territoria2.conv import str_to_postal_distribution
+from territoria2.conv import split_postal_distribution, str_to_postal_distribution
 
 
 default_state = states.default_state
 N_ = lambda message: message
+
+
+def params_to_pois_csv(params, state = default_state):
+    from . import ramdb
+    data, errors = pipe(
+        struct(
+            dict(
+                category = pipe(
+                    str_to_category_slug,
+                    function(lambda slug: ramdb.categories_by_slug[slug]),
+                    make_test(lambda category: (category.tags_slug or set()).issuperset(state.category_tags_slug or []),
+                        error = N_(u'Missing required tags to category')),
+                    ),
+                term = str_to_slug,
+                territory = pipe(
+                    str_to_postal_distribution,
+                    postal_distribution_to_territory,
+                    ),
+                ),
+            default = 'ignore',
+            keep_empty = True,
+            ),
+        )(params, state = state)
+    if errors is not None:
+        return data, errors
+
+    categories_slug = set(state.base_categories_slug or [])
+    if data.get('category') is not None:
+        categories_slug.add(data['category'].slug)
+    territory_id = data['territory']._id if data.get('territory') is not None else None
+    pois_id = list(ramdb.iter_pois_id(categories_slug = categories_slug, term = data.get('term'),
+        territory_id = territory_id))
+    pois = [
+        ramdb.pois_by_id[poi_id]
+        for poi_id in pois_id
+        ]
+    return pois_to_csv(pois, state = state)
 
 
 def params_to_pois_directory(params, state = default_state):
@@ -161,6 +201,39 @@ def params_to_pois_list_pager(params, state = default_state):
         for poi_id in pois_id[pager.first_item_index:pager.last_item_number]
         ]
     return pager, None
+
+
+def pois_to_csv(pois, state = default_state):
+    if not pois:
+        return None, None
+
+    columns_label = []
+    columns_ref = []
+    rows = []
+    for poi in pois:
+        columns_index = {}
+        row = [None] * len(columns_ref)
+        for field_ref, field in poi.iter_csv_fields(state):
+            # Detect column number to use for field. Create a new column if needed.
+            column_ref = tuple(field_ref[:-1])
+            same_ref_columns_count = field_ref[-1]
+            if columns_ref.count(column_ref) == same_ref_columns_count:
+                column_index = len(columns_ref)
+                columns_label.append(field.label) # or u' - '.join(label for label in field_ref[::2])
+                columns_ref.append(column_ref)
+                row.append(None)
+            else:
+                column_index = columns_ref.index(column_ref, columns_index.get(column_ref, -1) + 1)
+            columns_index[column_ref] = column_index
+            row[column_index] = unicode(field.value).encode('utf-8')
+        rows.append(row)
+
+    csv_file = StringIO()
+    writer = csv.writer(csv_file, delimiter = ',', quotechar = '"', quoting = csv.QUOTE_MINIMAL)
+    writer.writerow([label.encode("utf-8") for label in columns_label])
+    for row in rows:
+        writer.writerow(row)
+    return csv_file.getvalue().decode('utf-8'), None
 
 
 def pois_to_geojson(pois, state = default_state):

@@ -43,12 +43,104 @@ log = logging.getLogger(__name__)
 
 class Field(representations.UserRepresentable):
     id = None # Petitpois id = format of value
-    metadata = None # = Petitpois field metadata (contains label)
+    kind = None
+    label = None
+    type = None
     value = None
 
     def __init__(self, **attributes):
         if attributes:
             self.set_attributes(**attributes)
+
+    @classmethod
+    def from_bson(cls, id, metadata, value, state = conv.default_state):
+        if len(metadata) != (1 if 'kind' in metadata else 0) \
+                + (1 if 'label' in metadata else 0) \
+                + (1 if 'type' in metadata else 0) \
+                + (1 + len(metadata['positions']) if 'positions' in metadata else 0):
+            log.warning('Unexpected attributes in field metadata {0} for value {1}'.format(metadata, value))
+        if 'positions' in metadata:
+            fields_position = {}
+            fields = []
+            for field_id in metadata['positions']:
+                field_position = fields_position.get(field_id, 0)
+                fields_position[field_id] = field_position + 1
+                field_metadata = metadata[field_id][field_position]
+                field_value = value[field_id][field_position]
+                fields.append(Field.from_bson(field_id, field_metadata, field_value, state = state))
+            value = fields or None
+        return cls(
+            id = id,
+            kind = metadata.get('kind'),
+            label = metadata['label'],
+            type = metadata.get('type'),
+            value = value,
+            )
+
+    @property
+    def is_composite(self):
+        return self.id in ('adr', 'source')
+
+    def iter_csv_fields(self, ctx, counts_by_label, parent_ref = None):
+        """Iter fields, entering inside composite fields."""
+        if self.value is not None:
+            if self.is_composite:
+                same_label_index = counts_by_label.get(self.label, 0)
+                ref = (parent_ref or []) + [self.label, same_label_index]
+                if self.value is not None:
+                    field_counts_by_label = {}
+                    for field in self.value:
+                        for subfield_ref, subfield in field.iter_csv_fields(ctx, field_counts_by_label,
+                                parent_ref = ref):
+                            yield subfield_ref, subfield
+                    if field_counts_by_label:
+                        # Some subfields were not empty, so increment number of exported fields having the same label.
+                        counts_by_label[self.label] = same_label_index + 1
+            elif self.id == 'postal-distribution':
+                postal_code, postal_routing = conv.check(conv.split_postal_distribution)(self.value, state = ctx)
+                for field in (
+                        Field(id = 'postal-code', value = postal_code, label = u'Code postal'),
+                        Field(id = 'postal-routing', value = postal_routing, label = u'Commune'),
+                        ):
+                    for subfield_ref, subfield in field.iter_csv_fields(ctx, counts_by_label, parent_ref = parent_ref):
+                        yield subfield_ref, subfield
+            elif self.id == 'geo':
+                for field in (
+                        Field(id = 'float', value = self.value[0], label = u'Latitude'),
+                        Field(id = 'float', value = self.value[1], label = u'Longitude'),
+                        Field(id = 'int', value = self.value[2], label = u'Précision'),
+                        ):
+                    for subfield_ref, subfield in field.iter_csv_fields(ctx, counts_by_label, parent_ref = parent_ref):
+                        yield subfield_ref, subfield
+            elif self.id == 'street-address' and u'\n' in self.value:
+                for item_value in self.value.split('\n'):
+                    item_value = item_value.strip()
+                    item_field_attributes = self.__dict__.copy()
+                    item_field_attributes['label'] = u'Adresse' # Better than "Rue, Voie, Chemin"
+                    item_field_attributes['value'] = item_value
+                    item_field = Field(**item_field_attributes)
+                    for subfield_ref, subfield in item_field.iter_csv_fields(ctx, counts_by_label,
+                            parent_ref = parent_ref):
+                        yield subfield_ref, subfield
+            elif isinstance(self.value, list):
+                for item_value in self.value:
+                    item_field_attributes = self.__dict__.copy()
+                    item_field_attributes['value'] = item_value
+                    item_field = Field(**item_field_attributes)
+                    for subfield_ref, subfield in item_field.iter_csv_fields(ctx, counts_by_label,
+                            parent_ref = parent_ref):
+                        yield subfield_ref, subfield
+            elif self.id == 'commune':
+                field_attributes = self.__dict__.copy()
+                field_attributes['label'] = u'Code Insee commune' # Better than "Commune"
+                field = Field(**field_attributes)
+                same_label_index = counts_by_label.get(field.label, 0)
+                yield (parent_ref or []) + [field.label, same_label_index], field
+                counts_by_label[field.label] = same_label_index + 1
+            else:
+                same_label_index = counts_by_label.get(self.label, 0)
+                yield (parent_ref or []) + [self.label, same_label_index], self
+                counts_by_label[self.label] = same_label_index + 1
 
     def set_attributes(self, **attributes):
         for name, value in attributes.iteritems():
@@ -123,13 +215,20 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
         for field_id in metadata['positions']:
             field_position = fields_position.get(field_id, 0)
             fields_position[field_id] = field_position + 1
-            field_value = bson[field_id][field_position]
             field_metadata = metadata[field_id][field_position]
-            fields.append(Field(id = field_id, metadata = field_metadata, value = field_value))
+            field_value = bson[field_id][field_position]
+            fields.append(Field.from_bson(field_id, field_metadata, field_value, state = state))
         if fields:
             self.fields = fields
 
         return self
+
+    def iter_csv_fields(self, ctx):
+        if self.fields is not None:
+            counts_by_label = {}
+            for field in self.fields:
+                for subfield_ref, subfield in field.iter_csv_fields(ctx, counts_by_label):
+                    yield subfield_ref, subfield
 
     def set_attributes(self, **attributes):
         for name, value in attributes.iteritems():
