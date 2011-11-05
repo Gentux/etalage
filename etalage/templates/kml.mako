@@ -68,5 +68,5 @@ from etalage import urls
         % endfor
         </Placemark>
     % endfor
-    <Document>
+    </Document>
 </kml>
