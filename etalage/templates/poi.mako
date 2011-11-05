@@ -36,8 +36,8 @@ from etalage import model, ramdb
 
 <%def name="body_content()" filter="trim">
     <h2>${poi.name}</h2>
-    % for statement in (poi.statements or []):
-    <%self:field field id="${statement.id}" label="${statement.metadata['label']}" value="${statement.value}"/>
+    % for field in (poi.fields or []):
+    <%self:field field id="${field.id}" label="${field.metadata['label']}" value="${field.value}"/>
     % endfor
 </%def>
 

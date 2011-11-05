@@ -35,17 +35,35 @@ from suq import monpyjama, representations
 from . import conv, ramdb
 
 
-__all__ = ['Poi', 'Statement']
+__all__ = ['Field', 'Poi']
 
 
 log = logging.getLogger(__name__)
 
 
+class Field(representations.UserRepresentable):
+    id = None # Petitpois id = format of value
+    metadata = None # = Petitpois field metadata (contains label)
+    value = None
+
+    def __init__(self, **attributes):
+        if attributes:
+            self.set_attributes(**attributes)
+
+    def set_attributes(self, **attributes):
+        for name, value in attributes.iteritems():
+            if value is getattr(self.__class__, name, UnboundLocalError):
+                if value is not getattr(self, name, UnboundLocalError):
+                    delattr(self, name)
+            else:
+                setattr(self, name, value)
+
+
 class Poi(representations.UserRepresentable, monpyjama.Wrapper):
     collection_name = 'pois'
+    fields = None
     geo = None
     name = None
-    statements = None
 
     def __init__(self, **attributes):
         if attributes:
@@ -101,35 +119,17 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
             ) if metadata.get('territories-index') is not None else None
 
         fields_position = {}
-        statements = []
+        fields = []
         for field_id in metadata['positions']:
             field_position = fields_position.get(field_id, 0)
             fields_position[field_id] = field_position + 1
             field_value = bson[field_id][field_position]
             field_metadata = metadata[field_id][field_position]
-            statements.append(Statement(id = field_id, metadata = field_metadata, value = field_value))
-        if statements:
-            self.statements = statements
+            fields.append(Field(id = field_id, metadata = field_metadata, value = field_value))
+        if fields:
+            self.fields = fields
 
         return self
-
-    def set_attributes(self, **attributes):
-        for name, value in attributes.iteritems():
-            if value is getattr(self.__class__, name, UnboundLocalError):
-                if value is not getattr(self, name, UnboundLocalError):
-                    delattr(self, name)
-            else:
-                setattr(self, name, value)
-
-
-class Statement(representations.UserRepresentable):
-    id = None # Petitpois id = format of value
-    metadata = None # = Petitpois field metadata (contains label)
-    value = None
-
-    def __init__(self, **attributes):
-        if attributes:
-            self.set_attributes(**attributes)
 
     def set_attributes(self, **attributes):
         for name, value in attributes.iteritems():
