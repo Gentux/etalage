@@ -334,9 +334,14 @@ def poi(req):
         poi_id = req.urlvars.get('poi_id'),
         )
 
-    poi_id, error = conv.str_to_object_id(params['poi_id'], ctx)
+    poi_id, error = conv.pipe(
+        conv.str_to_object_id,
+        )(params['poi_id'], ctx)
     if error is not None:
-        raise wsgihelpers.not_found(ctx, explanation = ctx._('Poi ID Error: {0}').format(error))
+        raise wsgihelpers.bad_request(ctx, explanation = ctx._('POI ID Error: {0}').format(error))
+    poi = ramdb.pois_by_id.get(poi_id)
+    if poi is None:
+        raise wsgihelpers.not_found(ctx, explanation = ctx._("POI {0} doesn't exist.").format(error))
 
-    poi = pois.Poi.find_one({"_id": poi_id})
     return templates.render(ctx, '/poi.mako', poi = poi)
+
