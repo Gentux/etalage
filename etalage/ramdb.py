@@ -100,7 +100,7 @@ def iter_pois_id(add_competent = False, categories_slug = None, term = None, ter
             category_pois_id = pois_id_by_category_slug.get(category_slug)
             if category_pois_id:
                 if territory_competent_pois_id is None:
-                    competent_pois_id = None
+                    competent_pois_id = category_pois_id
                 else:
                     competent_pois_id = category_pois_id.intersection(territory_competent_pois_id)
                 if competent_pois_id:
