@@ -33,6 +33,17 @@ from etalage import urls
 <kml xmlns="http://www.opengis.net/kml/2.2">
     <Document>
         <name>Organismes</name>
+        <Style id="displayName-value">
+            <BalloonStyle>
+                <text>
+                    <![CDATA[
+<strong>$[name]</strong><br/>
+$[description]<br/>
+$[address]
+                    ]]>
+                </text>
+            </BalloonStyle>
+        </Style>
     % for poi in pager.items:
 <%
         if poi.geo is None:
