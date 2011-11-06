@@ -33,7 +33,7 @@ from etalage import urls
 <kml xmlns="http://www.opengis.net/kml/2.2">
     <Document>
         <name>Organismes</name>
-        <Style id="displayName-value">
+        <Style id="default-balloon-style">
             <BalloonStyle>
                 <text>
                     <![CDATA[
@@ -51,6 +51,7 @@ $[address]
 %>\
         <Placemark id="${poi._id}">
             <name>${poi.name}</name>
+            <styleUrl>#default-balloon-style</styleUrl>
             <description>${urls.get_full_url(ctx, 'organismes', str(poi._id))}</description>
             <Point>
                 <coordinates>${poi.geo[1]},${poi.geo[0]}</coordinates>
