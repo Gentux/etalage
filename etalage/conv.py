@@ -53,7 +53,7 @@ def params_to_pois_csv(params, state = default_state):
                     str_to_category_slug,
                     function(lambda slug: ramdb.categories_by_slug[slug]),
                     make_test(lambda category: (category.tags_slug or set()).issuperset(state.category_tags_slug or []),
-                        error = N_(u'Missing required tags to category')),
+                        error = N_(u'Missing required tags for category')),
                     ),
                 term = str_to_slug,
                 territory = pipe(
@@ -90,7 +90,7 @@ def params_to_pois_directory(params, state = default_state):
                     str_to_category_slug,
                     function(lambda slug: ramdb.categories_by_slug[slug]),
                     make_test(lambda category: (category.tags_slug or set()).issuperset(state.category_tags_slug or []),
-                        error = N_(u'Missing required tags to category')),
+                        error = N_(u'Missing required tags for category')),
                     ),
                 term = str_to_slug,
                 territory = pipe(
@@ -130,7 +130,7 @@ def params_to_pois_geojson(params, state = default_state):
                     str_to_category_slug,
                     function(lambda slug: ramdb.categories_by_slug[slug]),
                     make_test(lambda category: (category.tags_slug or set()).issuperset(state.category_tags_slug or []),
-                        error = N_(u'Missing required tags to category')),
+                        error = N_(u'Missing required tags for category')),
                     ),
                 term = str_to_slug,
                 territory = pipe(
@@ -168,7 +168,7 @@ def params_to_pois_list_pager(params, state = default_state):
                     str_to_category_slug,
                     function(lambda slug: ramdb.categories_by_slug[slug]),
                     make_test(lambda category: (category.tags_slug or set()).issuperset(state.category_tags_slug or []),
-                        error = N_(u'Missing required tags to category')),
+                        error = N_(u'Missing required tags for category')),
                     ),
                 page = pipe(
                     str_to_int,

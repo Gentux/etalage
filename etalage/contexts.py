@@ -49,6 +49,7 @@ class Ctx(object):
         container_base_url = None,
         controller_name = None,
         gadget_id = None,
+        hide_category = False,
         req = None,
         )
     env_keys = ('_lang', '_scopes', '_translator')

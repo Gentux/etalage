@@ -47,7 +47,7 @@ def about(req):
     ctx = contexts.Ctx(req)
 
     params = req.GET
-    init_ctx(ctx, params)
+    base_params = init_base(ctx, params)
     return templates.render(ctx, '/about.mako')
 
 
@@ -144,12 +144,13 @@ def csv(req):
     ctx = contexts.Ctx(req)
 
     params = req.GET
-    init_ctx(ctx, params)
+    base_params = init_base(ctx, params)
     params = dict(
         category = params.get('category'),
         term = params.get('term'),
         territory = params.get('territory'),
         )
+    params.update(base_params)
 
     csv, errors = conv.params_to_pois_csv(params, state = ctx)
     if errors is not None:
@@ -200,7 +201,7 @@ def geojson(req):
     ctx = contexts.Ctx(req)
 
     params = req.GET
-    init_ctx(ctx, params)
+    base_params = init_base(ctx, params)
     params = dict(
         category = params.get('category'),
         jsonp = params.get('jsonp'),
@@ -208,6 +209,7 @@ def geojson(req):
         term = params.get('term'),
         territory = params.get('territory'),
         )
+    params.update(base_params)
 
     geojson, errors = conv.params_to_pois_geojson(params, state = ctx)
     if errors is not None:
@@ -232,7 +234,7 @@ def index(req):
     ctx = contexts.Ctx(req)
 
     params = req.GET
-    init_ctx(ctx, params)
+    base_params = init_base(ctx, params)
 
     mode = req.urlvars.get('mode')
     if not mode:
@@ -251,6 +253,7 @@ def index(req):
         term = params.get('term'),
         territory = params.get('territory'),
         )
+    params.update(base_params)
 
     if mode == u'annuaire':
         directory, errors = conv.params_to_pois_directory(params, state = ctx)
@@ -292,26 +295,34 @@ def index(req):
             )
 
 
-def init_ctx(ctx, params):
+def init_base(ctx, params):
+    base_params = dict(
+        base_category = params.getall('base_category'),
+        category_tag = params.getall('category_tag'),
+        container_base_url = params.get('container_base_url'),
+        gadget = params.get('gadget'),
+        hide_category = params.get('hide_category'),
+        )
+
     ctx.base_categories_slug, error = conv.uniform_sequence(
         conv.str_to_category_slug,
-        )(params.getall('base_category'), state = ctx)
+        )(base_params['base_category'], state = ctx)
     if error is not None:
         raise wsgihelpers.bad_request(ctx, explanation = ctx._('Base Categories Error: {0}').format(error))
 
     ctx.category_tags_slug, error = conv.uniform_sequence(
         conv.str_to_category_slug,
-        )(params.getall('category_tag'), state = ctx)
+        )(base_params['category_tag'], state = ctx)
     if error is not None:
         raise wsgihelpers.bad_request(ctx, explanation = ctx._('Category Tags Error: {0}').format(error))
 
-    container_base_url = params.get('container_base_url') or None
+    container_base_url = base_params['container_base_url'] or None
     if container_base_url is None:
         container_hostname = None
     else:
         container_hostname = urlparse.urlsplit(container_base_url).hostname or None
     try:
-        gadget_id = int(params.get('gadget'))
+        gadget_id = int(base_params['gadget'])
     except (TypeError, ValueError):
         gadget_id = None
     if gadget_id is None:
@@ -368,6 +379,15 @@ def init_ctx(ctx, params):
 #                '/error-unknown-territory.mako', territory_code = user.territory['code'],
 #                territory_kind = user.territory['kind'])))
 
+    ctx.hide_category, error = conv.pipe(
+        conv.guess_bool,
+        conv.default(False),
+        )(base_params['hide_category'], state = ctx)
+    if error is not None:
+        raise wsgihelpers.bad_request(ctx, explanation = ctx._('Hide Category Error: {0}').format(error))
+
+    return base_params
+
 
 @wsgihelpers.wsgify
 @ramdb.ramdb_based
@@ -375,13 +395,14 @@ def kml(req):
     ctx = contexts.Ctx(req)
 
     params = req.GET
-    init_ctx(ctx, params)
+    base_params = init_base(ctx, params)
     params = dict(
         category = params.get('category'),
         page = params.get('page'),
         term = params.get('term'),
         territory = params.get('territory'),
         )
+    params.update(base_params)
 
     pager, errors = conv.params_to_pois_list_pager(params, state = ctx)
     if errors is not None:
@@ -415,10 +436,11 @@ def poi(req):
     ctx = contexts.Ctx(req)
 
     params = req.params
-    init_ctx(ctx, params)
+    base_params = init_base(ctx, params)
     params = dict(
         poi_id = req.urlvars.get('poi_id'),
         )
+    params.update(base_params)
 
     poi_id, error = conv.pipe(
         conv.str_to_object_id,
