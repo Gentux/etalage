@@ -38,18 +38,26 @@ from etalage import urls
         if poi.geo is None:
             continue
 %>\
-        <Placemark>
+        <Placemark id="${poi._id}">
             <name>${poi.name}</name>
             <description>${urls.get_full_url(ctx, 'organismes', str(poi._id))}</description>
             <Point>
                 <coordinates>${poi.geo[1]},${poi.geo[0]}</coordinates>
             </Point>
+<%
+        ids_count = {}
+%>\
         % for field in (poi.fields or []):
 <%
             if field.value is None:
                 continue
 %>\
             % if field.id == 'adr':
+<%
+                if field.id in ids_count:
+                    continue
+                ids_count[field.id] = 1
+%>\
             <address>${u', '.join(
                     strip_fragment
                     for strip_fragment in (
@@ -60,10 +68,13 @@ from etalage import urls
                         )
                     if strip_fragment
                     )}</address>
-            % elif field.id == 'fax':
-            <phoneNumber>fax: ${field.value}</phoneNumber>
             % elif field.id == 'tel':
-            <phoneNumber>tel: ${field.value}</phoneNumber>
+<%
+                if field.id in ids_count:
+                    continue
+                ids_count[field.id] = 1
+%>\
+            <phoneNumber>${field.value}</phoneNumber>
             % endif
         % endfor
         </Placemark>
