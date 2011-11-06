@@ -35,54 +35,43 @@ from etalage import conf, urls
 <%inherit file="/site.mako"/>
 
 
-<%def name="scripts()" filter="trim">
-    <%parent:scripts/>
-    <script src="/js/categories.js"></script>
-    <script src="/js/territories.js"></script>
-    <script>
-var etalage = etalage || {};
-etalage.categories.tags = ${ctx.category_tags_slug | n, js};
-etalage.territories.autocompleterUrl = ${urlparse.urljoin(conf['territoria_url'],
-    '/api/v1/autocomplete-territory') | n, js};
-etalage.params = ${params | n, js};
-
-$(function () {
-    etalage.categories.createAutocompleter($('#category'));
-    etalage.territories.createAutocompleter($('#territory'));
-
-    % if ctx.container_base_url is not None and ctx.gadget_id is not None:
-    $('#search-form').submit(function () {
-        return false;
-    });
-    % endif
-});
-    </script>
-</%def>
-
-
-<%def name="body_content()" filter="trim">
-    <div class="container-fluid">
+<%def name="container_content()" filter="trim">
         <form action="${urls.get_url(ctx)}" id="search-form" method="get">
             <fieldset>
-    % for name, value in params.iteritems():
+    % for name, value in sorted(params.iteritems()):
 <%
-        if name in ('category', 'page', 'term', 'territory'):
+        if name in (
+                'category' if not ctx.hide_category else None, 
+                'page',
+                'term',
+                'territory',
+                ):
+            continue
+        if value is None or value == u'':
             continue
 %>\
+        % if isinstance(value, list):
+            % for item_value in value:
+                <input name="${name}" type="hidden" value="${item_value or ''}">
+            % endfor
+        % else:
                 <input name="${name}" type="hidden" value="${value or ''}">
+        % endif
     % endfor
+    % if not ctx.hide_category:
 <%
-    error = errors.get('category') if errors is not None else None
+        error = errors.get('category') if errors is not None else None
 %>\
                 <div class="clearfix${' error' if error else ''}">
                     <label for="category">Catégorie</label>
                     <div class="input">
                         <input class="span6" id="category" name="category" type="text" value="${params['category'] or ''}">
-    % if error:
+        % if error:
                         <span class="help-inline">${error}</span>
-    % endif
+        % endif
                     </div>
                 </div>
+    % endif
 <%
     error = errors.get('term') if errors is not None else None
 %>\
@@ -126,6 +115,30 @@ $(function () {
     % if errors is None:
         <%self:results/>
     % endif
-    </div>
+</%def>
+
+
+<%def name="scripts()" filter="trim">
+    <%parent:scripts/>
+    <script src="/js/categories.js"></script>
+    <script src="/js/territories.js"></script>
+    <script>
+var etalage = etalage || {};
+etalage.categories.tags = ${ctx.category_tags_slug | n, js};
+etalage.territories.autocompleterUrl = ${urlparse.urljoin(conf['territoria_url'],
+    '/api/v1/autocomplete-territory') | n, js};
+etalage.params = ${params | n, js};
+
+$(function () {
+    etalage.categories.createAutocompleter($('#category'));
+    etalage.territories.createAutocompleter($('#territory'));
+
+    % if ctx.container_base_url is not None and ctx.gadget_id is not None:
+    $('#search-form').submit(function () {
+        return false;
+    });
+    % endif
+});
+    </script>
 </%def>
 

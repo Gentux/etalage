@@ -162,6 +162,40 @@ def csv(req):
 
 @wsgihelpers.wsgify
 @ramdb.ramdb_based
+def export_directory_csv(req):
+    ctx = contexts.Ctx(req)
+
+    params = req.GET
+    base_params = init_base(ctx, params)
+
+    params = dict(
+        accept = params.get('accept'),
+        category = params.get('category'),
+        download_button = params.get('download_button'),
+        term = params.get('term'),
+        territory = params.get('territory'),
+        )
+    params.update(base_params)
+
+    accept, error = conv.pipe(conv.guess_bool, conv.default(False), conv.make_is(True))(params['accept'], state = ctx)
+    if error is None:
+        url_params = params.copy()
+        del url_params['accept']
+        del url_params['download_button']
+        raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, 'api/v1/csv', **url_params))
+
+    errors = dict(
+        accept = ctx._(u"You must accept license to be allowed to download data."),
+        ) if params['download_button'] else None
+    return templates.render(ctx, '/export-directory-csv.mako',
+        errors = errors,
+        mode = u'export',
+        params = params,
+        )
+
+
+@wsgihelpers.wsgify
+@ramdb.ramdb_based
 def geojson(req):
     ctx = contexts.Ctx(req)
 
@@ -235,7 +269,9 @@ def index(req):
             params = params,
             )
     elif mode == 'export':
-        export_options, errors = conv.params_to_export_options(params, state = ctx)
+#        export_options, errors = conv.params_to_export_options(params, state = ctx)
+        export_options = None
+        errors = None
         return templates.render(ctx, '/export.mako',
             errors = errors,
             export_options = export_options,
@@ -364,6 +400,7 @@ def make_router():
         ('GET', '^/?$', index),
         ('GET', '^/a-propos/?$', about),
         ('GET', '^/(?P<mode>annuaire|carte|liste|export)/?$', index),
+        ('GET', '^/export/annuaire/csv/?$', export_directory_csv),
         ('GET', '^/api/v1/autocomplete-category/?$', autocomplete_category),
         ('GET', '^/api/v1/csv/?$', csv),
         ('GET', '^/api/v1/geojson/?$', geojson),

@@ -31,6 +31,17 @@ from etalage import conf
 %>
 
 
+<%def name="body_content()" filter="trim">
+    <div class="container-fluid">
+        <%self:container_content/>
+    </div>
+</%def>
+
+
+<%def name="container_content()" filter="trim">
+</%def>
+
+
 <%def name="css()" filter="trim">
     <link rel="stylesheet" href="${conf['bootstrap.css']}">
     <link rel="stylesheet" href="${conf['jquery-ui.css']}">
@@ -63,7 +74,7 @@ var rpc = new easyXDM.Rpc({
 </%def>
 
 
-<%def name="title()" filter="trim">
+<%def name="title_content()" filter="trim">
 Open Data POIs Portal
 </%def>
 
@@ -76,7 +87,7 @@ Open Data POIs Portal
 <html lang="fr">
 <head>
     <%self:metas/>
-    <title>${self.title()}</title>
+    <title>${self.title_content()}</title>
     <%self:css/>
     <%self:scripts/>
 </head>

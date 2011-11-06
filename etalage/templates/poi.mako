@@ -35,11 +35,11 @@ from etalage import model, ramdb
 <%inherit file="/site.mako"/>\
 
 
-<%def name="body_content()" filter="trim">
-    <h2>${poi.name}</h2>
-    % for field in (poi.fields or []):
-    <%self:field field="${field}"/>
-    % endfor
+<%def name="container_content()" filter="trim">
+        <h2>${poi.name}</h2>
+        % for field in (poi.fields or []):
+        <%self:field field="${field}"/>
+        % endfor
 </%def>
 
 
