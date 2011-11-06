@@ -37,7 +37,7 @@ from etalage import urls
             <BalloonStyle>
                 <text>
                     <![CDATA[
-<strong>$[name]</strong><br/>
+<h2>$[name]</h2>
 $[description]<br/>
 $[address]
                     ]]>
