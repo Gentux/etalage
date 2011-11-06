@@ -224,8 +224,13 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
         return self
 
     def iter_csv_fields(self, ctx):
+        counts_by_label = {}
+
+        id_field = Field(id = 'poi-id', value = self._id, label = u'ID')
+        for subfield_ref, subfield in id_field.iter_csv_fields(ctx, counts_by_label):
+            yield subfield_ref, subfield
+
         if self.fields is not None:
-            counts_by_label = {}
             for field in self.fields:
                 for subfield_ref, subfield in field.iter_csv_fields(ctx, counts_by_label):
                     yield subfield_ref, subfield
