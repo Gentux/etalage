@@ -180,16 +180,12 @@ rel="external">Google Maps</a>
     </div>
     % elif field.id == 'tags':
 <%
-    tags_code = field.value
-    tags_title = [
-        title
-        for slug, title in sorted(
-            (tag.slug, tag.title)
-            for tag in Tag.find(dict(code = {'$in': list(field.value)}))
-            )
+    tags_name = [
+        ramdb.categories_by_slug.get(tag_slug) or tag_slug
+        for tag_slug in sorted(field_value)
         ]
 %>\
-    <span class="field-value">${u', '.join(tags_title)}</span>
+    <span class="field-value">${u', '.join(tags_name)}</span>
     % elif field.id == 'territories':
 <%
         territories_title = [
