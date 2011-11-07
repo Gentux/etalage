@@ -31,7 +31,7 @@ etalage.categories = (function ($) {
         $input.autocomplete({
             source: function(request, response) {
                 $.ajax({
-                    url: '/api/v1/autocomplete-category',
+                    url: '/api/v1/categories/autocomplete',
                     dataType: 'json',
                     data: {
                         tag: etalage.categories.tags || '',

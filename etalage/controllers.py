@@ -614,7 +614,7 @@ def make_router():
         ('GET', '^/api/v1/annuaire/csv/?$', csv),
         ('GET', '^/api/v1/annuaire/geojson/?$', geojson),
         ('GET', '^/api/v1/annuaire/kml/?$', kml),
-        ('GET', '^/api/v1/autocomplete-category/?$', autocomplete_category),
+        ('GET', '^/api/v1/categories/autocomplete/?$', autocomplete_category),
         ('GET', '^/api/v1/couverture-geographique/csv/?$', csv), # TODO
         ('GET', '^/carte/?$', index_map),
         ('GET', '^/export/?$', index_export),
