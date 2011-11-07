@@ -168,7 +168,9 @@ def export_directory_csv(req):
 
     params = req.GET
     base_params = init_base(ctx, params)
-
+    format = u'csv'
+    mode = u'export'
+    type = u'annuaire'
     params = dict(
         accept = params.get('accept'),
         category = params.get('category'),
@@ -183,15 +185,137 @@ def export_directory_csv(req):
         url_params = params.copy()
         del url_params['accept']
         del url_params['download_button']
-        raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, 'api/v1/csv', **url_params))
+        raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, u'api/v1/{0}/{1}'.format(type, format),
+            **url_params))
 
     errors = dict(
         accept = ctx._(u"You must accept license to be allowed to download data."),
         ) if params['download_button'] else None
-    return templates.render(ctx, '/export-directory-csv.mako',
+    return templates.render(ctx, '/export-accept-license.mako',
         errors = errors,
-        mode = u'export',
+        format = format,
+        mode = mode,
         params = params,
+        type = type,
+        )
+
+
+@wsgihelpers.wsgify
+@ramdb.ramdb_based
+def export_directory_geojson(req):
+    ctx = contexts.Ctx(req)
+
+    params = req.GET
+    base_params = init_base(ctx, params)
+    format = u'geojson'
+    mode = u'export'
+    type = u'annuaire'
+    params = dict(
+        accept = params.get('accept'),
+        category = params.get('category'),
+        download_button = params.get('download_button'),
+        term = params.get('term'),
+        territory = params.get('territory'),
+        )
+    params.update(base_params)
+
+    accept, error = conv.pipe(conv.guess_bool, conv.default(False), conv.make_is(True))(params['accept'], state = ctx)
+    if error is None:
+        url_params = params.copy()
+        del url_params['accept']
+        del url_params['download_button']
+        raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, u'api/v1/{0}/{1}'.format(type, format),
+            **url_params))
+
+    errors = dict(
+        accept = ctx._(u"You must accept license to be allowed to download data."),
+        ) if params['download_button'] else None
+    return templates.render(ctx, '/export-accept-license.mako',
+        errors = errors,
+        format = format,
+        mode = mode,
+        params = params,
+        type = type,
+        )
+
+
+@wsgihelpers.wsgify
+@ramdb.ramdb_based
+def export_directory_kml(req):
+    ctx = contexts.Ctx(req)
+
+    params = req.GET
+    base_params = init_base(ctx, params)
+    format = u'kml'
+    mode = u'export'
+    type = u'annuaire'
+    params = dict(
+        accept = params.get('accept'),
+        category = params.get('category'),
+        download_button = params.get('download_button'),
+        term = params.get('term'),
+        territory = params.get('territory'),
+        )
+    params.update(base_params)
+
+    accept, error = conv.pipe(conv.guess_bool, conv.default(False), conv.make_is(True))(params['accept'], state = ctx)
+    if error is None:
+        url_params = params.copy()
+        del url_params['accept']
+        del url_params['download_button']
+        raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, u'api/v1/{0}/{1}'.format(type, format),
+            **url_params))
+
+    errors = dict(
+        accept = ctx._(u"You must accept license to be allowed to download data."),
+        ) if params['download_button'] else None
+    return templates.render(ctx, '/export-accept-license.mako',
+        errors = errors,
+        format = format,
+        mode = mode,
+        params = params,
+        type = type,
+        )
+
+
+@wsgihelpers.wsgify
+@ramdb.ramdb_based
+def export_geographical_coverage_csv(req):
+    ctx = contexts.Ctx(req)
+
+    params = req.GET
+    base_params = init_base(ctx, params)
+    format = u'csv'
+    mode = u'export'
+    type = u'couverture-geographique'
+    params = dict(
+        accept = params.get('accept'),
+        category = params.get('category'),
+        download_button = params.get('download_button'),
+        term = params.get('term'),
+        territory = params.get('territory'),
+        )
+    params.update(base_params)
+
+    accept, error = conv.pipe(conv.guess_bool, conv.default(False), conv.make_is(True))(params['accept'], state = ctx)
+    if error is None:
+        url_params = params.copy()
+        del url_params['accept']
+        del url_params['download_button']
+        # TODO
+        raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, u'api/v1/{0}/{1}'.format(type, format),
+            **url_params))
+
+    errors = dict(
+        accept = ctx._(u"You must accept license to be allowed to download data."),
+        ) if params['download_button'] else None
+    # TODO
+    return templates.render(ctx, '/export-accept-license.mako',
+        errors = errors,
+        format = format,
+        mode = mode,
+        params = params,
+        type = type,
         )
 
 
@@ -232,22 +356,17 @@ def geojson(req):
 @ramdb.ramdb_based
 def index(req):
     ctx = contexts.Ctx(req)
+    raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, 'carte', **req.params))
+
+
+@wsgihelpers.wsgify
+@ramdb.ramdb_based
+def index_directory(req):
+    ctx = contexts.Ctx(req)
 
     params = req.GET
     base_params = init_base(ctx, params)
-
-    mode = req.urlvars.get('mode')
-    if not mode:
-        for mode, button_name in (
-                (u'annuaire', u'directory_button'),
-                (u'carte', u'map_button'),
-                (u'export', u'export_button'),
-                (u'liste', u'list_button'),
-                ):
-            if params.get(button_name):
-                break
-        else:
-            mode = u'carte'
+    mode = u'annuaire'
     params = dict(
         category = params.get('category'),
         term = params.get('term'),
@@ -255,44 +374,115 @@ def index(req):
         )
     params.update(base_params)
 
-    if mode == u'annuaire':
-        directory, errors = conv.params_to_pois_directory(params, state = ctx)
-        return templates.render(ctx, '/directory.mako',
-            directory = directory,
-            errors = errors,
-            mode = mode,
-            params = params,
-            )
-    elif mode == u'carte':
-        geojson, errors = conv.params_to_pois_geojson(params, state = ctx)
-        return templates.render(ctx, '/map.mako',
-            errors = errors,
-            geojson = geojson,
-            mode = mode,
-            params = params,
-            )
-    elif mode == 'export':
-#        export_options, errors = conv.params_to_export_options(params, state = ctx)
-        export_options = None
-        errors = None
-        return templates.render(ctx, '/export.mako',
-            errors = errors,
-            export_options = export_options,
-            mode = mode,
-            params = params,
-            )
-    else:
-        assert mode == u'liste', 'Unexpected mode: {0}'.format(mode)
-        params.update(
-            page = params.get('page'),
-            )
-        pager, errors = conv.params_to_pois_list_pager(params, state = ctx)
-        return templates.render(ctx, '/list.mako',
-            errors = errors,
-            mode = mode,
-            pager = pager,
-            params = params,
-            )
+    directory, errors = conv.params_to_pois_directory(params, state = ctx)
+    return templates.render(ctx, '/directory.mako',
+        directory = directory,
+        errors = errors,
+        mode = mode,
+        params = params,
+        )
+
+
+@wsgihelpers.wsgify
+@ramdb.ramdb_based
+def index_export(req):
+    ctx = contexts.Ctx(req)
+
+    params = req.GET
+    base_params = init_base(ctx, params)
+    mode = u'export'
+    params = dict(
+        category = params.get('category'),
+# TODO
+        select_export_button = params.get('select_export_button'),
+        term = params.get('term'),
+        territory = params.get('territory'),
+# TODO
+        type_and_format = params.get('type_and_format'),
+        )
+    params.update(base_params)
+
+    data, errors = conv.struct(
+        dict(
+            type_and_format = conv.pipe(
+                conv.str_to_slug,
+                conv.make_in([
+                    'annuaire-csv',
+                    'annuaire-geojson',
+                    'annuaire-kml',
+                    'couverture-geographique-csv',
+                    ]),
+                ),
+            ),
+        default = 'ignore',
+        keep_empty = True,
+        )(params, state = ctx)
+    if errors is None:
+        if params['select_export_button']:
+            if data.get('type_and_format') is not None:
+                type, format = data['type_and_format'].rsplit(u'-', 1)
+                raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, 'export', type, format,
+                    category = params['category'],
+                    term = params['term'],
+                    territory = params['territory'],
+                    ))
+            errors = dict(
+                type_and_format = ctx._(u'Missing value'),
+                )
+    return templates.render(ctx, '/export.mako',
+        errors = errors,
+        mode = mode,
+        params = params,
+        )
+
+
+@wsgihelpers.wsgify
+@ramdb.ramdb_based
+def index_list(req):
+    ctx = contexts.Ctx(req)
+
+    params = req.GET
+    base_params = init_base(ctx, params)
+    mode = u'liste'
+    params = dict(
+        category = params.get('category'),
+        page = params.get('page'),
+        term = params.get('term'),
+        territory = params.get('territory'),
+        )
+    params.update(base_params)
+
+    pager, errors = conv.params_to_pois_list_pager(params, state = ctx)
+    return templates.render(ctx, '/list.mako',
+        errors = errors,
+        mode = mode,
+        pager = pager,
+        params = params,
+        )
+
+
+@wsgihelpers.wsgify
+@ramdb.ramdb_based
+def index_map(req):
+    ctx = contexts.Ctx(req)
+
+    params = req.GET
+    base_params = init_base(ctx, params)
+    mode = u'carte'
+    params = dict(
+        category = params.get('category'),
+        term = params.get('term'),
+        territory = params.get('territory'),
+        )
+    params.update(base_params)
+
+    geojson, errors = conv.params_to_pois_geojson(params, state = ctx)
+    return templates.render(ctx, '/map.mako',
+        errors = errors,
+        geojson = geojson,
+        mode = mode,
+        params = params,
+        )
 
 
 def init_base(ctx, params):
@@ -420,12 +610,19 @@ def make_router():
     return urls.make_router(
         ('GET', '^/?$', index),
         ('GET', '^/a-propos/?$', about),
-        ('GET', '^/(?P<mode>annuaire|carte|liste|export)/?$', index),
-        ('GET', '^/export/annuaire/csv/?$', export_directory_csv),
+        ('GET', '^/annuaire/?$', index_directory),
+        ('GET', '^/api/v1/annuaire/csv/?$', csv),
+        ('GET', '^/api/v1/annuaire/geojson/?$', geojson),
+        ('GET', '^/api/v1/annuaire/kml/?$', kml),
         ('GET', '^/api/v1/autocomplete-category/?$', autocomplete_category),
-        ('GET', '^/api/v1/csv/?$', csv),
-        ('GET', '^/api/v1/geojson/?$', geojson),
-        ('GET', '^/api/v1/kml/?$', kml),
+        ('GET', '^/api/v1/couverture-geographique/csv/?$', csv), # TODO
+        ('GET', '^/carte/?$', index_map),
+        ('GET', '^/export/?$', index_export),
+        ('GET', '^/export/annuaire/csv/?$', export_directory_csv),
+        ('GET', '^/export/annuaire/geojson/?$', export_directory_geojson),
+        ('GET', '^/export/annuaire/kml/?$', export_directory_kml),
+        ('GET', '^/export/couverture-geographique/csv/?$', export_geographical_coverage_csv),
+        ('GET', '^/liste/?$', index_list),
         ('GET', '^/organismes/(?P<poi_id>[a-z0-9]{24})/?$', poi),
         )
 

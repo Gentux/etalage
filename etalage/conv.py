@@ -46,24 +46,22 @@ N_ = lambda message: message
 
 def params_to_pois_csv(params, state = default_state):
     from . import ramdb
-    data, errors = pipe(
-        struct(
-            dict(
-                category = pipe(
-                    str_to_category_slug,
-                    function(lambda slug: ramdb.categories_by_slug[slug]),
-                    make_test(lambda category: (category.tags_slug or set()).issuperset(state.category_tags_slug or []),
-                        error = N_(u'Missing required tags for category')),
-                    ),
-                term = str_to_slug,
-                territory = pipe(
-                    str_to_postal_distribution,
-                    postal_distribution_to_territory,
-                    ),
+    data, errors = struct(
+        dict(
+            category = pipe(
+                str_to_category_slug,
+                function(lambda slug: ramdb.categories_by_slug[slug]),
+                make_test(lambda category: (category.tags_slug or set()).issuperset(state.category_tags_slug or []),
+                    error = N_(u'Missing required tags for category')),
                 ),
-            default = 'ignore',
-            keep_empty = True,
+            term = str_to_slug,
+            territory = pipe(
+                str_to_postal_distribution,
+                postal_distribution_to_territory,
+                ),
             ),
+        default = 'ignore',
+        keep_empty = True,
         )(params, state = state)
     if errors is not None:
         return data, errors

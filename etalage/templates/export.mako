@@ -33,16 +33,29 @@ from etalage import urls
 
 
 <%def name="results()" filter="trim">
-##    % if pager.item_count == 0:
-##        <div>
-##            <em>Aucun organisme trouvé.</em>
-##        </div>
-##    % else:
-        <form action="${urls.get_url(ctx)}" id="export-form" method="get">
+        <form action="${urls.get_url(ctx, mode)}" id="export-form" method="get">
             <fieldset>
                 <legend>${_('Select export options')}</legend>
+    % for name, value in sorted(params.iteritems()):
 <%
-    error = errors.get('format') if errors is not None else None
+        if name in (
+                'type_and_format',
+                'select_export_button',
+                ):
+            continue
+        if value is None or value == u'':
+            continue
+%>\
+        % if isinstance(value, list):
+            % for item_value in value:
+                <input name="${name}" type="hidden" value="${item_value or ''}">
+            % endfor
+        % else:
+                <input name="${name}" type="hidden" value="${value or ''}">
+        % endif
+    % endfor
+<%
+    error = errors.get('type_and_format') if errors is not None else None
 %>\
                 <div class="clearfix${' error' if error else ''}">
                     <label>${(u"Export Type")}</label>
@@ -83,10 +96,9 @@ from etalage import urls
                     </div>
                 </div>
                 <div class="actions">
-                    <input class="btn primary" name="export_button" type="submit" value="${_(u'Export')}">
+                    <input class="btn primary" name="select_export_button" type="submit" value="${_(u'Select')}">
                 </div>
             </fieldset>
         </form>
-##    % endif
 </%def>
 

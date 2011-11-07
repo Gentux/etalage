@@ -36,7 +36,7 @@ from etalage import conf, urls
 
 
 <%def name="container_content()" filter="trim">
-        <form action="${urls.get_url(ctx)}" id="search-form" method="get">
+        <form action="${urls.get_url(ctx, mode)}" id="search-form" method="get">
             <fieldset>
     % for name, value in sorted(params.iteritems()):
 <%
@@ -97,24 +97,32 @@ from etalage import conf, urls
                     </div>
                 </div>
                 <div class="actions">
-<%
-    buttons_mode_name_and_value = (
-        (u'annuaire', u'directory_button', u'Annuaire'),
-        (u'liste', u'list_button', u'Liste'),
-        (u'carte', u'map_button', u'Carte'),
-        (u'export', u'export_button', u'Export'),
-        )
-%>\
-    % for button_mode, button_name, button_value in buttons_mode_name_and_value:
-                    <input class="btn${' primary' if button_mode == mode else ''}" name="${\
-                            button_name}" type="submit" value="${button_value}">
-    % endfor
+                    <input class="btn primary" type="submit" value="${_('Search')}">
                 </div>
             </fieldset>
         </form>
-    % if errors is None:
+        <ul class="tabs">
+<%
+    modes_infos = (
+        (u'annuaire', u'Annuaire'),
+        (u'liste', u'Liste'),
+        (u'carte', u'Carte'),
+        (u'export', u'Export'),
+        )
+%>\
+    % for tab_mode, tab_name in modes_infos:
+            <li${' class="active"' if tab_mode == mode else '' | n}>
+                <a href="${urls.get_url(ctx, tab_mode, **params)}">${tab_name}</a>
+            </li>
+    % endfor
+        </ul>
+        ## There is a bug in the tabs CSS above that requires a style="clear: left;".
+        ## Remove the div below once it is repaired.
+        <div style="clear: left;">
+##    % if errors is None:
         <%self:results/>
-    % endif
+##    % endif
+        </div>
 </%def>
 
 
@@ -134,7 +142,9 @@ $(function () {
     etalage.territories.createAutocompleter($('#territory'));
 
     % if ctx.container_base_url is not None and ctx.gadget_id is not None:
-    $('#search-form').submit(function () {
+    $('#search-form').submit(function (event) {
+        console.log(event);
+        rpc.requestNavigateTo($(this).serializeArray());
         return false;
     });
     % endif

@@ -29,10 +29,10 @@ from etalage import urls
 %>
 
 
-<%inherit file="/site.mako"/>
+<%inherit file="/index.mako"/>
 
 
-<%def name="container_content()" filter="trim">
+<%def name="results()" filter="trim">
         <div class="license">
             <img alt="${_(u"Logo of Open Licence")}" class="thumbnail" src="http://a35.idata.over-blog.com/4/37/99/26/licence-ouverte-open-licence.gif" width="250">
             <p>
@@ -92,7 +92,7 @@ from etalage import urls
                 </li>
             </ul>
         </div>
-        <form action="${urls.get_url(ctx, 'export', 'annuaire', 'csv')}" id="export-form" method="get">
+        <form action="${urls.get_url(ctx, mode, type, format)}" id="export-form" method="get">
             <fieldset>
                 <legend>${_('Accept license')}</legend>
     % for name, value in sorted(params.iteritems()):
