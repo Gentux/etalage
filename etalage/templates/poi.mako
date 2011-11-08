@@ -192,17 +192,13 @@ rel="external">Google Maps</a>
     <span class="field-value">${u', '.join(tags_name)}</span>
     % elif field.id == 'territories':
 <%
-        territories_title = [
-            title
-            for slug, title in sorted(
-                ## FIXME : Ne pas utiliser ncc
-                (territory.ncc, territory.name)
-                for territory in (
-                    model.Territory.find_one(dict(code = territory_kind_code['code'], kind = territory_kind_code['kind']))
-                    for territory_kind_code in field.value
-                    )
-                if territory is not None
+        territories_main_postal_distribution_str = [
+            territory.main_postal_distribution_str
+            for territory in (
+                model.Territory.find_one(dict(code = territory_kind_code['code'], kind = territory_kind_code['kind']))
+                for territory_kind_code in field.value
                 )
+            if territory is not None
             ]
 %>\
     <span class="field-value">${u', '.join(territories_title)}</span>
