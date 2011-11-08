@@ -182,7 +182,7 @@ rel="external">Google Maps</a>
 <%
     tags_name = [
         ramdb.categories_by_slug.get(tag_slug) or tag_slug
-        for tag_slug in sorted(field_value)
+        for tag_slug in sorted(field.value)
         ]
 %>\
     <span class="field-value">${u', '.join(tags_name)}</span>
