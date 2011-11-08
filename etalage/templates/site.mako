@@ -45,6 +45,9 @@ from etalage import conf
 <%def name="css()" filter="trim">
     <link rel="stylesheet" href="${conf['bootstrap.css']}">
     <link rel="stylesheet" href="${conf['jquery-ui.css']}">
+    % if ctx.container_base_url is not None and ctx.gadget_id is not None:
+    <link rel="stylesheet" href="/css/gadget.css">
+    % endif
 </%def>
 
 
