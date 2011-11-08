@@ -181,8 +181,12 @@ rel="external">Google Maps</a>
     % elif field.id == 'tags':
 <%
     tags_name = [
-        ramdb.categories_by_slug.get(tag_slug) or tag_slug
-        for tag_slug in sorted(field.value)
+        tag.name
+        for tag in (
+            ramdb.categories_by_slug.get(tag_slug)
+            for tag_slug in sorted(field.value)
+            )
+        if tag is not None
         ]
 %>\
     <span class="field-value">${u', '.join(tags_name)}</span>
