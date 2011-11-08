@@ -201,7 +201,7 @@ rel="external">Google Maps</a>
             if territory is not None
             ]
 %>\
-    <span class="field-value">${u', '.join(territories_title)}</span>
+    <span class="field-value">${u', '.join(territories_main_postal_distribution_str)}</span>
     % elif field.id == 'text-block':
     <div class="field-value">${markupsafe.Markup('<br>').join(field.value.split('\n'))}</div>
     % elif field.id == 'text-rich':
