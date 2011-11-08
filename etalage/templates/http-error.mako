@@ -29,7 +29,9 @@
 
 <%def name="container_content()" filter="trim">
         <h2>${title}</h2>
-        <div class="error-main">${explanation}</div>
+        <div class="alert-message error">
+            <p>${explanation}</p>
+        </div>
     % if comment:
         <p>${comment}</p>
     % endif

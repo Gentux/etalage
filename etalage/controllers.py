@@ -356,7 +356,20 @@ def geojson(req):
 @ramdb.ramdb_based
 def index(req):
     ctx = contexts.Ctx(req)
-    raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, 'carte', **req.params))
+
+    params = req.params
+    base_params = init_base(ctx, params)
+
+    # Redirect to another page.
+    url_args = ('carte',)
+    url_kwargs = dict(params)
+    if ctx.container_base_url is None or ctx.gadget_id is None:
+        raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, *url_args, **url_kwargs))
+    else:
+        return templates.render(ctx, '/http-simulated-redirect.mako',
+            url_args = url_args,
+            url_kwargs = url_kwargs,
+            )
 
 
 @wsgihelpers.wsgify
@@ -421,11 +434,21 @@ def index_export(req):
         if params['submit']:
             if data.get('type_and_format') is not None:
                 type, format = data['type_and_format'].rsplit(u'-', 1)
-                raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, 'export', type, format,
+
+                # Form submitted. Redirect to another page.
+                url_args = ('export', type, format)
+                url_kwargs = dict(
                     category = params['category'],
                     term = params['term'],
                     territory = params['territory'],
-                    ))
+                    )
+                if ctx.container_base_url is None or ctx.gadget_id is None:
+                    raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, *url_args, **url_kwargs))
+                else:
+                    return templates.render(ctx, '/http-simulated-redirect.mako',
+                        url_args = url_args,
+                        url_kwargs = url_kwargs,
+                        )
             errors = dict(
                 type_and_format = ctx._(u'Missing value'),
                 )

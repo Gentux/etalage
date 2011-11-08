@@ -68,24 +68,8 @@ from etalage import conf, urls
 %>\
     <a class="${class_}" href="${urls.get_url(ctx, *args, **kwargs)}" id="${id}">${caller.body()}</a>
     % if ctx.container_base_url is not None and ctx.gadget_id is not None:
-<%
-    if args:
-        args = list(args)
-        assert 'action' not in kwargs
-        kwargs['action'] = args.pop(0)
-        if args:
-            assert 'type' not in kwargs
-            kwargs['type'] = args.pop(0)
-            if args:
-                assert 'format' not in kwargs
-                kwargs['format'] = args.pop(0)
-                assert not args, 'Too much args: {0}'.format(args)
-%>\
     <script>
-$('a#${id}').data('navigation', ${[
-    dict(name = name, value = value)
-    for name, value in sorted(kwargs.iteritems())
-    ] |n, js})
+$('a#${id}').data('navigation', ${urls.get_navigation_params(ctx, *args, **kwargs) | n, js})
     </script>
     % endif
 </%def>
@@ -109,24 +93,8 @@ $('a#${id}').data('navigation', ${[
     <form class="${class_}" action="${urls.get_url(ctx, *args, **kwargs)}" id="${id}" method="${method}">${caller.body(
         )}</form>
     % if ctx.container_base_url is not None and ctx.gadget_id is not None:
-<%
-    if args:
-        args = list(args)
-        assert 'action' not in kwargs
-        kwargs['action'] = args.pop(0)
-        if args:
-            assert 'type' not in kwargs
-            kwargs['type'] = args.pop(0)
-            if args:
-                assert 'format' not in kwargs
-                kwargs['format'] = args.pop(0)
-                assert not args, 'Too much args: {0}'.format(args)
-%>\
     <script>
-$('form#${id}').data('navigation', ${[
-    dict(name = name, value = value)
-    for name, value in sorted(kwargs.iteritems())
-    ] |n, js})
+$('form#${id}').data('navigation', ${urls.get_navigation_params(ctx, *args, **kwargs) | n, js})
     </script>
     % endif
 </%def>

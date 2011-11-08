@@ -64,6 +64,24 @@ def get_full_url(ctx, *path, **query):
         ('?' + urllib.urlencode(query, doseq = True)) if query else '')
 
 
+def get_navigation_params(ctx, *args, **kwargs):
+    if args:
+        args = list(args)
+        assert not kwargs.get('action')
+        kwargs['action'] = args.pop(0)
+        if args:
+            assert not kwargs.get('type')
+            kwargs['type'] = args.pop(0)
+            if args:
+                assert not kwargs.get('format')
+                kwargs['format'] = args.pop(0)
+                assert not args, 'Too much args: {0}'.format(args)
+    return [
+        dict(name = name, value = value)
+        for name, value in sorted(kwargs.iteritems())
+        ]
+
+
 def get_url(ctx, *path, **query):
     path = [
         urllib.quote(unicode(sub_fragment).encode('utf-8'), safe = ',/:').decode('utf-8')
