@@ -33,14 +33,14 @@ from etalage import urls
 
 
 <%def name="results()" filter="trim">
-        <form action="${urls.get_url(ctx, mode)}" id="export-form" method="get">
+        <%call expr="self.internal_form(ctx, mode, id = 'export-form', method = 'get')">
             <fieldset>
                 <legend>${_('Select export options')}</legend>
     % for name, value in sorted(params.iteritems()):
 <%
         if name in (
+                'submit',
                 'type_and_format',
-                'select_export_button',
                 ):
             continue
         if value is None or value == u'':
@@ -96,9 +96,9 @@ from etalage import urls
                     </div>
                 </div>
                 <div class="actions">
-                    <input class="btn primary" name="select_export_button" type="submit" value="${_(u'Select')}">
+                    <input class="btn primary" name="submit" type="submit" value="${_(u'Select')}">
                 </div>
             </fieldset>
-        </form>
+        </%call>
 </%def>
 

@@ -36,7 +36,7 @@ from etalage import conf, urls
 
 
 <%def name="container_content()" filter="trim">
-        <form action="${urls.get_url(ctx, mode)}" id="search-form" method="get">
+        <%call expr="self.internal_form(ctx, mode, id = 'search-form', method = 'get')">
             <fieldset>
     % for name, value in sorted(params.iteritems()):
 <%
@@ -100,7 +100,7 @@ from etalage import conf, urls
                     <input class="btn primary" type="submit" value="${_('Search')}">
                 </div>
             </fieldset>
-        </form>
+        </%call>
         <ul class="tabs">
 <%
     modes_infos = (
@@ -112,7 +112,7 @@ from etalage import conf, urls
 %>\
     % for tab_mode, tab_name in modes_infos:
             <li${' class="active"' if tab_mode == mode else '' | n}>
-                <%call expr="self.a_internal(ctx, tab_mode, **params)">${tab_name}</%call>
+                <%call expr="self.internal_a(ctx, tab_mode, **params)">${tab_name}</%call>
             </li>
     % endfor
         </ul>
@@ -140,13 +140,6 @@ etalage.params = ${params | n, js};
 $(function () {
     etalage.categories.createAutocompleter($('#category'));
     etalage.territories.createAutocompleter($('#territory'));
-
-    % if ctx.container_base_url is not None and ctx.gadget_id is not None:
-    $('#search-form').submit(function (event) {
-        rpc.requestNavigateTo($(this).serializeArray());
-        return false;
-    });
-    % endif
 });
     </script>
 </%def>

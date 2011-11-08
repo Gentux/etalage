@@ -32,7 +32,27 @@ from etalage import conf, urls
 %>
 
 
-<%def name="a_internal(ctx, *args, **kwargs)" filter="trim">
+<%def name="body_content()" filter="trim">
+    <div class="container-fluid">
+        <%self:container_content/>
+    </div>
+</%def>
+
+
+<%def name="container_content()" filter="trim">
+</%def>
+
+
+<%def name="css()" filter="trim">
+    <link rel="stylesheet" href="${conf['bootstrap.css']}">
+    <link rel="stylesheet" href="${conf['jquery-ui.css']}">
+    % if ctx.container_base_url is not None and ctx.gadget_id is not None:
+    <link rel="stylesheet" href="/css/gadget.css">
+    % endif
+</%def>
+
+
+<%def name="internal_a(ctx, *args, **kwargs)" filter="trim">
 <%
     class_ = u' '.join(
         fragment
@@ -62,28 +82,52 @@ from etalage import conf, urls
                 assert not args, 'Too much args: {0}'.format(args)
 %>\
     <script>
-$('a#${id}').data('navigation', ${kwargs |n, js})
+$('a#${id}').data('navigation', ${[
+    dict(name = name, value = value)
+    for name, value in sorted(kwargs.iteritems())
+    ] |n, js})
     </script>
     % endif
 </%def>
 
 
-<%def name="body_content()" filter="trim">
-    <div class="container-fluid">
-        <%self:container_content/>
-    </div>
-</%def>
-
-
-<%def name="container_content()" filter="trim">
-</%def>
-
-
-<%def name="css()" filter="trim">
-    <link rel="stylesheet" href="${conf['bootstrap.css']}">
-    <link rel="stylesheet" href="${conf['jquery-ui.css']}">
+<%def name="internal_form(ctx, *args, **kwargs)" filter="trim">
+<%
+    class_ = u' '.join(
+        fragment
+        for fragment in (
+            kwargs.pop('class_', None),
+            'internal',
+            )
+        if fragment
+        )
+    id = kwargs.pop('id', None)
+    if id is None:
+        id = u'form-{0}'.format(uuid.uuid4())
+    method = kwargs.pop('method', 'get')
+%>\
+    <form class="${class_}" action="${urls.get_url(ctx, *args, **kwargs)}" id="${id}" method="${method}">${caller.body(
+        )}</form>
     % if ctx.container_base_url is not None and ctx.gadget_id is not None:
-    <link rel="stylesheet" href="/css/gadget.css">
+<%
+    if args:
+        args = list(args)
+        assert 'action' not in kwargs
+        kwargs['action'] = args.pop(0)
+        if args:
+            assert 'type' not in kwargs
+            kwargs['type'] = args.pop(0)
+            if args:
+                assert 'format' not in kwargs
+                kwargs['format'] = args.pop(0)
+                assert not args, 'Too much args: {0}'.format(args)
+%>\
+    <script>
+$('form#${id}').data('navigation', ${[
+    dict(name = name, value = value)
+    for name, value in sorted(kwargs.iteritems())
+    ] |n, js})
+    </script>
     % endif
 </%def>
 
@@ -113,7 +157,15 @@ var rpc = new easyXDM.Rpc({
 $(function () {
     rpc.adjustHeight($('body', document).height());
 
-    $('.internal').click(function () {
+    $('form.internal').submit(function (event) {
+        rpc.requestNavigateTo($(this).data('navigation').concat($(this).serializeArray()).concat({
+            name: 'submit',
+            value: 'Submit'
+        }));
+        return false;
+    });
+
+    $('a.internal').click(function () {
         rpc.requestNavigateTo($(this).data('navigation'));
         return false;
     });

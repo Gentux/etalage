@@ -99,7 +99,7 @@ from etalage import urls
 <%
         if name in (
                 'accept',
-                'download_button',
+                'submit',
                 ):
             continue
         if value is None or value == u'':
@@ -128,7 +128,7 @@ from etalage import urls
                     </div>
                 </div>
                 <div class="actions">
-                    <input class="btn primary" name="download_button" type="submit" value="${_(u'Download')}">
+                    <input class="btn primary" name="submit" type="submit" value="${_(u'Download')}">
                 </div>
             </fieldset>
         </form>

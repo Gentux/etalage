@@ -174,7 +174,7 @@ def export_directory_csv(req):
     params = dict(
         accept = params.get('accept'),
         category = params.get('category'),
-        download_button = params.get('download_button'),
+        submit = params.get('submit'),
         term = params.get('term'),
         territory = params.get('territory'),
         )
@@ -184,13 +184,13 @@ def export_directory_csv(req):
     if error is None:
         url_params = params.copy()
         del url_params['accept']
-        del url_params['download_button']
+        del url_params['submit']
         raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, u'api/v1/{0}/{1}'.format(type, format),
             **url_params))
 
     errors = dict(
         accept = ctx._(u"You must accept license to be allowed to download data."),
-        ) if params['download_button'] else None
+        ) if params['submit'] else None
     return templates.render(ctx, '/export-accept-license.mako',
         errors = errors,
         format = format,
@@ -213,7 +213,7 @@ def export_directory_geojson(req):
     params = dict(
         accept = params.get('accept'),
         category = params.get('category'),
-        download_button = params.get('download_button'),
+        submit = params.get('submit'),
         term = params.get('term'),
         territory = params.get('territory'),
         )
@@ -223,13 +223,13 @@ def export_directory_geojson(req):
     if error is None:
         url_params = params.copy()
         del url_params['accept']
-        del url_params['download_button']
+        del url_params['submit']
         raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, u'api/v1/{0}/{1}'.format(type, format),
             **url_params))
 
     errors = dict(
         accept = ctx._(u"You must accept license to be allowed to download data."),
-        ) if params['download_button'] else None
+        ) if params['submit'] else None
     return templates.render(ctx, '/export-accept-license.mako',
         errors = errors,
         format = format,
@@ -252,7 +252,7 @@ def export_directory_kml(req):
     params = dict(
         accept = params.get('accept'),
         category = params.get('category'),
-        download_button = params.get('download_button'),
+        submit = params.get('submit'),
         term = params.get('term'),
         territory = params.get('territory'),
         )
@@ -262,13 +262,13 @@ def export_directory_kml(req):
     if error is None:
         url_params = params.copy()
         del url_params['accept']
-        del url_params['download_button']
+        del url_params['submit']
         raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, u'api/v1/{0}/{1}'.format(type, format),
             **url_params))
 
     errors = dict(
         accept = ctx._(u"You must accept license to be allowed to download data."),
-        ) if params['download_button'] else None
+        ) if params['submit'] else None
     return templates.render(ctx, '/export-accept-license.mako',
         errors = errors,
         format = format,
@@ -291,7 +291,7 @@ def export_geographical_coverage_csv(req):
     params = dict(
         accept = params.get('accept'),
         category = params.get('category'),
-        download_button = params.get('download_button'),
+        submit = params.get('submit'),
         term = params.get('term'),
         territory = params.get('territory'),
         )
@@ -301,14 +301,14 @@ def export_geographical_coverage_csv(req):
     if error is None:
         url_params = params.copy()
         del url_params['accept']
-        del url_params['download_button']
+        del url_params['submit']
         # TODO
         raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, u'api/v1/{0}/{1}'.format(type, format),
             **url_params))
 
     errors = dict(
         accept = ctx._(u"You must accept license to be allowed to download data."),
-        ) if params['download_button'] else None
+        ) if params['submit'] else None
     # TODO
     return templates.render(ctx, '/export-accept-license.mako',
         errors = errors,
@@ -394,7 +394,7 @@ def index_export(req):
     params = dict(
         category = params.get('category'),
 # TODO
-        select_export_button = params.get('select_export_button'),
+        submit = params.get('submit'),
         term = params.get('term'),
         territory = params.get('territory'),
 # TODO
@@ -418,7 +418,7 @@ def index_export(req):
         keep_empty = True,
         )(params, state = ctx)
     if errors is None:
-        if params['select_export_button']:
+        if params['submit']:
             if data.get('type_and_format') is not None:
                 type, format = data['type_and_format'].rsplit(u'-', 1)
                 raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, 'export', type, format,
