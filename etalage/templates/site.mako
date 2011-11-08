@@ -72,6 +72,10 @@ var rpc = new easyXDM.Rpc({
         requestNavigateTo: {}
     }
 });
+
+$(function () {
+    rpc.adjustHeight($('body', document).height());
+});
     </script>
     % endif
 </%def>
