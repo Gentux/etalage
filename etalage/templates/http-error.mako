@@ -40,3 +40,8 @@
     % endif
 </%def>
 
+
+<%def name="title_content()" filter="trim">
+${_(u'Error')} - ${parent.title_content()}
+</%def>
+

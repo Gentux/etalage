@@ -33,8 +33,9 @@ from etalage import urls
 
 
 <%def name="results()" filter="trim">
+        <h2>${export_title}</h2>
         <div class="license">
-            <img alt="${_(u"Logo of Open Licence")}" class="thumbnail" src="http://a35.idata.over-blog.com/4/37/99/26/licence-ouverte-open-licence.gif" width="250">
+            <img alt="${_(u"Open Licence Logo")}" class="thumbnail" src="http://a35.idata.over-blog.com/4/37/99/26/licence-ouverte-open-licence.gif" width="250">
             <p>
                 Dans le cadre de la politique du Gouvernement en faveur de l’ouverture des données publiques
                 (« Open Data »), Etalab a conçu la « Licence Ouverte / Open Licence ». Cette licence, élaborée en
@@ -132,5 +133,10 @@ from etalage import urls
                 </div>
             </fieldset>
         </form>
+</%def>
+
+
+<%def name="title_content()" filter="trim">
+${export_title} - ${parent.title_content()}
 </%def>
 

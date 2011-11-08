@@ -53,3 +53,8 @@ rpc.requestNavigateTo(${urls.get_navigation_params(ctx, *url_args, **url_kwargs)
         </script>
 </%def>
 
+
+<%def name="title_content()" filter="trim">
+${_(u'Redirection')} - ${parent.title_content()}
+</%def>
+

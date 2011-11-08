@@ -66,3 +66,8 @@ $(function () {
     </script>
 </%def>
 
+
+<%def name="title_content()" filter="trim">
+${_(u'Map')} - ${parent.title_content()}
+</%def>
+

@@ -192,6 +192,7 @@ def export_directory_csv(req):
         accept = ctx._(u"You must accept license to be allowed to download data."),
         ) if params['submit'] else None
     return templates.render(ctx, '/export-accept-license.mako',
+        export_title = ctx._(u"Directory Export in CSV Format"),
         errors = errors,
         format = format,
         mode = mode,
@@ -231,6 +232,7 @@ def export_directory_geojson(req):
         accept = ctx._(u"You must accept license to be allowed to download data."),
         ) if params['submit'] else None
     return templates.render(ctx, '/export-accept-license.mako',
+        export_title = ctx._(u"Directory Export in GeoJSON Format"),
         errors = errors,
         format = format,
         mode = mode,
@@ -270,6 +272,7 @@ def export_directory_kml(req):
         accept = ctx._(u"You must accept license to be allowed to download data."),
         ) if params['submit'] else None
     return templates.render(ctx, '/export-accept-license.mako',
+        export_title = ctx._(u"Directory Export in KML Format"),
         errors = errors,
         format = format,
         mode = mode,
@@ -311,6 +314,7 @@ def export_geographical_coverage_csv(req):
         ) if params['submit'] else None
     # TODO
     return templates.render(ctx, '/export-accept-license.mako',
+        export_title = ctx._(u"Geographical Coverage Export in CSV Format"),
         errors = errors,
         format = format,
         mode = mode,

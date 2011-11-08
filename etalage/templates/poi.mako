@@ -217,3 +217,8 @@ rel="external">Google Maps</a>
     % endif
 </%def>
 
+
+<%def name="title_content()" filter="trim">
+${poi.name} - ${parent.title_content()}
+</%def>
+

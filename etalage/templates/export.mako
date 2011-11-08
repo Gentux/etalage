@@ -102,3 +102,8 @@ from etalage import urls
         </%call>
 </%def>
 
+
+<%def name="title_content()" filter="trim">
+${_(u'Export')} - ${parent.title_content()}
+</%def>
+

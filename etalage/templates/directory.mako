@@ -67,3 +67,8 @@ from etalage import ramdb, urls
     % endif
 </%def>
 
+
+<%def name="title_content()" filter="trim">
+${_(u'Directory')} - ${parent.title_content()}
+</%def>
+

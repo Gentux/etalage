@@ -119,3 +119,8 @@ etalage.pager = ${dict(
     </script>
 </%def>
 
+
+<%def name="title_content()" filter="trim">
+${_(u'List')} - ${parent.title_content()}
+</%def>
+
