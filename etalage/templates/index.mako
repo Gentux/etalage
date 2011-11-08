@@ -112,7 +112,7 @@ from etalage import conf, urls
 %>\
     % for tab_mode, tab_name in modes_infos:
             <li${' class="active"' if tab_mode == mode else '' | n}>
-                <a href="${urls.get_url(ctx, tab_mode, **params)}">${tab_name}</a>
+                <%call expr="self.a_internal(ctx, tab_mode, **params)">${tab_name}</%call>
             </li>
     % endfor
         </ul>
@@ -143,7 +143,6 @@ $(function () {
 
     % if ctx.container_base_url is not None and ctx.gadget_id is not None:
     $('#search-form').submit(function (event) {
-        console.log(event);
         rpc.requestNavigateTo($(this).serializeArray());
         return false;
     });

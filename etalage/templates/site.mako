@@ -26,9 +26,46 @@
 
 <%!
 import urlparse
+import uuid
 
-from etalage import conf
+from etalage import conf, urls
 %>
+
+
+<%def name="a_internal(ctx, *args, **kwargs)" filter="trim">
+<%
+    class_ = u' '.join(
+        fragment
+        for fragment in (
+            kwargs.pop('class_', None),
+            'internal',
+            )
+        if fragment
+        )
+    id = kwargs.pop('id', None)
+    if id is None:
+        id = u'a-{0}'.format(uuid.uuid4())
+%>\
+    <a class="${class_}" href="${urls.get_url(ctx, *args, **kwargs)}" id="${id}">${caller.body()}</a>
+    % if ctx.container_base_url is not None and ctx.gadget_id is not None:
+<%
+    if args:
+        args = list(args)
+        assert 'action' not in kwargs
+        kwargs['action'] = args.pop(0)
+        if args:
+            assert 'type' not in kwargs
+            kwargs['type'] = args.pop(0)
+            if args:
+                assert 'format' not in kwargs
+                kwargs['format'] = args.pop(0)
+                assert not args, 'Too much args: {0}'.format(args)
+%>\
+    <script>
+$('a#${id}').data('navigation', ${kwargs |n, js})
+    </script>
+    % endif
+</%def>
 
 
 <%def name="body_content()" filter="trim">
@@ -75,6 +112,11 @@ var rpc = new easyXDM.Rpc({
 
 $(function () {
     rpc.adjustHeight($('body', document).height());
+
+    $('.internal').click(function () {
+        rpc.requestNavigateTo($(this).data('navigation'));
+        return false;
+    });
 });
     </script>
     % endif
