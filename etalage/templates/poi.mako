@@ -160,7 +160,7 @@ rel="external">Google Maps</a>
             </div>
         </div>
     % elif field.id == 'image':
-        <img class="field-value" alt="" src="${field.value}" />
+        <div class="field-value"><img alt="" src="${field.value}"></div>
     % elif field.id == 'link':
 <%
         target = ramdb.pois_by_id.get(field.value)
