@@ -33,37 +33,39 @@ from etalage import ramdb, urls
 
 
 <%def name="results()" filter="trim">
-    % if not directory:
+    % if errors is None:
+        % if not directory:
         <div>
             <em>Aucun organisme trouvé.</em>
         </div>
-    % else:
+        % else:
         <div>
-        % for category_slug, pois_id in sorted(directory.iteritems()):
+            % for category_slug, pois_id in sorted(directory.iteritems()):
 <%
-            category = ramdb.categories_by_slug[category_slug]
+                category = ramdb.categories_by_slug[category_slug]
 %>\
             <h3>${category.name}</h3>
-            % if not pois_id:
+                % if not pois_id:
             <div>
                 <em>Aucun organisme trouvé.</em>
             </div>
-            % else:
+                % else:
             <ul>
-                % for poi_id in pois_id:
+                    % for poi_id in pois_id:
 <%
-                    poi = ramdb.pois_by_id[poi_id]
+                        poi = ramdb.pois_by_id[poi_id]
 %>\
                 <li>
                     <a href="${urls.get_url(ctx, 'organismes', poi_id)}">${poi.name}</a>
                 </li>
-                % endfor
+                    % endfor
             </ul>
-            % endif
+                % endif
             <ul>
             </ul>
-        % endfor
+            % endfor
         </div>
+        % endif
     % endif
 </%def>
 
