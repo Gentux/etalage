@@ -136,6 +136,15 @@ from etalage import conf, model, ramdb
     </div>
     % elif field.id == 'geo':
         <div class="field-value">
+        % if field.value[2] <= 6:
+            <div class="alert-message error">
+                <p>Cet organisme est positionné <strong>très approximativement</strong>.</p>
+            </div>
+        % elif field.value[2] <= 6:
+            <div class="alert-message warning">
+                <p>Cet organisme est positionné <strong>approximativement dans la rue</strong>.</p>
+            </div>
+        % endif
             <div class="single-marker-map" id="map-poi" style="height: 500px;"></div>
             <script type="text/javascript">
 var etalage = etalage || {};
