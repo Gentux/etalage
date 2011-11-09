@@ -80,7 +80,7 @@ def params_to_pois_csv(params, state = default_state):
 
 
 def params_to_pois_directory(params, state = default_state):
-    from . import ramdb
+    from . import model, ramdb
     data, errors = pipe(
         struct(
             dict(
@@ -94,6 +94,9 @@ def params_to_pois_directory(params, state = default_state):
                 territory = pipe(
                     str_to_postal_distribution,
                     postal_distribution_to_territory,
+                    make_test(lambda territory: territory.__class__.__name__ in model.communes_kinds,
+                        error = N_(u'In "directory" mode, territory must be a commune')),
+                    test_exists(error = N_(u'In "directory" mode, a commune is required')),
                     ),
                 ),
             default = 'ignore',
@@ -102,8 +105,6 @@ def params_to_pois_directory(params, state = default_state):
         )(params, state = state)
     if errors is not None:
         return data, errors
-
-    territory_id = data['territory']._id if data.get('territory') is not None else None
 
     if data.get('category') is None:
         directory_categories_slug = set(ramdb.iter_categories_slug(organism_types_only = True,
@@ -115,7 +116,7 @@ def params_to_pois_directory(params, state = default_state):
         categories_slug = set(state.base_categories_slug or [])
         categories_slug.add(directory_category_slug)
         directory[directory_category_slug] = list(ramdb.iter_pois_id(add_competent = True,
-            categories_slug = categories_slug, term = data.get('term'), territory_id = territory_id))[:3]
+            categories_slug = categories_slug, term = data.get('term'), territory_id = data['territory']._id))[:3]
     return directory, None
 
 
