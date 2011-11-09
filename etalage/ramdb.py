@@ -190,7 +190,7 @@ def load():
             new_indexes['france_id'] = territory_infos['_id']
     assert new_indexes['france_id'] is not None
 
-    for poi in model.Poi.find({'metadata.deleted': {'$exists': False}}).limit(1000): # TODO
+    for poi in model.Poi.find({'metadata.deleted': {'$exists': False}}):
         poi.add_to_ramdb(new_indexes)
 
 #    # Remove unused categories.
