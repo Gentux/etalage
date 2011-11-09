@@ -77,7 +77,7 @@ def get_navigation_params(ctx, *args, **kwargs):
                 kwargs['format'] = args.pop(0)
                 assert not args, 'Too much args: {0}'.format(args)
     return [
-        dict(name = name, value = value)
+        dict(name = name, value = unicode(value))
         for name, value in sorted(kwargs.iteritems())
         ]
 
