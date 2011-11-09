@@ -189,7 +189,12 @@ rel="external">Google Maps</a>
     </ul>
         % endif
     % elif field.id == 'organism-type':
-    <span class="field-value">${field.value.title}</span>
+<%
+    category_slug = ramdb.categories_slug_by_pivot_code.get(field.value)
+    category = ramdb.categories_by_slug.get(category_slug) if category_slug is not None else None
+    category_name = category.name if category is not None else field.value
+%>\
+    <span class="field-value">${category_name}</span>
     % elif field.id == 'source':
     <div class="field-value">
         % for subfield in field.value:
