@@ -137,6 +137,10 @@ $(function () {
         rpc.requestNavigateTo($(this).data('navigation'));
         return false;
     });
+
+    $('a[href][rel=bookmark]').attr('target', '_blank');
+    $('a[href][rel=mobile]').attr('target', '_blank');
+    $('a[href][rel=external]').attr('target', '_blank');
 });
     </script>
     % endif
