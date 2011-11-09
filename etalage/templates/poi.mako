@@ -119,7 +119,7 @@ from etalage import conf, model, ramdb
         <em class="error">Erreur dans le flux d'actualité <a href="${field.value}" rel="external">${field.value}</a></em>
         % else:
         <strong>${d.feed.title}</strong>
-        <a href="${field.value}" rel="external"><img alt="" src="http://cdn.comarquage.fr/images/misc/feed.png" /></a>
+        <a href="${field.value}" rel="external"><img alt="" src="http://cdn.comarquage.fr/images/misc/feed.png"></a>
         % endif
         <ul>
         % for entry in d.entries[:10]:

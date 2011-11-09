@@ -38,7 +38,7 @@ from etalage import urls
                 <text>
                     <![CDATA[
 <h2>$[name]</h2>
-$[description]<br/>
+$[description]<br>
 $[address]
                     ]]>
                 </text>
