@@ -74,15 +74,16 @@ from etalage import urls
 
 
 <%def name="results()" filter="trim">
-    % if pager.item_count == 0:
+    % if errors is None:
+        % if pager.item_count == 0:
         <div>
             <em>Aucun organisme trouvé.</em>
         </div>
-    % else:
+        % else:
         <div>
             Organismes ${pager.first_item_number} à ${pager.last_item_number} sur ${pager.item_count}
         </div>
-    % endif
+        % endif
         <%self:pagination/>
         <table class="zebra-striped">
             <thead>
@@ -92,15 +93,16 @@ from etalage import urls
                 </tr>
             </thead>
             <tbody>
-    % for poi in pager.items:
+        % for poi in pager.items:
                 <tr>
                     <td><a data-rel="external" href="/organismes/${poi._id}">${poi.name}</a></td>
                     <td>${poi.geo}</td>
                 </tr>
-    % endfor
+        % endfor
             </tbody>
         </table>
         <%self:pagination/>
+    % endif
 </%def>
 
 
