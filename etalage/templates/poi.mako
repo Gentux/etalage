@@ -28,7 +28,7 @@
 import markupsafe
 from biryani import strings
 
-from etalage import model, ramdb
+from etalage import conf, model, ramdb
 %>\
 
 
@@ -40,6 +40,15 @@ from etalage import model, ramdb
         % for field in (poi.fields or []):
         <%self:field field="${field}"/>
         % endfor
+</%def>
+
+
+<%def name="css()" filter="trim">
+    <%parent:css/>
+    <link rel="stylesheet" href="${conf['leaflet.css']}">
+<!--[if lte IE 8]>
+    <link rel="stylesheet" href="${conf['leaflet.ie.css']}">
+<![endif]-->
 </%def>
 
 
@@ -215,6 +224,21 @@ rel="external">Google Maps</a>
 %>\
     <span class="field-value">${field.value}</span>
     % endif
+</%def>
+
+
+<%def name="scripts()" filter="trim">
+    <%parent:scripts/>
+    <script src="${conf['leaflet.js']}"></script>
+<!--[if lt IE 10]>
+    <script src="${conf['pie.js']}"></script>
+<![endif]-->
+    <script src="/js/map.js"></script>
+    <script>
+var etalage = etalage || {};
+etalage.map.markersUrl = ${conf['markers_url'].rstrip('/') | n, js};
+etalage.map.tileUrlTemplate = ${conf['tile_url_template'] | n, js};
+    </script>
 </%def>
 
 
