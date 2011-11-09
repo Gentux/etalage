@@ -201,8 +201,11 @@ rel="external">Google Maps</a>
     <span class="field-value">${u', '.join(tags_name)}</span>
     % elif field.id == 'territories':
 <%
-        territories_main_postal_distribution_str = [
+        territories_title_markup = [
             territory.main_postal_distribution_str
+                if territory.__class__.__name__ in model.communes_kinds
+                else markupsafe.Markup(u'{0} <em>({1})</em>').format(
+                    territory.main_postal_distribution_str, territory.type_short_name_fr)
             for territory in (
                 model.Territory.find_one(dict(code = territory_kind_code['code'], kind = territory_kind_code['kind']))
                 for territory_kind_code in field.value
@@ -210,7 +213,17 @@ rel="external">Google Maps</a>
             if territory is not None
             ]
 %>\
-    <span class="field-value">${u', '.join(territories_main_postal_distribution_str)}</span>
+        % if territories_title_markup:
+            % if len(territories_title_markup) == 1:
+    <span class="field-value">${territories_title_markup[0] | n}</span>
+            % else:
+    <ul class="field-value">
+                % for territory_title_markup in territories_title_markup:
+        <li>${territory_title_markup | n}</li>
+                % endfor
+    </ul>
+            % endif
+        % endif
     % elif field.id == 'text-block':
     <div class="field-value">${markupsafe.Markup('<br>').join(field.value.split('\n'))}</div>
     % elif field.id == 'text-rich':
