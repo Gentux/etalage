@@ -391,12 +391,49 @@ def index_directory(req):
         )
     params.update(base_params)
 
-    directory, errors = conv.params_to_pois_directory(params, state = ctx)
+    data, errors = conv.params_to_pois_directory_data(params, state = ctx)
+    if errors is not None:
+        directory = None
+        territory = None
+    else:
+        directory = {}
+        if data.get('category') is None:
+            directory_categories_slug = set(ramdb.iter_categories_slug(organism_types_only = True,
+                tags_slug = ctx.category_tags_slug))
+        else:
+            directory_categories_slug = set([data['category'].slug])
+        territory = data['territory']
+        for directory_category_slug in directory_categories_slug:
+            categories_slug = set(ctx.base_categories_slug or [])
+            categories_slug.add(directory_category_slug)
+            pois_id = ramdb.iter_pois_id(add_competent = True, categories_slug = categories_slug,
+                term = data.get('term'), territory_id = territory._id)
+            pois = set(
+                poi
+                for poi in (
+                    ramdb.pois_by_id.get(poi_id)
+                    for poi_id in pois_id
+                    )
+                if poi is not None
+                )
+            distance_and_poi_couples = sorted(
+                (
+                    ((poi.geo[0] - territory.geo[0]) ** 2 + (poi.geo[1] - territory.geo[1]) ** 2, poi)
+                    for poi in pois
+                    if poi.geo is not None
+                    ),
+                key = lambda distance_and_poi: distance_and_poi[0],
+                )
+            directory[directory_category_slug] = [
+                poi
+                for distance, poi in distance_and_poi_couples[:3]
+                ]
     return templates.render(ctx, '/directory.mako',
         directory = directory,
         errors = errors,
         mode = mode,
         params = params,
+        territory = territory,
         )
 
 

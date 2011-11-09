@@ -34,6 +34,7 @@ from etalage import ramdb, urls
 
 <%def name="results()" filter="trim">
     % if errors is None:
+        <h2>Annuaire ${territory.name_with_hinge}</h2>
         % if not directory:
         <div>
             <em>Aucun organisme trouvé.</em>

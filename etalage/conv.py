@@ -79,9 +79,9 @@ def params_to_pois_csv(params, state = default_state):
     return pois_to_csv(pois, state = state)
 
 
-def params_to_pois_directory(params, state = default_state):
+def params_to_pois_directory_data(params, state = default_state):
     from . import model, ramdb
-    data, errors = pipe(
+    return pipe(
         struct(
             dict(
                 category = pipe(
@@ -105,42 +105,6 @@ def params_to_pois_directory(params, state = default_state):
             keep_empty = True,
             ),
         )(params, state = state)
-    if errors is not None:
-        return data, errors
-    territory = data['territory']
-
-    if data.get('category') is None:
-        directory_categories_slug = set(ramdb.iter_categories_slug(organism_types_only = True,
-            tags_slug = state.category_tags_slug))
-    else:
-        directory_categories_slug = set([data['category'].slug])
-    directory = {}
-    for directory_category_slug in directory_categories_slug:
-        categories_slug = set(state.base_categories_slug or [])
-        categories_slug.add(directory_category_slug)
-        pois_id = ramdb.iter_pois_id(add_competent = True, categories_slug = categories_slug,
-            term = data.get('term'), territory_id = territory._id)
-        pois = set(
-            poi
-            for poi in (
-                ramdb.pois_by_id.get(poi_id)
-                for poi_id in pois_id
-                )
-            if poi is not None
-            )
-        distance_and_poi_couples = sorted(
-            (
-                ((poi.geo[0] - territory.geo[0]) ** 2 + (poi.geo[1] - territory.geo[1]) ** 2, poi)
-                for poi in pois
-                if poi.geo is not None
-                ),
-            key = lambda distance_and_poi: distance_and_poi[0],
-            )
-        directory[directory_category_slug] = [
-            poi
-            for distance, poi in distance_and_poi_couples[:3]
-            ]
-    return directory, None
 
 
 def params_to_pois_geojson(params, state = default_state):
