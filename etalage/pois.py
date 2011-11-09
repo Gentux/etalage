@@ -168,8 +168,12 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
             indexes['pois_id_by_category_slug'].setdefault(category_slug, set()).add(self._id)
         del self.categories_slug
 
-        for territory_id in (self.competence_territories_id or set()):
-            indexes['pois_id_by_competence_territory_id'].setdefault(territory_id, set()).add(self._id)
+        if self.competence_territories_id is None:
+            # A POI that has no explicit competence territories is considered to be competent everywhere.
+            indexes['pois_id_by_competence_territory_id'].setdefault(indexes['france_id'], set()).add(self._id)
+        else:
+            for territory_id in (self.competence_territories_id or set()):
+                indexes['pois_id_by_competence_territory_id'].setdefault(territory_id, set()).add(self._id)
         del self.competence_territories_id
 
         for territory_id in (self.territories_id or set()):

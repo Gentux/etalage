@@ -96,6 +96,8 @@ def params_to_pois_directory(params, state = default_state):
                     postal_distribution_to_territory,
                     make_test(lambda territory: territory.__class__.__name__ in model.communes_kinds,
                         error = N_(u'In "directory" mode, territory must be a commune')),
+                    make_test(lambda territory: territory.geo is not None,
+                        error = N_(u'In "directory" mode, commune must have geographical coordinates')),
                     test_exists(error = N_(u'In "directory" mode, a commune is required')),
                     ),
                 ),
@@ -105,6 +107,7 @@ def params_to_pois_directory(params, state = default_state):
         )(params, state = state)
     if errors is not None:
         return data, errors
+    territory = data['territory']
 
     if data.get('category') is None:
         directory_categories_slug = set(ramdb.iter_categories_slug(organism_types_only = True,
@@ -115,8 +118,28 @@ def params_to_pois_directory(params, state = default_state):
     for directory_category_slug in directory_categories_slug:
         categories_slug = set(state.base_categories_slug or [])
         categories_slug.add(directory_category_slug)
-        directory[directory_category_slug] = list(ramdb.iter_pois_id(add_competent = True,
-            categories_slug = categories_slug, term = data.get('term'), territory_id = data['territory']._id))[:3]
+        pois_id = ramdb.iter_pois_id(add_competent = True, categories_slug = categories_slug,
+            term = data.get('term'), territory_id = territory._id)
+        pois = set(
+            poi
+            for poi in (
+                ramdb.pois_by_id.get(poi_id)
+                for poi_id in pois_id
+                )
+            if poi is not None
+            )
+        distance_and_poi_couples = sorted(
+            (
+                ((poi.geo[0] - territory.geo[0]) ** 2 + (poi.geo[1] - territory.geo[1]) ** 2, poi)
+                for poi in pois
+                if poi.geo is not None
+                ),
+            key = lambda distance_and_poi: distance_and_poi[0],
+            )
+        directory[directory_category_slug] = [
+            poi
+            for distance, poi in distance_and_poi_couples[:3]
+            ]
     return directory, None
 
 
