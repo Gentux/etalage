@@ -79,6 +79,7 @@ def get_navigation_params(ctx, *args, **kwargs):
     return [
         dict(name = name, value = unicode(value))
         for name, value in sorted(kwargs.iteritems())
+        if value is not None
         ]
 
 
