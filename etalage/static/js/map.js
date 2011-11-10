@@ -67,7 +67,15 @@ etalage.map = (function ($) {
             e.layer.options.icon = icon;
 
             if (e.properties.id && e.properties.name)  {
-                e.layer.bindPopup('<a href="/organismes/' + e.properties.id + '">' +  e.properties.name + '</a>');
+                e.layer
+                    .bindPopup('<a class="internal" href="/organismes/' + e.properties.id + '">'
+                        + e.properties.name + '</a>')
+                    .on('click', function (e) {
+                        $('a.internal', e.target._popup._contentNode).on('click', function () {
+                            rpc.requestNavigateTo($(this).attr('href'));
+                            return false;
+                        });
+                    });
             }
         });
         leafletMap.addLayer(geojson);

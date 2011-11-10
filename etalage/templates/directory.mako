@@ -54,7 +54,7 @@ from etalage import ramdb, urls
             <ul>
                     % for poi in pois:
                 <li>
-                     <%call expr="self.internal_a(ctx, 'organismes', poi._id)">${poi.name}</%call>
+                    <a class="internal" href="${urls.get_url(ctx, 'organismes', poi._id)}">${poi.name}</a>
                 </li>
                     % endfor
             </ul>

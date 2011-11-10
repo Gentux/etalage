@@ -36,7 +36,7 @@ from etalage import conf, urls
 
 
 <%def name="container_content()" filter="trim">
-        <%call expr="self.internal_form(ctx, mode, id = 'search-form', method = 'get')">
+        <form action="${urls.get_url(ctx, mode)}" class="internal" id="search-form" method="get">
             <fieldset>
     % for name, value in sorted(params.iteritems()):
 <%
@@ -100,7 +100,7 @@ from etalage import conf, urls
                     <input class="btn primary" type="submit" value="${_('Search')}">
                 </div>
             </fieldset>
-        </%call>
+        </form>
         <ul class="tabs">
 <%
     modes_infos = (
@@ -112,7 +112,7 @@ from etalage import conf, urls
 %>\
     % for tab_mode, tab_name in modes_infos:
             <li${' class="active"' if tab_mode == mode else '' | n}>
-                <%call expr="self.internal_a(ctx, tab_mode, **params)">${tab_name}</%call>
+                <a class="internal" href="${urls.get_url(ctx, tab_mode, **params)}">${tab_name}</a>
             </li>
     % endfor
         </ul>

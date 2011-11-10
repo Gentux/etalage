@@ -64,24 +64,6 @@ def get_full_url(ctx, *path, **query):
         ('?' + urllib.urlencode(query, doseq = True)) if query else '')
 
 
-def get_navigation_params(ctx, *path, **query):
-    path = u'/'.join(
-        urllib.quote(unicode(sub_fragment).encode('utf-8'), safe = ',/:').decode('utf-8')
-        for fragment in path
-        if fragment
-        for sub_fragment in unicode(fragment).split(u'/')
-        if sub_fragment
-        ) or None
-    if path is not None:
-        assert not query.get('path')
-        query['path'] = path
-    return [
-        dict(name = name, value = unicode(value))
-        for name, value in sorted(query.iteritems())
-        if value is not None
-        ]
-
-
 def get_url(ctx, *path, **query):
     path = [
         urllib.quote(unicode(sub_fragment).encode('utf-8'), safe = ',/:').decode('utf-8')

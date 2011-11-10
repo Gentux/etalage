@@ -39,8 +39,8 @@ from etalage import urls
         <div class="alert-message info">
             <p>
                 ${_(u"You'll be redirected to page")}
-                <%call expr="self.internal_a(ctx, *url_args, **url_kwargs)">${urls.get_url(
-                    ctx, *url_args, **url_kwargs)}</%call>.
+                <a class="internal" href="${urls.get_url(ctx, *url_args, **url_kwargs)}">${urls.get_url(
+                    ctx, *url_args, **url_kwargs)}</a>.
             </p>
         </div>
 </%def>
@@ -49,7 +49,7 @@ from etalage import urls
 <%def name="scripts()" filter="trim">
         <%parent:scripts/>
         <script type="text/javascript">
-rpc.requestNavigateTo(${urls.get_navigation_params(ctx, *url_args, **url_kwargs) | n, js});
+rpc.requestNavigateTo(${urls.get_url(ctx, *url_args, **url_kwargs) | n, js});
         </script>
 </%def>
 

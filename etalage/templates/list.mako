@@ -44,28 +44,28 @@ from etalage import urls
             )
 %>\
                     <li class="prev${' disabled' if pager.page_number <= 1 else ''}">
-                        <%call expr="self.internal_a(ctx, mode, page = pager.page_number - 1, **url_args
-                                )">&larr; ${_(u"Previous")}</%call>
+                        <a class="internal" href="${urls.get_url(ctx, mode, page = pager.page_number - 1, **url_args
+                                )}">&larr; ${_(u"Previous")}</a>
                     </li>
         % for page_number in range(max(pager.page_number - 5, 1), pager.page_number):
                     <li>
-                        <%call expr="self.internal_a(ctx, mode, class_ = 'page', page = page_number, **url_args
-                                )">${page_number}</%call>
+                        <a class="internal" href="${urls.get_url(ctx, mode, class_ = 'page', page = page_number,
+                                **url_args)}">${page_number}</a>
                     </li>
         % endfor
                     <li class="active">
-                        <%call expr="self.internal_a(ctx, mode, page = pager.page_number, **url_args
-                                )">${pager.page_number}</%call>
+                        <a class="internal" href="${urls.get_url(ctx, mode, page = pager.page_number, **url_args
+                                )}">${pager.page_number}</a>
                     </li>
         % for page_number in range(pager.page_number + 1, min(pager.page_number + 5, pager.last_page_number) + 1):
                     <li>
-                        <%call expr="self.internal_a(ctx, mode, class_ = 'page', page = page_number, **url_args
-                                )">${page_number}</%call>
+                        <a class="internal" href="${urls.get_url(ctx, mode, class_ = 'page', page = page_number,
+                                **url_args)}">${page_number}</a>
                     </li>
         % endfor
                     <li class="next${' disabled' if pager.page_number >= pager.last_page_number else ''}">
-                        <%call expr="self.internal_a(ctx, mode, page = pager.page_number + 1, **url_args
-                                )">${_(u"Next")} &rarr;</%call>
+                        <a class="internal" href="${urls.get_url(ctx, mode, page = pager.page_number + 1, **url_args
+                                )}">${_(u"Next")} &rarr;</a>
                     </li>
                 </ul>
             </div>
@@ -96,7 +96,7 @@ from etalage import urls
         % for poi in pager.items:
                 <tr>
                     <td>
-                        <%call expr="self.internal_a(ctx, 'organismes', poi._id)">${poi.name}</%call>
+                        <a class="internal" href="${urls.get_url(ctx, 'organismes', poi._id)}">${poi.name}</a>
                     </td>
                     <td>${poi.geo}</td>
                 </tr>

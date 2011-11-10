@@ -33,7 +33,7 @@ from etalage import urls
 
 
 <%def name="results()" filter="trim">
-        <%call expr="self.internal_form(ctx, mode, id = 'export-form', method = 'get')">
+        <form action="${urls.get_url(ctx, mode)}" class="internal" id="export-form" method="get">
             <fieldset>
                 <legend>${_('Select export options')}</legend>
     % for name, value in sorted(params.iteritems()):
@@ -99,7 +99,7 @@ from etalage import urls
                     <input class="btn primary" name="submit" type="submit" value="${_(u'Select')}">
                 </div>
             </fieldset>
-        </%call>
+        </form>
 </%def>
 
 

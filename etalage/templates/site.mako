@@ -52,54 +52,6 @@ from etalage import conf, urls
 </%def>
 
 
-<%def name="internal_a(ctx, *args, **kwargs)" filter="trim">
-<%
-    class_ = u' '.join(
-        fragment
-        for fragment in (
-            kwargs.pop('class_', None),
-            'internal',
-            )
-        if fragment
-        )
-    id = kwargs.pop('id', None)
-    if id is None:
-        id = u'a-{0}'.format(uuid.uuid4())
-%>\
-    <a class="${class_}" href="${urls.get_url(ctx, *args, **kwargs)}" id="${id}">${caller.body()}</a>
-    % if ctx.container_base_url is not None and ctx.gadget_id is not None:
-    <script>
-$('a#${id}').data('navigation', ${urls.get_navigation_params(ctx, *args, **kwargs) | n, js})
-    </script>
-    % endif
-</%def>
-
-
-<%def name="internal_form(ctx, *args, **kwargs)" filter="trim">
-<%
-    class_ = u' '.join(
-        fragment
-        for fragment in (
-            kwargs.pop('class_', None),
-            'internal',
-            )
-        if fragment
-        )
-    id = kwargs.pop('id', None)
-    if id is None:
-        id = u'form-{0}'.format(uuid.uuid4())
-    method = kwargs.pop('method', 'get')
-%>\
-    <form class="${class_}" action="${urls.get_url(ctx, *args, **kwargs)}" id="${id}" method="${method}">${caller.body(
-        )}</form>
-    % if ctx.container_base_url is not None and ctx.gadget_id is not None:
-    <script>
-$('form#${id}').data('navigation', ${urls.get_navigation_params(ctx, *args, **kwargs) | n, js})
-    </script>
-    % endif
-</%def>
-
-
 <%def name="metas()" filter="trim">
     <meta charset="utf-8">
 </%def>
@@ -125,16 +77,16 @@ var rpc = new easyXDM.Rpc({
 $(function () {
     rpc.adjustHeight($('body', document).height());
 
-    $('form.internal').submit(function (event) {
-        rpc.requestNavigateTo($(this).data('navigation').concat($(this).serializeArray()).concat({
+    $('form.internal').on('submit', function (event) {
+        rpc.requestNavigateTo($(this).attr('action'), $(this).serializeArray().concat({
             name: 'submit',
             value: 'Submit'
         }));
         return false;
     });
 
-    $('a.internal').click(function () {
-        rpc.requestNavigateTo($(this).data('navigation'));
+    $('a.internal').on('click', function () {
+        rpc.requestNavigateTo($(this).attr('href'));
         return false;
     });
 
