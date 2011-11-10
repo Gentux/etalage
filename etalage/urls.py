@@ -57,28 +57,27 @@ def get_full_url(ctx, *path, **query):
         ]
     query = dict(
         (str(name), strings.deep_encode(value))
-        for name, value in query.iteritems()
+        for name, value in sorted(query.iteritems())
         if value is not None
         )
     return u'{0}/{1}{2}'.format(get_base_url(ctx, full = True), u'/'.join(path),
         ('?' + urllib.urlencode(query, doseq = True)) if query else '')
 
 
-def get_navigation_params(ctx, *args, **kwargs):
-    if args:
-        args = list(args)
-        assert not kwargs.get('action')
-        kwargs['action'] = args.pop(0)
-        if args:
-            assert not kwargs.get('type')
-            kwargs['type'] = args.pop(0)
-            if args:
-                assert not kwargs.get('format')
-                kwargs['format'] = args.pop(0)
-                assert not args, 'Too much args: {0}'.format(args)
+def get_navigation_params(ctx, *path, **query):
+    path = u'/'.join(
+        urllib.quote(unicode(sub_fragment).encode('utf-8'), safe = ',/:').decode('utf-8')
+        for fragment in path
+        if fragment
+        for sub_fragment in unicode(fragment).split(u'/')
+        if sub_fragment
+        ) or None
+    if path is not None:
+        assert not query.get('path')
+        query['path'] = path
     return [
         dict(name = name, value = unicode(value))
-        for name, value in sorted(kwargs.iteritems())
+        for name, value in sorted(query.iteritems())
         if value is not None
         ]
 
@@ -93,7 +92,7 @@ def get_url(ctx, *path, **query):
         ]
     query = dict(
         (str(name), strings.deep_encode(value))
-        for name, value in query.iteritems()
+        for name, value in sorted(query.iteritems())
         if value is not None
         )
     return u'{0}/{1}{2}'.format(get_base_url(ctx), u'/'.join(path),
