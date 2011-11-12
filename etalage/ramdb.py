@@ -172,7 +172,12 @@ def load():
             name = category_infos['title'],
             tags_slug = set(category_infos.get('tags_code') or []) or None,
             )
-        category.add_to_ramdb(new_indexes)
+        category_slug = category_infos['code']
+        new_indexes['categories_by_slug'][category_slug] = category
+        for word in category_slug.split(u'-'):
+            new_indexes['categories_slug_by_word'].setdefault(word, set()).add(category_slug)
+        for tag_slug in (category.tags_slug or set()):
+            new_indexes['categories_slug_by_tag_slug'].setdefault(tag_slug, set()).add(category_slug)
 
     for organism_type_infos in model.db[conf['organism_types_collection']].find(None, ['code', 'slug']):
         if organism_type_infos['slug'] not in new_indexes['categories_by_slug']:
@@ -191,7 +196,26 @@ def load():
     assert new_indexes['france_id'] is not None
 
     for poi in model.Poi.find({'metadata.deleted': {'$exists': False}}):
-        poi.add_to_ramdb(new_indexes)
+        new_indexes['pois_by_id'][poi._id] = poi
+
+        for category_slug in (poi.categories_slug or set()):
+            new_indexes['pois_id_by_category_slug'].setdefault(category_slug, set()).add(poi._id)
+        del poi.categories_slug
+
+        if poi.competence_territories_id is None:
+            # A POI that has no explicit competence territories is considered to be competent everywhere.
+            new_indexes['pois_id_by_competence_territory_id'].setdefault(new_indexes['france_id'], set()).add(poi._id)
+        else:
+            for territory_id in (poi.competence_territories_id or set()):
+                new_indexes['pois_id_by_competence_territory_id'].setdefault(territory_id, set()).add(poi._id)
+        del poi.competence_territories_id
+
+        for territory_id in (poi.territories_id or set()):
+            new_indexes['pois_id_by_territory_id'].setdefault(territory_id, set()).add(poi._id)
+        del poi.territories_id
+
+        for word in strings.slugify(poi.name).split(u'-'):
+            new_indexes['pois_id_by_word'].setdefault(word, set()).add(poi._id)
 
 #    # Remove unused categories.
 #    for category_slug in new_indexes['categories_by_slug'].keys():

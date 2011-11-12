@@ -49,14 +49,6 @@ class Category(representations.UserRepresentable):
         if attributes:
             self.set_attributes(**attributes)
 
-    def add_to_ramdb(self, indexes):
-        slug = self.slug
-        indexes['categories_by_slug'][slug] = self
-        for word in slug.split(u'-'):
-            indexes['categories_slug_by_word'].setdefault(word, set()).add(slug)
-        for tag_slug in (self.tags_slug or set()):
-            indexes['categories_slug_by_tag_slug'].setdefault(tag_slug, set()).add(slug)
-
     def set_attributes(self, **attributes):
         for name, value in attributes.iteritems():
             if value is getattr(self.__class__, name, UnboundLocalError):

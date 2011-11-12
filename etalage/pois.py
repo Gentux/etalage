@@ -161,28 +161,6 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
         if attributes:
             self.set_attributes(**attributes)
 
-    def add_to_ramdb(self, indexes):
-        indexes['pois_by_id'][self._id] = self
-
-        for category_slug in (self.categories_slug or set()):
-            indexes['pois_id_by_category_slug'].setdefault(category_slug, set()).add(self._id)
-        del self.categories_slug
-
-        if self.competence_territories_id is None:
-            # A POI that has no explicit competence territories is considered to be competent everywhere.
-            indexes['pois_id_by_competence_territory_id'].setdefault(indexes['france_id'], set()).add(self._id)
-        else:
-            for territory_id in (self.competence_territories_id or set()):
-                indexes['pois_id_by_competence_territory_id'].setdefault(territory_id, set()).add(self._id)
-        del self.competence_territories_id
-
-        for territory_id in (self.territories_id or set()):
-            indexes['pois_id_by_territory_id'].setdefault(territory_id, set()).add(self._id)
-        del self.territories_id
-
-        for word in strings.slugify(self.name).split(u'-'):
-            indexes['pois_id_by_word'].setdefault(word, set()).add(self._id)
-
     @classmethod
     def from_bson(cls, bson, state = conv.default_state):
         if bson is None:
