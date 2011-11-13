@@ -98,6 +98,12 @@ def main(argv = None):
     print time.time() - start_time
     print
 
+    print "conv.pois_to_csv(ramdb.pois_by_id.itervalues())"
+    print "==============================================="
+    print
+    start_time = time.time()
+    conv.pois_to_csv(ramdb.pois_by_id.itervalues())
+    print time.time() - start_time
     return 0
 
 
