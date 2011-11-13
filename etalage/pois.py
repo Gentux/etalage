@@ -87,23 +87,21 @@ class Field(representations.UserRepresentable):
             if self.is_composite:
                 same_label_index = counts_by_label.get(self.label, 0)
                 ref = (parent_ref or []) + [self.label, same_label_index]
-                if self.value is not None:
-                    field_counts_by_label = {}
-                    for field in self.value:
-                        for subfield_ref, subfield in field.iter_csv_fields(ctx, field_counts_by_label,
-                                parent_ref = ref):
-                            yield subfield_ref, subfield
-                    if field_counts_by_label:
-                        # Some subfields were not empty, so increment number of exported fields having the same label.
-                        counts_by_label[self.label] = same_label_index + 1
-            elif self.id == 'postal-distribution':
-                postal_code, postal_routing = conv.check(conv.split_postal_distribution)(self.value, state = ctx)
-                for field in (
-                        Field(id = 'postal-code', value = postal_code, label = u'Code postal'),
-                        Field(id = 'postal-routing', value = postal_routing, label = u'Commune'),
-                        ):
-                    for subfield_ref, subfield in field.iter_csv_fields(ctx, counts_by_label, parent_ref = parent_ref):
+                field_counts_by_label = {}
+                for field in self.value:
+                    for subfield_ref, subfield in field.iter_csv_fields(ctx, field_counts_by_label,
+                            parent_ref = ref):
                         yield subfield_ref, subfield
+                if field_counts_by_label:
+                    # Some subfields were not empty, so increment number of exported fields having the same label.
+                    counts_by_label[self.label] = same_label_index + 1
+            elif self.id == 'commune':
+                field_attributes = self.__dict__.copy()
+                field_attributes['label'] = u'Code Insee commune' # Better than "Commune"
+                field = Field(**field_attributes)
+                same_label_index = counts_by_label.get(field.label, 0)
+                yield (parent_ref or []) + [field.label, same_label_index], field
+                counts_by_label[field.label] = same_label_index + 1
             elif self.id == 'geo':
                 for field in (
                         Field(id = 'float', value = self.value[0], label = u'Latitude'),
@@ -112,10 +110,19 @@ class Field(representations.UserRepresentable):
                         ):
                     for subfield_ref, subfield in field.iter_csv_fields(ctx, counts_by_label, parent_ref = parent_ref):
                         yield subfield_ref, subfield
-            elif self.id == 'street-address' and u'\n' in self.value:
+            elif self.id == 'postal-distribution':
+                postal_code, postal_routing = conv.check(conv.split_postal_distribution)(self.value, state = ctx)
+                for field in (
+                        Field(id = 'postal-code', value = postal_code, label = u'Code postal'),
+                        Field(id = 'postal-routing', value = postal_routing, label = u'Commune'),
+                        ):
+                    for subfield_ref, subfield in field.iter_csv_fields(ctx, counts_by_label, parent_ref = parent_ref):
+                        yield subfield_ref, subfield
+            elif self.id == 'street-address':
                 for item_value in self.value.split('\n'):
                     item_value = item_value.strip()
                     item_field_attributes = self.__dict__.copy()
+                    item_field_attributes['id'] = 'street-address-lines' # Change ID to avoid infinite recursion.
                     item_field_attributes['label'] = u'Adresse' # Better than "Rue, Voie, Chemin"
                     item_field_attributes['value'] = item_value
                     item_field = Field(**item_field_attributes)
@@ -130,13 +137,6 @@ class Field(representations.UserRepresentable):
                     for subfield_ref, subfield in item_field.iter_csv_fields(ctx, counts_by_label,
                             parent_ref = parent_ref):
                         yield subfield_ref, subfield
-            elif self.id == 'commune':
-                field_attributes = self.__dict__.copy()
-                field_attributes['label'] = u'Code Insee commune' # Better than "Commune"
-                field = Field(**field_attributes)
-                same_label_index = counts_by_label.get(field.label, 0)
-                yield (parent_ref or []) + [field.label, same_label_index], field
-                counts_by_label[field.label] = same_label_index + 1
             else:
                 same_label_index = counts_by_label.get(self.label, 0)
                 yield (parent_ref or []) + [self.label, same_label_index], self
