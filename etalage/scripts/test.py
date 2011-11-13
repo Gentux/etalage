@@ -60,10 +60,10 @@ def main(argv = None):
     print "============================================================="
     print
     start_time = time.time()
-    print len(ramdb.iter_pois_id(territory_id = conv.check(conv.pipe(
+    print len(list(ramdb.iter_pois_id(territory_id = conv.check(conv.pipe(
         conv.str_to_postal_distribution,
         conv.postal_distribution_to_territory,
-        ))(u'92 HAUTS DE SEINE'))
+        ))(u'92 HAUTS DE SEINE'))))
     print time.time() - start_time
     print
 
@@ -87,14 +87,14 @@ def main(argv = None):
     print "=============================================================================================================="
     print
     start_time = time.time()
-    print len(ramdb.iter_pois_id(
+    print len(list(ramdb.iter_pois_id(
         categories_slug = [u'mairie'],
         term = u'Mairie',
         territory_id = conv.check(conv.pipe(
             conv.str_to_postal_distribution,
             conv.postal_distribution_to_territory,
             ))(u'92 HAUTS DE SEINE'),
-        )
+        )))
     print time.time() - start_time
     print
 
