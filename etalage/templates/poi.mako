@@ -221,8 +221,8 @@ rel="external">Google Maps</a>
                 else markupsafe.Markup(u'{0} <em>({1})</em>').format(
                     territory.main_postal_distribution_str, territory.type_short_name_fr)
             for territory in (
-                model.Territory.find_one(dict(code = territory_kind_code['code'], kind = territory_kind_code['kind']))
-                for territory_kind_code in field.value
+                ramdb.territories_by_id[territory_id]
+                for territory_id in field.value
                 )
             if territory is not None
             ]

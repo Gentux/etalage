@@ -57,6 +57,7 @@ def load_environment(global_conf, app_conf):
         'i18n_dir': os.path.join(app_dir, 'i18n'),
         'log_level': 'WARNING',
         'organism_types_collection': 'organism_types',
+        'pois_collection': 'pois',
         'package_name': 'etalage',
         'static_files': True, # Whether this application serves its own static files
         'static_files_dir': os.path.join(app_dir, 'static'),

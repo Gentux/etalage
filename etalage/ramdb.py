@@ -50,8 +50,7 @@ pois_id_by_category_slug = None
 pois_id_by_competence_territory_id = None
 pois_id_by_territory_id = None
 pois_id_by_word = None
-territories_ancestors_id_by_id = None
-territories_id_by_kind_code = None # Temporary variable, not an index
+territories_by_id = None
 
 
 def iter_categories_slug(organism_types_only = False, tags_slug = None, term = None):
@@ -88,10 +87,11 @@ def iter_pois_id(add_competent = False, categories_slug = None, term = None, ter
     intersected_sets = []
 
     if territory_id is not None:
-        ancestors_id = territories_ancestors_id_by_id.get(territory_id)
+        territory = territories_by_id[territory_id]
+        ancestors_id = territory.ancestors_id
         territory_competent_pois_id = union_set(
             pois_id_by_competence_territory_id.get(ancestor_id)
-            for ancestor_id in (ancestors_id or set())
+            for ancestor_id in (ancestors_id or [])
             ) if ancestors_id is not None and add_competent else None
     else:
         territory_competent_pois_id = None
@@ -164,55 +164,100 @@ def load():
         pois_id_by_competence_territory_id = {},
         pois_id_by_territory_id = {},
         pois_id_by_word = {},
-        territories_ancestors_id_by_id = {},
+        territories_by_id = {},
         )
 
-    for category_infos in model.db[conf['categories_collection']].find(None, ['code', 'tags_code', 'title']):
+    for category_bson in model.db[conf['categories_collection']].find(None, ['code', 'tags_code', 'title']):
         category = model.Category(
-            name = category_infos['title'],
-            tags_slug = set(category_infos.get('tags_code') or []) or None,
+            name = category_bson['title'],
+            tags_slug = set(category_bson.get('tags_code') or []) or None,
             )
-        category_slug = category_infos['code']
+        category_slug = category_bson['code']
         new_indexes['categories_by_slug'][category_slug] = category
         for word in category_slug.split(u'-'):
             new_indexes['categories_slug_by_word'].setdefault(word, set()).add(category_slug)
         for tag_slug in (category.tags_slug or set()):
             new_indexes['categories_slug_by_tag_slug'].setdefault(tag_slug, set()).add(category_slug)
 
-    for organism_type_infos in model.db[conf['organism_types_collection']].find(None, ['code', 'slug']):
-        if organism_type_infos['slug'] not in new_indexes['categories_by_slug']:
-            log.warning('Ignoring organism type "{0}" without matching category.'.format(organism_type_infos['code']))
+    for organism_type_bson in model.db[conf['organism_types_collection']].find(None, ['code', 'slug']):
+        if organism_type_bson['slug'] not in new_indexes['categories_by_slug']:
+            log.warning('Ignoring organism type "{0}" without matching category.'.format(organism_type_bson['code']))
             continue
-        new_indexes['categories_slug_by_pivot_code'][organism_type_infos['code']] = organism_type_infos['slug']
+        new_indexes['categories_slug_by_pivot_code'][organism_type_bson['code']] = organism_type_bson['slug']
 
-    global territories_id_by_kind_code
+    # Temporary variable, not a permanent index
     territories_id_by_kind_code = {}
-    for territory_infos in model.db[conf['territories_collection']].find(None, ['ancestors_id', 'code', 'kind']):
-        territories_id_by_kind_code[(territory_infos['kind'], territory_infos['code'])] = territory_infos['_id']
-        if territory_infos.get('ancestors_id') is not None:
-            new_indexes['territories_ancestors_id_by_id'][territory_infos['_id']] = set(territory_infos['ancestors_id'])
-        if territory_infos['kind'] == u'Country' and territory_infos['code'] == u'FR':
-            new_indexes['france_id'] = territory_infos['_id']
+    for territory_bson in model.db[conf['territories_collection']].find(None, [
+            'ancestors_id',
+            'code',
+            'hinge_type',
+            'kind',
+            'main_postal_distribution',
+            'name',
+            ]):
+        territory_class = model.Territory.kind_to_class(territory_bson['kind'])
+        assert territory_class is not None, 'Invalid territory type name: {0}'.format(class_name)
+        territory = territory_class(
+            _id = territory_bson['_id'],
+            ancestors_id = territory_bson['ancestors_id'],
+            code = territory_bson['code'],
+            hinge_type = territory_bson.get('hinge_type'),
+            main_postal_distribution = territory_bson['main_postal_distribution'],
+            name = territory_bson['name'],
+            )
+        new_indexes['territories_by_id'][territory_bson['_id']] = territory
+        territories_id_by_kind_code[(territory_bson['kind'], territory_bson['code'])] = territory_bson['_id']
+        if territory_bson['kind'] == u'Country' and territory_bson['code'] == u'FR':
+            new_indexes['france_id'] = territory_bson['_id']
     assert new_indexes['france_id'] is not None
 
-    for poi in model.Poi.find({'metadata.deleted': {'$exists': False}}):
+    for poi_bson in model.db[conf['pois_collection']].find({'metadata.deleted': {'$exists': False}}):
+        metadata = poi_bson['metadata']
+        poi = model.Poi(
+            _id = poi_bson['_id'],
+            geo = poi_bson['geo'][0] if poi_bson.get('geo') is not None else None,
+            name = metadata['title'],
+            )
+
+        fields_position = {}
+        fields = []
+        for field_id in metadata['positions']:
+            field_position = fields_position.get(field_id, 0)
+            fields_position[field_id] = field_position + 1
+            field_metadata = metadata[field_id][field_position]
+            field_value = poi_bson[field_id][field_position]
+            fields.append(load_field(field_id, field_metadata, field_value, territories_id_by_kind_code))
+        if fields:
+            poi.fields = fields
+
         new_indexes['pois_by_id'][poi._id] = poi
 
-        for category_slug in (poi.categories_slug or set()):
+        for category_slug in (metadata.get('categories-index') or set()):
             new_indexes['pois_id_by_category_slug'].setdefault(category_slug, set()).add(poi._id)
-        del poi.categories_slug
 
-        if poi.competence_territories_id is None:
+        for i, territory_metadata in enumerate(metadata.get('territories') or []):
+            if strings.slugify(territory_metadata['label']) == u'territoires-de-competence':
+                poi_competence_territories_id = set(
+                    territories_id_by_kind_code[(territory_kind_code['kind'], territory_kind_code['code'])]
+                    for territory_kind_code in poi_bson['territories'][i]
+                    )
+                break
+        else:
+            poi_competence_territories_id = None
+        if poi_competence_territories_id is None:
             # A POI that has no explicit competence territories is considered to be competent everywhere.
             new_indexes['pois_id_by_competence_territory_id'].setdefault(new_indexes['france_id'], set()).add(poi._id)
         else:
-            for territory_id in (poi.competence_territories_id or set()):
+            for territory_id in (poi_competence_territories_id or set()):
                 new_indexes['pois_id_by_competence_territory_id'].setdefault(territory_id, set()).add(poi._id)
-        del poi.competence_territories_id
 
-        for territory_id in (poi.territories_id or set()):
+        poi_territories_id = set(
+            territories_id_by_kind_code[(territory_kind_code['kind'], territory_kind_code['code'])]
+            for territory_kind_code in metadata['territories-index']
+            if territory_kind_code['kind'] not in (u'Country', u'InternationalOrganization', u'MetropoleOfCountry')
+            ) if metadata.get('territories-index') is not None else None
+        for territory_id in (poi_territories_id or set()):
             new_indexes['pois_id_by_territory_id'].setdefault(territory_id, set()).add(poi._id)
-        del poi.territories_id
 
         for word in strings.slugify(poi.name).split(u'-'):
             new_indexes['pois_id_by_word'].setdefault(word, set()).add(poi._id)
@@ -252,11 +297,45 @@ def load():
         pois_id_by_territory_id = new_indexes['pois_id_by_territory_id']
         global pois_id_by_word
         pois_id_by_word = new_indexes['pois_id_by_word']
-        global territories_ancestors_id_by_id
-        territories_ancestors_id_by_id = new_indexes['territories_ancestors_id_by_id']
+        global territories_by_id
+        territories_by_id = new_indexes['territories_by_id']
 
     inited = True
     log.info('RAM-based database loaded in {0} seconds'.format(datetime.datetime.utcnow() - start_time))
+
+
+def load_field(id, metadata, value, territories_id_by_kind_code):
+    from . import model
+
+    if len(metadata) != (1 if 'kind' in metadata else 0) \
+            + (1 if 'label' in metadata else 0) \
+            + (1 if 'type' in metadata else 0) \
+            + (1 + len(metadata['positions']) if 'positions' in metadata else 0):
+        log.warning('Unexpected attributes in field metadata {0} for value {1}'.format(metadata, value))
+    if 'positions' in metadata:
+        fields_position = {}
+        fields = []
+        for field_id in metadata['positions']:
+            field_position = fields_position.get(field_id, 0)
+            fields_position[field_id] = field_position + 1
+            field_metadata = metadata[field_id][field_position]
+            field_value = value[field_id][field_position]
+            fields.append(load_field(field_id, field_metadata, field_value, territories_id_by_kind_code))
+        value = fields or None
+    elif id == 'territories':
+        # Replace each kind-code with the corresponding territory ID.
+        if value is not None:
+            value = [
+                territories_id_by_kind_code[(territory_kind_code['kind'], territory_kind_code['code'])]
+                for territory_kind_code in value
+                ]
+    return model.Field(
+        id = id,
+        kind = metadata.get('kind'),
+        label = metadata['label'],
+        type = metadata.get('type'),
+        value = value,
+        )
 
 
 def ramdb_based(controller):

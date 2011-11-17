@@ -52,31 +52,6 @@ class Field(representations.UserRepresentable):
         if attributes:
             self.set_attributes(**attributes)
 
-    @classmethod
-    def from_bson(cls, id, metadata, value, state = conv.default_state):
-        if len(metadata) != (1 if 'kind' in metadata else 0) \
-                + (1 if 'label' in metadata else 0) \
-                + (1 if 'type' in metadata else 0) \
-                + (1 + len(metadata['positions']) if 'positions' in metadata else 0):
-            log.warning('Unexpected attributes in field metadata {0} for value {1}'.format(metadata, value))
-        if 'positions' in metadata:
-            fields_position = {}
-            fields = []
-            for field_id in metadata['positions']:
-                field_position = fields_position.get(field_id, 0)
-                fields_position[field_id] = field_position + 1
-                field_metadata = metadata[field_id][field_position]
-                field_value = value[field_id][field_position]
-                fields.append(Field.from_bson(field_id, field_metadata, field_value, state = state))
-            value = fields or None
-        return cls(
-            id = id,
-            kind = metadata.get('kind'),
-            label = metadata['label'],
-            type = metadata.get('type'),
-            value = value,
-            )
-
     @property
     def is_composite(self):
         return self.id in ('adr', 'source')
@@ -160,50 +135,6 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
     def __init__(self, **attributes):
         if attributes:
             self.set_attributes(**attributes)
-
-    @classmethod
-    def from_bson(cls, bson, state = conv.default_state):
-        if bson is None:
-            return None
-
-        metadata = bson['metadata']
-        self = cls(
-            _id = bson['_id'],
-            geo = bson['geo'][0] if bson.get('geo') is not None else None,
-            name = metadata['title'],
-            )
-
-        self.categories_slug = metadata.get('categories-index')
-
-        for i, territory_metadata in enumerate(metadata.get('territories') or []):
-            if strings.slugify(territory_metadata['label']) == u'territoires-de-competence':
-                competence_territories_id = set(
-                    ramdb.territories_id_by_kind_code[(territory_kind_code['kind'], territory_kind_code['code'])]
-                    for territory_kind_code in bson['territories'][i]
-                    )
-                break
-        else:
-            competence_territories_id = None
-        self.competence_territories_id = competence_territories_id
-
-        self.territories_id = set(
-            ramdb.territories_id_by_kind_code[(territory_kind_code['kind'], territory_kind_code['code'])]
-            for territory_kind_code in metadata['territories-index']
-            if territory_kind_code['kind'] not in (u'Country', u'InternationalOrganization', u'MetropoleOfCountry')
-            ) if metadata.get('territories-index') is not None else None
-
-        fields_position = {}
-        fields = []
-        for field_id in metadata['positions']:
-            field_position = fields_position.get(field_id, 0)
-            fields_position[field_id] = field_position + 1
-            field_metadata = metadata[field_id][field_position]
-            field_value = bson[field_id][field_position]
-            fields.append(Field.from_bson(field_id, field_metadata, field_value, state = state))
-        if fields:
-            self.fields = fields
-
-        return self
 
     def iter_csv_fields(self, ctx):
         counts_by_label = {}
