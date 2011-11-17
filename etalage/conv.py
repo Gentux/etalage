@@ -51,7 +51,7 @@ def params_to_pois_csv(params, state = default_state):
             category = pipe(
                 str_to_category_slug,
                 function(lambda slug: ramdb.categories_by_slug[slug]),
-                make_test(lambda category: (category.tags_slug or set()).issuperset(state.category_tags_slug or []),
+                test(lambda category: (category.tags_slug or set()).issuperset(state.category_tags_slug or []),
                     error = N_(u'Missing required tags for category')),
                 ),
             term = str_to_slug,
@@ -87,16 +87,16 @@ def params_to_pois_directory_data(params, state = default_state):
                 category = pipe(
                     str_to_category_slug,
                     function(lambda slug: ramdb.categories_by_slug[slug]),
-                    make_test(lambda category: (category.tags_slug or set()).issuperset(state.category_tags_slug or []),
+                    test(lambda category: (category.tags_slug or set()).issuperset(state.category_tags_slug or []),
                         error = N_(u'Missing required tags for category')),
                     ),
                 term = str_to_slug,
                 territory = pipe(
                     str_to_postal_distribution,
                     postal_distribution_to_territory,
-                    make_test(lambda territory: territory.__class__.__name__ in model.communes_kinds,
+                    test(lambda territory: territory.__class__.__name__ in model.communes_kinds,
                         error = N_(u'In "directory" mode, territory must be a commune')),
-                    make_test(lambda territory: territory.geo is not None,
+                    test(lambda territory: territory.geo is not None,
                         error = N_(u'In "directory" mode, commune must have geographical coordinates')),
                     test_exists(error = N_(u'In "directory" mode, a commune is required')),
                     ),
@@ -115,7 +115,7 @@ def params_to_pois_geojson(params, state = default_state):
                 category = pipe(
                     str_to_category_slug,
                     function(lambda slug: ramdb.categories_by_slug[slug]),
-                    make_test(lambda category: (category.tags_slug or set()).issuperset(state.category_tags_slug or []),
+                    test(lambda category: (category.tags_slug or set()).issuperset(state.category_tags_slug or []),
                         error = N_(u'Missing required tags for category')),
                     ),
                 term = str_to_slug,
@@ -153,12 +153,12 @@ def params_to_pois_list_pager(params, state = default_state):
                 category = pipe(
                     str_to_category_slug,
                     function(lambda slug: ramdb.categories_by_slug[slug]),
-                    make_test(lambda category: (category.tags_slug or set()).issuperset(state.category_tags_slug or []),
+                    test(lambda category: (category.tags_slug or set()).issuperset(state.category_tags_slug or []),
                         error = N_(u'Missing required tags for category')),
                     ),
                 page = pipe(
                     str_to_int,
-                    make_greater_or_equal(1),
+                    test_greater_or_equal(1),
                     default(1),
                     ),
                 term = str_to_slug,
@@ -266,6 +266,6 @@ def str_to_category_slug(value, state = default_state):
     from . import ramdb
     return pipe(
         str_to_slug,
-        make_test(lambda slug: slug in ramdb.categories_by_slug, error = N_(u'Invalid category')),
+        test(lambda slug: slug in ramdb.categories_by_slug, error = N_(u'Invalid category')),
         )(value, state = state)
 

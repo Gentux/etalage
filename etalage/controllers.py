@@ -71,7 +71,7 @@ def autocomplete_category(req):
             dict(
                 page = conv.pipe(
                     conv.str_to_int,
-                    conv.make_greater_or_equal(1),
+                    conv.test_greater_or_equal(1),
                     conv.default(1),
                     ),
                 tag = conv.uniform_sequence(conv.str_to_category_slug),
@@ -180,7 +180,7 @@ def export_directory_csv(req):
         )
     params.update(base_params)
 
-    accept, error = conv.pipe(conv.guess_bool, conv.default(False), conv.make_is(True))(params['accept'], state = ctx)
+    accept, error = conv.pipe(conv.guess_bool, conv.default(False), conv.test_is(True))(params['accept'], state = ctx)
     if error is None:
         url_params = params.copy()
         del url_params['accept']
@@ -220,7 +220,7 @@ def export_directory_geojson(req):
         )
     params.update(base_params)
 
-    accept, error = conv.pipe(conv.guess_bool, conv.default(False), conv.make_is(True))(params['accept'], state = ctx)
+    accept, error = conv.pipe(conv.guess_bool, conv.default(False), conv.test_is(True))(params['accept'], state = ctx)
     if error is None:
         url_params = params.copy()
         del url_params['accept']
@@ -260,7 +260,7 @@ def export_directory_kml(req):
         )
     params.update(base_params)
 
-    accept, error = conv.pipe(conv.guess_bool, conv.default(False), conv.make_is(True))(params['accept'], state = ctx)
+    accept, error = conv.pipe(conv.guess_bool, conv.default(False), conv.test_is(True))(params['accept'], state = ctx)
     if error is None:
         url_params = params.copy()
         del url_params['accept']
@@ -300,7 +300,7 @@ def export_geographical_coverage_csv(req):
         )
     params.update(base_params)
 
-    accept, error = conv.pipe(conv.guess_bool, conv.default(False), conv.make_is(True))(params['accept'], state = ctx)
+    accept, error = conv.pipe(conv.guess_bool, conv.default(False), conv.test_is(True))(params['accept'], state = ctx)
     if error is None:
         url_params = params.copy()
         del url_params['accept']
@@ -460,7 +460,7 @@ def index_export(req):
         dict(
             type_and_format = conv.pipe(
                 conv.str_to_slug,
-                conv.make_in([
+                conv.test_in([
                     'annuaire-csv',
                     'annuaire-geojson',
                     'annuaire-kml',
