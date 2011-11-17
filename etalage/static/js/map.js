@@ -121,7 +121,8 @@ etalage.map = (function ($) {
                     return;
                 }
                 setGeoJSONData(data);
-            }
+            },
+            traditional: true
         });
     }
 
