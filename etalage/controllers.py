@@ -331,9 +331,10 @@ def geojson(req):
     params = req.GET
     base_params = init_base(ctx, params)
     params = dict(
+        bbox = params.get('bbox'),
         category = params.get('category'),
+        context = params.get('context'),
         jsonp = params.get('jsonp'),
-        page = params.get('page'),
         term = params.get('term'),
         territory = params.get('territory'),
         )

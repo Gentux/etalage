@@ -54,8 +54,12 @@ from etalage import conf, conv
 <![endif]-->
     <script src="/js/map.js"></script>
     <script>
-var etalage = etalage || {};
-etalage.map.geojsonUrl = '/api/v1/geojson';
+etalage.map.geojsonParams = ${dict(
+    (name, value)
+    for name, value in params.iteritems()
+    if name not in ('bbox', 'context', 'jsonp') and value is not None
+    )| n, js};
+etalage.map.geojsonUrl = '/api/v1/annuaire/geojson';
 etalage.map.markersUrl = ${conf['markers_url'].rstrip('/') | n, js};
 etalage.map.tileUrlTemplate = ${conf['tile_url_template'] | n, js};
 

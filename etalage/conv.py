@@ -29,8 +29,8 @@
 
 from cStringIO import StringIO
 import csv
-import re
 import datetime
+import itertools
 
 from biryani.baseconv import *
 from biryani.bsonconv import *
@@ -108,10 +108,47 @@ def params_to_pois_directory_data(params, state = default_state):
 
 
 def params_to_pois_geojson(params, state = default_state):
-    from . import pagers, ramdb
+    from . import ramdb
     data, errors = pipe(
         struct(
             dict(
+                bbox = pipe(
+                    function(lambda bounding_box: bounding_box.split(u',')),
+                    struct(
+                        [
+                            # West longitude
+                            pipe(
+                                str_to_float,
+                                test_between(-180, 180),
+                                exists,
+                                ),
+                            # South latitude
+                            pipe(
+                                str_to_float,
+                                test_between(-90, 90),
+                                exists,
+                                ),
+                            # East longitude
+                            pipe(
+                                str_to_float,
+                                test_between(-180, 180),
+                                exists,
+                                ),
+                            # North latitude
+                            pipe(
+                                str_to_float,
+                                test_between(-90, 90),
+                                exists,
+                                ),
+                            ],
+                        ),
+                    function(lambda bounding_box: dict(
+                        bottom = bounding_box[1],
+                        left = bounding_box[0],
+                        right = bounding_box[2],
+                        top = bounding_box[3],
+                        )),
+                    ),
                 category = pipe(
                     str_to_category_slug,
                     function(lambda slug: ramdb.categories_by_slug[slug]),
@@ -127,6 +164,7 @@ def params_to_pois_geojson(params, state = default_state):
             default = 'ignore',
             keep_empty = True,
             ),
+        rename_item('bbox', 'bounding_box'),
         )(params, state = state)
     if errors is not None:
         return data, errors
@@ -135,14 +173,57 @@ def params_to_pois_geojson(params, state = default_state):
     if data.get('category') is not None:
         categories_slug.add(data['category'].slug)
     territory_id = data['territory']._id if data.get('territory') is not None else None
-    pois_id = list(ramdb.iter_pois_id(categories_slug = categories_slug, term = data.get('term'),
-        territory_id = territory_id))
-    pager = pagers.Pager(item_count = len(pois_id))
-    pois = [
-        ramdb.pois_by_id[poi_id]
-        for poi_id in pois_id[pager.first_item_index:pager.last_item_number]
-        ]
-    return pois_to_geojson(pois, state = state)
+    pois_id_iter = ramdb.iter_pois_id(categories_slug = categories_slug,
+        term = data.get('term'), territory_id = territory_id)
+    pois_by_id = ramdb.pois_by_id
+    if data.get('bounding_box') is None:
+        pois_iter = itertools.islice(
+            (
+                poi
+                for poi in (
+                    pois_by_id[poi_id]
+                    for poi_id in pois_id_iter
+                    )
+                if poi.geo is not None
+                ),
+            200) # TODO
+    else:
+        bottom = data['bounding_box']['bottom']
+        left = data['bounding_box']['left']
+        right = data['bounding_box']['right']
+        top = data['bounding_box']['top']
+        pois_iter = itertools.islice(
+            (
+                poi
+                for poi in (
+                    pois_by_id[poi_id]
+                    for poi_id in pois_id_iter
+                    )
+                if poi.geo is not None and bottom <= poi.geo[0] <= top and left <= poi.geo[1] <= right
+                ),
+            200) # TODO
+    geojson = {
+        'type': 'FeatureCollection',
+        'properties': {
+            'context': params.get('context'), # Parameter given in request that is returned as is.
+            'date': unicode(datetime.datetime.utcnow())
+        },
+        'features': [
+            {
+                'geometry': {
+                    'type': 'Point',
+                    'coordinates': [poi.geo[1], poi.geo[0]],
+                    },
+                'type': 'Feature',
+                'properties': {
+                    'id': str(poi._id),
+                    'name': poi.name,
+                    },
+                }
+            for poi in pois_iter
+            ],
+        }
+    return geojson, None
 
 
 def params_to_pois_list_pager(params, state = default_state):
@@ -220,31 +301,6 @@ def pois_to_csv(pois, state = default_state):
     for row in rows:
         writer.writerow(row)
     return csv_file.getvalue().decode('utf-8'), None
-
-
-def pois_to_geojson(pois, state = default_state):
-    if pois is None:
-        return pois, None
-    geojson = {
-        'type': 'FeatureCollection',
-        'properties': {'date': unicode(datetime.datetime.utcnow())},
-        'features': [
-            {
-                'geometry': {
-                    'type': 'Point',
-                    'coordinates': [poi.geo[1], poi.geo[0]],
-                    },
-                'type': 'Feature',
-                'properties': {
-                    'id': str(poi._id),
-                    'name': poi.name,
-                    },
-                }
-            for poi in pois
-            if poi.geo is not None
-            ],
-        }
-    return geojson, None
 
 
 def postal_distribution_to_territory(postal_distribution, state = default_state):

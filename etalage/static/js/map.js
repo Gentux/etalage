@@ -40,6 +40,20 @@ etalage.map = (function ($) {
                 maxZoom: 18
             })
         );
+        leafletMap.on('moveend', function(e) {
+            try {
+                var bounds = leafletMap.getBounds();
+            } catch(err) {
+                // Method getBounds fails when map center or zoom level are not yet set.
+                return;
+            }
+            fetchPois({
+                bbox: [
+                    bounds.getSouthWest().lng, bounds.getSouthWest().lat,
+                    bounds.getNorthEast().lng, bounds.getNorthEast().lat
+                ].join(","),
+            });
+        });
 
         if (window.PIE) {
             $('.leaflet-control, .leaflet-control-zoom, .leaflet-control-zoom-in, .leaflet-control-zoom-out').each(
@@ -79,33 +93,35 @@ etalage.map = (function ($) {
             }
         });
         leafletMap.addLayer(geojson);
-        leafletMap._geojsonLayer = geojson;
+        etalage.map.geojson = geojson;
 
         if (window.PIE) {
-            leafletMap.on('layeradd', function(event) {
-                if (event.layer._wrapper && event.layer._opened === true && event.layer._content) {
+            leafletMap.on('layeradd', function(e) {
+                if (e.layer._wrapper && e.layer._opened === true && e.layer._content) {
                     // Apply CSS3 border-radius for IE to popup.
-                    PIE.attach(event.layer._wrapper);
+                    PIE.attach(e.layer._wrapper);
                 }
             });
         }
 
-        if (geojsonData) {
-            setGeoJSONData(geojsonData);
-        } else {
-            fetchPois();
-        }
+        setGeoJSONData(geojsonData);
+        leafletMap.fitBounds(etalage.map.getBBox(geojsonData.features));
     }
 
-    function fetchPois() {
+    function fetchPois(params) {
+        var context = (new Date()).getTime();
         $.ajax({
             url: etalage.map.geojsonUrl,
             dataType: 'json',
-            data: {
-                term: $('#term').val(),
-                territory: $('#territory').val()
-            },
-            success: setGeoJSONData
+            data: $.extend({
+                context: context
+            }, etalage.map.geojsonParams || {}, params || {}),
+            success: function (data) {
+                if (parseInt(data.properties.context) !== context) {
+                    return;
+                }
+                setGeoJSONData(data);
+            }
         });
     }
 
@@ -121,8 +137,8 @@ etalage.map = (function ($) {
     }
 
     function setGeoJSONData(data) {
-        leafletMap._geojsonLayer.addGeoJSON(data);
-        leafletMap.fitBounds(etalage.map.getBBox(data.features));
+        etalage.map.geojson.clearLayers();
+        etalage.map.geojson.addGeoJSON(data);
     }
 
     function singleMarkerMap(mapDiv, latitude, longitude) {
@@ -155,6 +171,8 @@ etalage.map = (function ($) {
 
     return {
         createMap: createMap,
+        geojson: null,
+        geojsonParams: null,
         geojsonUrl: null,
         getBBox: getBBox,
         markersUrl: null,
