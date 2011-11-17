@@ -104,9 +104,9 @@ from etalage import conf, urls
         <ul class="tabs">
 <%
     modes_infos = (
-        (u'annuaire', u'Annuaire'),
-        (u'liste', u'Liste'),
         (u'carte', u'Carte'),
+        (u'liste', u'Liste'),
+        (u'annuaire', u'Annuaire'),
         (u'export', u'Export'),
         )
 %>\
