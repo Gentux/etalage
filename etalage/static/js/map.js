@@ -78,19 +78,17 @@ etalage.map = (function ($) {
 
         var geojson = new L.GeoJSON();
         geojson.on('featureparse', function(e) {
+            etalage.map.layerByPoiId[e.properties.id] = e.layer;
             e.layer.options.icon = icon;
-
-            if (e.properties.id && e.properties.name)  {
-                e.layer
-                    .bindPopup('<a class="internal" href="/organismes/' + e.properties.id + '">'
-                        + e.properties.name + '</a>')
-                    .on('click', function (e) {
-                        $('a.internal', e.target._popup._contentNode).on('click', function () {
-                            rpc.requestNavigateTo($(this).attr('href'));
-                            return false;
-                        });
+            e.layer
+                .bindPopup('<a class="internal" href="/organismes/' + e.properties.id + '">'
+                    + e.properties.name + '</a>')
+                .on('click', function (e) {
+                    $('a.internal', e.target._popup._contentNode).on('click', function () {
+                        rpc.requestNavigateTo($(this).attr('href'));
+                        return false;
                     });
-            }
+                });
         });
         leafletMap.addLayer(geojson);
         etalage.map.geojson = geojson;
@@ -104,6 +102,7 @@ etalage.map = (function ($) {
             });
         }
 
+        etalage.map.layerByPoiId = {};
         setGeoJSONData(geojsonData);
         leafletMap.fitBounds(etalage.map.getBBox(geojsonData.features));
     }
@@ -138,8 +137,34 @@ etalage.map = (function ($) {
     }
 
     function setGeoJSONData(data) {
-        etalage.map.geojson.clearLayers();
-        etalage.map.geojson.addGeoJSON(data);
+        var geojson = etalage.map.geojson;
+        var layerByPoiId = etalage.map.layerByPoiId;
+        // Retrieve existing POIs layers.
+        var obsoleteLayerByPoiId = {};
+        for (var poiId in layerByPoiId) {
+            if (layerByPoiId.hasOwnProperty(poiId)) {
+                obsoleteLayerByPoiId[poiId] = layerByPoiId[poiId];
+            }
+        }
+        // Add only new POIs layers.
+        if (data.features) {
+            var feature, poiId;
+            for (var i = 0, len = data.features.length; i < len; i++) {
+                feature = data.features[i];
+                poiId = feature.properties.id;
+                delete obsoleteLayerByPoiId[poiId];
+                if (!(poiId in layerByPoiId)) {
+                    geojson.addGeoJSON(feature);
+                }
+            }
+        }
+        // Delete obsolete POIs layers.
+        for (var poiId in obsoleteLayerByPoiId) {
+            if (obsoleteLayerByPoiId.hasOwnProperty(poiId)) {
+                geojson.removeLayer(obsoleteLayerByPoiId[poiId]);
+                delete layerByPoiId[poiId];
+            }
+        }
     }
 
     function singleMarkerMap(mapDiv, latitude, longitude) {
@@ -176,6 +201,7 @@ etalage.map = (function ($) {
         geojsonParams: null,
         geojsonUrl: null,
         getBBox: getBBox,
+        layerByPoiId: null,
         markersUrl: null,
         singleMarkerMap: singleMarkerMap,
         tileUrlTemplate: null
