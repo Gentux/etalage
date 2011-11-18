@@ -28,7 +28,7 @@
 import markupsafe
 from biryani import strings
 
-from etalage import conf, model, ramdb
+from etalage import conf, model, ramdb, urls
 %>\
 
 
@@ -37,9 +37,29 @@ from etalage import conf, model, ramdb
 
 <%def name="container_content()" filter="trim">
         <h2>${poi.name}</h2>
-        % for field in (poi.fields or []):
+    % for field in (poi.fields or []):
         <%self:field field="${field}"/>
+    % endfor
+<%
+    services = sorted(
+        (
+            service
+            for service in ramdb.pois_by_id.itervalues()
+            if service.parent_id == poi._id
+            ),
+        key = lambda service: service.name,
+        )
+%>\
+    % if services:
+        <h3>Services</h3>
+        <ul>
+        % for service in services:
+            <li>
+                <a class="field-value" href="${urls.get_url(ctx, 'organismes', service._id)}">${service.name}</a>
+            </li>
         % endfor
+        </ul>
+    %endif
 </%def>
 
 
@@ -168,7 +188,7 @@ rel="external">Google Maps</a>
         % if target is None:
     <em class="field-value">Lien manquant</em>
         % else:
-    <a class="field-value" href="/poi/${target._id}">${target.name}</a>
+    <a class="field-value" href="${urls.get_url(ctx, 'organismes', target._id)}">${target.name}</a>
         % endif
     % elif field.id == 'links':
         % if len(field.value) == 1:
@@ -184,7 +204,7 @@ rel="external">Google Maps</a>
                 if target is None:
                     continue
 %>\
-        <li><a href="/poi/${target._id}">${target.name}</a></li>
+        <li><a href="${urls.get_url(ctx, 'organismes', target._id)}">${target.name}</a></li>
             % endfor
     </ul>
         % endif

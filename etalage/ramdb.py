@@ -226,7 +226,11 @@ def load():
             fields_position[field_id] = field_position + 1
             field_metadata = metadata[field_id][field_position]
             field_value = poi_bson[field_id][field_position]
-            fields.append(load_field(field_id, field_metadata, field_value, territories_id_by_kind_code))
+            field = load_field(field_id, field_metadata, field_value, territories_id_by_kind_code)
+            if field.id == u'link' and field.kind == u'Organisme' and field.relation == u'parent':
+                assert poi.parent is None, str(poi)
+                poi.parent_id = field.value
+            fields.append(field)
         if fields:
             poi.fields = fields
 
@@ -309,6 +313,7 @@ def load_field(id, metadata, value, territories_id_by_kind_code):
 
     if len(metadata) != (1 if 'kind' in metadata else 0) \
             + (1 if 'label' in metadata else 0) \
+            + (1 if 'relation' in metadata else 0) \
             + (1 if 'type' in metadata else 0) \
             + (1 + len(metadata['positions']) if 'positions' in metadata else 0):
         log.warning('Unexpected attributes in field {0}, metadata {1}, value {2}'.format(id, metadata, value))
@@ -333,6 +338,7 @@ def load_field(id, metadata, value, territories_id_by_kind_code):
         id = id,
         kind = metadata.get('kind'),
         label = metadata['label'],
+        relation = metadata.get('relation'),
         type = metadata.get('type'),
         value = value,
         )

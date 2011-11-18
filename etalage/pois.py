@@ -45,6 +45,7 @@ class Field(representations.UserRepresentable):
     id = None # Petitpois id = format of value
     kind = None
     label = None
+    relation = None
     type = None
     value = None
 
@@ -131,6 +132,7 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
     fields = None
     geo = None
     name = None
+    parent_id = None
 
     def __init__(self, **attributes):
         if attributes:
@@ -147,6 +149,12 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
             for field in self.fields:
                 for subfield_ref, subfield in field.iter_csv_fields(ctx, counts_by_label):
                     yield subfield_ref, subfield
+
+    @property
+    def parent(self):
+        if self.parent_id is None:
+            return None
+        return ramdb.pois_by_id.get(self.parent_id)
 
     def set_attributes(self, **attributes):
         for name, value in attributes.iteritems():
