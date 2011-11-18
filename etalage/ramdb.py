@@ -311,7 +311,7 @@ def load_field(id, metadata, value, territories_id_by_kind_code):
             + (1 if 'label' in metadata else 0) \
             + (1 if 'type' in metadata else 0) \
             + (1 + len(metadata['positions']) if 'positions' in metadata else 0):
-        log.warning('Unexpected attributes in field metadata {0} for value {1}'.format(metadata, value))
+        log.warning('Unexpected attributes in field {0}, metadata {1}, value {2}'.format(id, metadata, value))
     if 'positions' in metadata:
         fields_position = {}
         fields = []
