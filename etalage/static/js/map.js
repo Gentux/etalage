@@ -79,17 +79,30 @@ etalage.map = (function ($) {
 
         var geojson = new L.GeoJSON();
         geojson.on('featureparse', function(e) {
-            etalage.map.layerByPoiId[e.properties.id] = e.layer;
+            var properties = e.properties;
+            etalage.map.layerByPoiId[properties.id] = e.layer;
             e.layer.options.icon = icon;
-            e.layer
-                .bindPopup('<a class="internal" href="/organismes/' + e.properties.id + '">'
-                    + e.properties.name + '</a>')
-                .on('click', function (e) {
-                    $('a.internal', e.target._popup._contentNode).on('click', function () {
-                        rpc.requestNavigateTo($(this).attr('href'));
-                        return false;
-                    });
+            var $div = $('<div/>').append(
+                $('<a/>', {
+                    'class': 'internal',
+                    href: '/organismes/' + properties.id
+                }).text(properties.name)
+            );
+            if (properties.street_address) {
+                $.each(properties.street_address.split('\n'), function (index, line) {
+                    $div.append($('<div/>').text(line));
                 });
+            }
+            if (properties.postal_distribution) {
+                $div.append($('<div/>').text(properties.postal_distribution));
+            }
+            e.layer.bindPopup($div.html())
+            .on('click', function (e) {
+                $('a.internal', e.target._popup._contentNode).on('click', function () {
+                    rpc.requestNavigateTo($(this).attr('href'));
+                    return false;
+                });
+            });
         });
         leafletMap.addLayer(geojson);
         etalage.map.geojson = geojson;

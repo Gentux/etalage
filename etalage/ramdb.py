@@ -227,7 +227,13 @@ def load():
             field_metadata = metadata[field_id][field_position]
             field_value = poi_bson[field_id][field_position]
             field = load_field(field_id, field_metadata, field_value, territories_id_by_kind_code)
-            if field.id == u'link' and field.kind == u'Organisme' and field.relation == u'parent':
+            if field.id == u'adr' and poi.postal_distribution_str is None:
+                for sub_field in (field.value or []):
+                    if sub_field.id == u'postal-distribution':
+                        poi.postal_distribution_str = sub_field.value
+                    elif sub_field.id == u'street-address':
+                        poi.street_address = sub_field.value
+            elif field.id == u'link' and field.kind == u'Organisme' and field.relation == u'parent':
                 assert poi.parent is None, str(poi)
                 poi.parent_id = field.value
             fields.append(field)

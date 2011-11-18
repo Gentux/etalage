@@ -218,6 +218,8 @@ def params_to_pois_geojson(params, state = default_state):
                 'properties': {
                     'id': str(poi._id),
                     'name': poi.name,
+                    'postal_distribution': poi.postal_distribution_str,
+                    'street_address': poi.street_address,
                     },
                 }
             for poi in pois_iter

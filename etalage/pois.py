@@ -133,6 +133,8 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
     geo = None
     name = None
     parent_id = None
+    postal_distribution_str = None
+    street_address = None
 
     def __init__(self, **attributes):
         if attributes:
