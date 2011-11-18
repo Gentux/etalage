@@ -186,7 +186,7 @@ def params_to_pois_geojson(params, state = default_state):
                     )
                 if poi.geo is not None
                 ),
-            200) # TODO
+            20) # TODO
     else:
         bottom = data['bounding_box']['bottom']
         left = data['bounding_box']['left']
@@ -201,7 +201,7 @@ def params_to_pois_geojson(params, state = default_state):
                     )
                 if poi.geo is not None and bottom <= poi.geo[0] <= top and left <= poi.geo[1] <= right
                 ),
-            200) # TODO
+            20) # TODO
     geojson = {
         'type': 'FeatureCollection',
         'properties': {
