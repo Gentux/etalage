@@ -55,7 +55,7 @@ from etalage import conf, model, ramdb, urls
         <ul>
         % for service in services:
             <li>
-                <a class="field-value" href="${urls.get_url(ctx, 'organismes', service._id)}">${service.name}</a>
+                <a class="field-value internal" href="${urls.get_url(ctx, 'organismes', service._id)}">${service.name}</a>
             </li>
         % endfor
         </ul>
@@ -188,7 +188,7 @@ rel="external">Google Maps</a>
         % if target is None:
     <em class="field-value">Lien manquant</em>
         % else:
-    <a class="field-value" href="${urls.get_url(ctx, 'organismes', target._id)}">${target.name}</a>
+    <a class="field-value internal" href="${urls.get_url(ctx, 'organismes', target._id)}">${target.name}</a>
         % endif
     % elif field.id == 'links':
         % if len(field.value) == 1:
@@ -204,7 +204,7 @@ rel="external">Google Maps</a>
                 if target is None:
                     continue
 %>\
-        <li><a href="${urls.get_url(ctx, 'organismes', target._id)}">${target.name}</a></li>
+        <li><a class="internal" href="${urls.get_url(ctx, 'organismes', target._id)}">${target.name}</a></li>
             % endfor
     </ul>
         % endif
