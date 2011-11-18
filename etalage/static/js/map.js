@@ -47,11 +47,16 @@ etalage.map = (function ($) {
                 // Method getBounds fails when map center or zoom level are not yet set.
                 return;
             }
+            // When map is larger than 360 degrees, fix min and max longitude returned by getBounds().
+            var northEast = bounds.getNorthEast();
+            var southWest = bounds.getSouthWest();
+            var lowestX = leafletMap.layerPointToContainerPoint(leafletMap.latLngToLayerPoint(new L.LatLng(0, -180))).x;
+            var zeroX = leafletMap.layerPointToContainerPoint(leafletMap.latLngToLayerPoint(new L.LatLng(0, 0))).x;
+            // highestX = lowestX + 2 * (zeroX - lowestX) = 2 * zeroX - lowestX
+            var east = 2 * zeroX - lowestX > leafletMap.getSize().x ?  northEast.lng : 180;
+            var west = lowestX < 0 ? southWest.lng : -180;
             fetchPois({
-                bbox: [
-                    bounds.getSouthWest().lng, bounds.getSouthWest().lat,
-                    bounds.getNorthEast().lng, bounds.getNorthEast().lat
-                ].join(","),
+                bbox: [west, southWest.lat, east, northEast.lat].join(",")
             });
         });
 
