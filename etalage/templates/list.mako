@@ -25,6 +25,8 @@
 
 
 <%!
+import markupsafe
+
 from etalage import urls
 %>
 
@@ -89,7 +91,8 @@ from etalage import urls
             <thead>
                 <tr>
                     <th>Name</th>
-                    <th>Place</th>
+                    <th>Street Address</th>
+                    <th>Postal Code & Commune</th>
                 </tr>
             </thead>
             <tbody>
@@ -98,7 +101,8 @@ from etalage import urls
                     <td>
                         <a class="internal" href="${urls.get_url(ctx, 'organismes', poi._id)}">${poi.name}</a>
                     </td>
-                    <td>${poi.geo}</td>
+                    <td>${markupsafe.Markup(u'<br>').join((poi.street_address or u'').split(u'\n'))}</td>
+                    <td>${poi.postal_distribution_str or ''}</td>
                 </tr>
         % endfor
             </tbody>
