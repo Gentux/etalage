@@ -306,18 +306,16 @@ def pois_to_csv(pois, state = default_state):
 
 
 def postal_distribution_to_territory(postal_distribution, state = default_state):
-    from . import model
+    from . import ramdb
     if postal_distribution is None:
         return postal_distribution, None
-    found_territories = list(model.Territory.find({
-        'main_postal_distribution.postal_code': postal_distribution[0],
-        'main_postal_distribution.postal_routing': postal_distribution[1],
-        }).limit(2))
-    if not found_territories:
+    territory_id = ramdb.territories_id_by_postal_distribution.get(postal_distribution)
+    if territory_id is None:
         return postal_distribution, state._(u'Unknown territory')
-    if len(found_territories) > 1:
-        return postal_distribution, state._(u'Ambiguous territory')
-    return found_territories[0], None
+    territory = ramdb.territories_by_id.get(territory_id)
+    if territory is None:
+        return postal_distribution, state._(u'Unknown territory')
+    return territory, None
 
 
 def str_to_category_slug(value, state = default_state):

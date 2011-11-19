@@ -51,6 +51,7 @@ pois_id_by_competence_territory_id = None
 pois_id_by_territory_id = None
 pois_id_by_word = None
 territories_by_id = None
+territories_id_by_postal_distribution = None
 
 
 def iter_categories_slug(organism_types_only = False, tags_slug = None, term = None):
@@ -165,6 +166,7 @@ def load():
         pois_id_by_territory_id = {},
         pois_id_by_word = {},
         territories_by_id = {},
+        territories_id_by_postal_distribution = {},
         )
 
     for category_bson in model.db[conf['categories_collection']].find(None, ['code', 'tags_code', 'title']):
@@ -195,20 +197,24 @@ def load():
             'main_postal_distribution',
             'name',
             ]):
+        main_postal_distribution = territory_bson['main_postal_distribution']
         territory_class = model.Territory.kind_to_class(territory_bson['kind'])
         assert territory_class is not None, 'Invalid territory type name: {0}'.format(class_name)
+        territory_id = territory_bson['_id']
         territory = territory_class(
-            _id = territory_bson['_id'],
+            _id = territory_id,
             ancestors_id = territory_bson['ancestors_id'],
             code = territory_bson['code'],
             hinge_type = territory_bson.get('hinge_type'),
-            main_postal_distribution = territory_bson['main_postal_distribution'],
+            main_postal_distribution = main_postal_distribution,
             name = territory_bson['name'],
             )
-        new_indexes['territories_by_id'][territory_bson['_id']] = territory
-        territories_id_by_kind_code[(territory_bson['kind'], territory_bson['code'])] = territory_bson['_id']
+        new_indexes['territories_by_id'][territory_id] = territory
+        new_indexes['territories_id_by_postal_distribution'][(main_postal_distribution['postal_code'],
+            main_postal_distribution['postal_routing'])] = territory_id
+        territories_id_by_kind_code[(territory_bson['kind'], territory_bson['code'])] = territory_id
         if territory_bson['kind'] == u'Country' and territory_bson['code'] == u'FR':
-            new_indexes['france_id'] = territory_bson['_id']
+            new_indexes['france_id'] = territory_id
     assert new_indexes['france_id'] is not None
 
     for poi_bson in model.db[conf['pois_collection']].find({'metadata.deleted': {'$exists': False}}):
@@ -309,6 +315,8 @@ def load():
         pois_id_by_word = new_indexes['pois_id_by_word']
         global territories_by_id
         territories_by_id = new_indexes['territories_by_id']
+        global territories_id_by_postal_distribution
+        territories_id_by_postal_distribution = new_indexes['territories_id_by_postal_distribution']
 
     inited = True
     log.info('RAM-based database loaded in {0} seconds'.format(datetime.datetime.utcnow() - start_time))
