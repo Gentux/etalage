@@ -118,7 +118,7 @@ from etalage import urls
     error = errors.get('accept') if errors is not None else None
 %>\
                 <div class="clearfix${' error' if error else ''}">
-                    <label for="accept">${(u"Accept License")}</label>
+                    <label for="accept">${_(u"Accept License")}</label>
                     <div class="input">
                         <input id="accept" name="accept" type="checkbox" value="1">
                         <span class="help-inline">J'ai pris connaissance de la licence d'utilisation des données et

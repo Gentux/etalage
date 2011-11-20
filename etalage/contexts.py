@@ -27,7 +27,7 @@
 """Context loaded and saved in WSGI requests"""
 
 
-from gettext import NullTranslations, translation
+import gettext
 import os
 
 import webob
@@ -136,8 +136,9 @@ class Ctx(object):
 
     def lang_get(self):
         if self._lang is None:
-#            self._lang = self.req.accept_language.best_matches('en-US') if self.req is not None else []
-            self._lang = ['fr-FR']
+            # self._lang = self.req.accept_language.best_matches('en-US') if self.req is not None else []
+            # Note: Don't forget to add country-less language code when only a "language-COUNTRY" code is given.
+            self._lang = ['fr-FR', 'fr']
             if self.req is not None:
                 self.req.environ.setdefault('etalage', {})['_lang'] = self._lang
         return self._lang
@@ -191,17 +192,19 @@ class Ctx(object):
     def translator(self):
         """Get a valid translator object from one or several languages names."""
         if self._translator is None:
-            lang = self.lang
-            if not lang:
-                return NullTranslations()
-            if not isinstance(lang, list):
-                lang = [lang]
-            translator = translation(conf['package_name'], conf['i18n_dir'], languages = lang,
-                fallback = NullTranslations())
+            languages = self.lang
+            if not languages:
+                return gettext.NullTranslations()
+            if not isinstance(languages, list):
+                languages = [languages]
+            byriani_translator = gettext.translation('biryani', conf['biryani_i18n_dir'],
+                fallback = gettext.NullTranslations(), languages = languages)
+            translator = gettext.translation(conf['package_name'], conf['i18n_dir'], languages = languages,
+                fallback = byriani_translator)
             self._translator = translator
         return self._translator
 
 
 null_ctx = Ctx()
-null_ctx.lang = 'fr-FR'
+null_ctx.lang = ['fr-FR', 'fr']
 

@@ -134,7 +134,7 @@ def redirect(ctx, code = 302, location = None, **kw):
         template_path = kw.pop('template_path', '/http-error.mako')
         explanation = kw.pop('explanation', None)
         if explanation is None:
-            explanation = Markup(_('{0} <a href="{1}">{1}</a>.')).format(_(u"You'll be redirected to page"), location)
+            explanation = Markup(u'{0} <a href="{1}">{1}</a>.').format(_(u"You'll be redirected to page"), location)
         message = kw.pop('message', None)
         if message is None:
             message = errors_message.get(code)

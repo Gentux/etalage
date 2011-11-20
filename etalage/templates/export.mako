@@ -58,7 +58,7 @@ from etalage import urls
     error = errors.get('type_and_format') if errors is not None else None
 %>\
                 <div class="clearfix${' error' if error else ''}">
-                    <label>${(u"Export Type")}</label>
+                    <label>${_(u"Export Type")}</label>
                     <div class="input">
                         <ul class="inputs-list">
                             <li>

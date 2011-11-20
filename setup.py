@@ -62,6 +62,9 @@ setup(
     long_description = '\n'.join(doc_lines[2:]),
     url = 'http://gitorious.org/infos-pratiques/etalage',
 
+    data_files = [
+        ('share/locale/fr/LC_MESSAGES', ['etalage/i18n/fr/LC_MESSAGES/etalage.mo']),
+        ],
     entry_points = """
         [paste.app_factory]
         main = etalage.application:make_app
@@ -82,7 +85,7 @@ setup(
             ('**.py', 'python', None),
             ('templates/**.mako', 'mako', {'input_encoding': 'utf-8'}),
             ('static/**', 'ignore', None)]},
-    package_data = {'etalage': ['i18n/*/LC_MESSAGES/*.mo']},
+#    package_data = {'etalage': ['i18n/*/LC_MESSAGES/*.mo']},
     packages = find_packages(),
     paster_plugins = ['PasteScript'],
     setup_requires = ["PasteScript >= 1.6.3"],

@@ -4,6 +4,7 @@ data
 development-*local*.ini
 dist
 *.egg-info
+*.mo
 *.pyc
 *.pyo
 *~
