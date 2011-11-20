@@ -81,7 +81,7 @@ class Ctx(object):
     def blank_req(self, path, environ = None, base_url = None, headers = None, POST = None, **kw):
         env = environ.copy() if environ else {}
         etalage_env = env.setdefault('etalage', {})
-        for key in env_keys:
+        for key in self.env_keys:
             value = getattr(self, key)
             if value is not None:
                 etalage_env[key] = value
