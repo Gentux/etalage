@@ -27,7 +27,6 @@
 """Controllers for territories"""
 
 
-import datetime
 import itertools
 import logging
 import simplejson as json
@@ -35,7 +34,7 @@ import urlparse
 
 from biryani import strings
 
-from . import contexts, conf, conv, model, pois, ramdb, templates, urls, wsgihelpers
+from . import contexts, conv, ramdb, templates, urls, wsgihelpers
 
 
 log = logging.getLogger(__name__)

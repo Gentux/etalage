@@ -36,7 +36,7 @@ from biryani.baseconv import *
 from biryani.bsonconv import *
 from biryani.objectconv import *
 from biryani.frconv import *
-from biryani import states, strings
+from biryani import states
 from territoria2.conv import split_postal_distribution, str_to_postal_distribution
 
 

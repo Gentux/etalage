@@ -29,7 +29,6 @@
 
 import logging
 
-from biryani import strings
 from suq import monpyjama, representations
 
 from . import conv, ramdb

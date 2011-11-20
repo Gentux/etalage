@@ -32,8 +32,6 @@ import logging
 from biryani import strings
 from suq import representations
 
-from . import conv
-
 
 __all__ = ['Category']
 

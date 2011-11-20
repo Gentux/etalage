@@ -27,9 +27,6 @@
 """Generic toolbox for RAM-based indexes"""
 
 
-import sys
-
-
 def delete_remaining(indexes, remaining):
     for index_type, remaining_for_type in remaining.iteritems():
         if index_type == 'dict_of_sets':

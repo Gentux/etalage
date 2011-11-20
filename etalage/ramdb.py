@@ -27,7 +27,7 @@
 """RAM-based database"""
 
 
-import itertools
+import datetime
 import logging
 
 from biryani import strings
@@ -146,10 +146,6 @@ def iter_pois_id(add_competent = False, categories_slug = None, term = None, ter
 
 def load():
     """Load MongoDB data into RAM-based database."""
-    import datetime
-
-    import pymongo
-
     from . import model
 
     start_time = datetime.datetime.utcnow()

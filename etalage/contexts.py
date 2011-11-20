@@ -28,7 +28,6 @@
 
 
 import gettext
-import os
 
 import webob
 

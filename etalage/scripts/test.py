@@ -4,14 +4,12 @@
 
 import logging
 import os
-import pprint
 import sys
 import time
 
-from bson.objectid import ObjectId
 import paste.deploy
 
-from etalage import conv, environment, model, ramdb
+from etalage import conv, environment, ramdb
 
 
 app_name = os.path.splitext(os.path.basename(__file__))[0]
