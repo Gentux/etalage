@@ -33,7 +33,16 @@ from etalage import ramdb, urls
 
 
 <%def name="results()" filter="trim">
-    % if errors is None:
+    % if errors is not None:
+        % if 'territory' in errors:
+        <div class="alert-message error">
+            <p>
+                Pour accéder à l'annuaire, vous devez <strong>préciser une commune</strong> dans le formulaire
+                ci-dessus.
+            </p>
+        </div>
+        % endif
+    % else:
         <h2>Annuaire ${territory.name_with_hinge}</h2>
         % if not directory:
         <div>
@@ -42,15 +51,11 @@ from etalage import ramdb, urls
         % else:
         <div>
             % for category_slug, pois in sorted(directory.iteritems()):
+                % if pois:
 <%
-                category = ramdb.categories_by_slug[category_slug]
+                    category = ramdb.categories_by_slug[category_slug]
 %>\
             <h3>${category.name}</h3>
-                % if not pois:
-            <div>
-                <em>Aucun organisme trouvé.</em>
-            </div>
-                % else:
             <ul>
                     % for poi in pois:
                 <li>
@@ -59,8 +64,6 @@ from etalage import ramdb, urls
                     % endfor
             </ul>
                 % endif
-            <ul>
-            </ul>
             % endfor
         </div>
         % endif
