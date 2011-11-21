@@ -188,6 +188,7 @@ def load():
     for territory_bson in model.db[conf['territories_collection']].find(None, [
             'ancestors_id',
             'code',
+            'geo',
             'hinge_type',
             'kind',
             'main_postal_distribution',
@@ -201,6 +202,7 @@ def load():
             _id = territory_id,
             ancestors_id = territory_bson['ancestors_id'],
             code = territory_bson['code'],
+            geo = territory_bson.get('geo'),
             hinge_type = territory_bson.get('hinge_type'),
             main_postal_distribution = main_postal_distribution,
             name = territory_bson['name'],
