@@ -25,6 +25,8 @@
 
 
 <%!
+import markupsafe
+
 from etalage import ramdb, urls
 %>
 
@@ -60,6 +62,12 @@ from etalage import ramdb, urls
                     % for poi in pois:
                 <li>
                     <a class="internal" href="${urls.get_url(ctx, 'organismes', poi._id)}">${poi.name}</a>
+                        % if poi.street_address:
+                    <div>${markupsafe.Markup(u'<br>').join((poi.street_address).split(u'\n'))}</div>
+                        % endif
+                        % if poi.postal_distribution_str:
+                    <div>${poi.postal_distribution_str}</div>
+                        % endif
                 </li>
                     % endfor
             </ul>
