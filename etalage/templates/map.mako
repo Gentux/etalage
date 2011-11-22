@@ -25,7 +25,7 @@
 
 
 <%!
-from etalage import conf, conv
+from etalage import conf
 %>
 
 

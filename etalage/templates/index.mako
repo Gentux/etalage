@@ -25,7 +25,6 @@
 
 
 <%!
-import urllib
 import urlparse
 
 from etalage import conf, urls

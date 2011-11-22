@@ -25,10 +25,7 @@
 
 
 <%!
-import urlparse
-import uuid
-
-from etalage import conf, urls
+from etalage import conf
 %>
 
 

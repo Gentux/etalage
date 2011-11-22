@@ -44,7 +44,7 @@ $[address]
                 </text>
             </BalloonStyle>
         </Style>
-    % for poi in pager.items:
+    % for poi in pois_iter:
 <%
         if poi.geo is None:
             continue

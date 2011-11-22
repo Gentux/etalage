@@ -29,7 +29,6 @@
 
 from cStringIO import StringIO
 import csv
-import datetime
 import itertools
 
 from biryani.baseconv import *
@@ -106,7 +105,7 @@ def params_to_pois_directory_data(params, state = default_state):
         )(params, state = state)
 
 
-def params_to_pois_geojson(params, state = default_state):
+def params_to_pois_layer_iter(params, state = default_state):
     from . import ramdb
     data, errors = pipe(
         struct(
@@ -200,30 +199,7 @@ def params_to_pois_geojson(params, state = default_state):
                 if poi.geo is not None and bottom <= poi.geo[0] <= top and left <= poi.geo[1] <= right
                 ),
             20) # TODO
-    geojson = {
-        'type': 'FeatureCollection',
-        'properties': {
-            'context': params.get('context'), # Parameter given in request that is returned as is.
-            'date': unicode(datetime.datetime.utcnow())
-        },
-        'features': [
-            {
-                'geometry': {
-                    'type': 'Point',
-                    'coordinates': [poi.geo[1], poi.geo[0]],
-                    },
-                'type': 'Feature',
-                'properties': {
-                    'id': str(poi._id),
-                    'name': poi.name,
-                    'postal_distribution': poi.postal_distribution_str,
-                    'street_address': poi.street_address,
-                    },
-                }
-            for poi in pois_iter
-            ],
-        }
-    return geojson, None
+    return pois_iter, None
 
 
 def params_to_pois_list_data(params, state = default_state):
