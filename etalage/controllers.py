@@ -339,7 +339,13 @@ def geojson(req):
         )
     params.update(base_params)
 
-    geojson, errors = conv.params_to_pois_geojson(params, state = ctx)
+    pois_iter, errors = conv.pipe(
+        conv.params_to_pois_layer_data,
+        conv.layer_data_to_pois_iter,
+        )(params, state = ctx)
+    if errors is not None:
+        raise wsgihelpers.bad_request(ctx, explanation = ctx._('Error: {0}').format(errors))
+    geojson, errors = conv.params_and_pois_iter_to_geojson((params, pois_iter), state = ctx)
     if errors is not None:
         raise wsgihelpers.bad_request(ctx, explanation = ctx._('Error: {0}').format(errors))
 
@@ -553,7 +559,14 @@ def index_map(req):
         )
     params.update(base_params)
 
-    geojson, errors = conv.params_to_pois_geojson(params, state = ctx)
+    pois_iter, errors = conv.pipe(
+        conv.params_to_pois_layer_data,
+        conv.layer_data_to_pois_iter,
+        )(params, state = ctx)
+    if errors is None:
+        geojson, errors = conv.params_and_pois_iter_to_geojson((params, pois_iter), state = ctx)
+    else:
+        geojson = None
     return templates.render(ctx, '/map.mako',
         errors = errors,
         geojson = geojson,
@@ -672,7 +685,10 @@ def kml(req):
         )
     params.update(base_params)
 
-    pois_iter, errors = conv.params_to_pois_layer_iter(params, state = ctx)
+    pois_iter, errors = conv.pipe(
+        conv.params_to_pois_layer_data,
+        conv.layer_data_to_pois_iter,
+        )(params, state = ctx)
     if errors is not None:
         raise wsgihelpers.bad_request(ctx, explanation = ctx._('Error: {0}').format(errors))
 

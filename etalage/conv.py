@@ -44,6 +44,108 @@ default_state = states.default_state
 N_ = lambda message: message
 
 
+def layer_data_to_pois_iter(data, state = default_state):
+    from . import ramdb
+    if data is None:
+        return None, None
+    categories_slug = set(state.base_categories_slug or [])
+    if data.get('category') is not None:
+        categories_slug.add(data['category'].slug)
+    pois_id_iter = ramdb.iter_pois_id(categories_slug = categories_slug, presence_territory = data.get('territory'),
+        term = data.get('term'))
+    pois_by_id = ramdb.pois_by_id
+    if data.get('bounding_box') is None:
+        pois_iter = itertools.islice(
+            (
+                poi
+                for poi in (
+                    pois_by_id[poi_id]
+                    for poi_id in pois_id_iter
+                    )
+                if poi.geo is not None
+                ),
+            20) # TODO
+    else:
+        bottom = data['bounding_box']['bottom']
+        left = data['bounding_box']['left']
+        right = data['bounding_box']['right']
+        top = data['bounding_box']['top']
+        pois_iter = itertools.islice(
+            (
+                poi
+                for poi in (
+                    pois_by_id[poi_id]
+                    for poi_id in pois_id_iter
+                    )
+                if poi.geo is not None and bottom <= poi.geo[0] <= top and left <= poi.geo[1] <= right
+                ),
+            20) # TODO
+    return pois_iter, None
+
+
+def params_and_pois_iter_to_csv((params, pois_iter), state = default_state):
+    if pois_iter is None:
+        return None, None
+
+    columns_label = []
+    columns_ref = []
+    rows = []
+    for poi in pois_iter:
+        columns_index = {}
+        row = [None] * len(columns_ref)
+        for field_ref, field in poi.iter_csv_fields(state):
+            # Detect column number to use for field. Create a new column if needed.
+            column_ref = tuple(field_ref[:-1])
+            same_ref_columns_count = field_ref[-1]
+            if columns_ref.count(column_ref) == same_ref_columns_count:
+                column_index = len(columns_ref)
+                columns_label.append(field.label) # or u' - '.join(label for label in field_ref[::2])
+                columns_ref.append(column_ref)
+                row.append(None)
+            else:
+                column_index = columns_ref.index(column_ref, columns_index.get(column_ref, -1) + 1)
+            columns_index[column_ref] = column_index
+            row[column_index] = unicode(field.value).encode('utf-8')
+        rows.append(row)
+
+    csv_file = StringIO()
+    writer = csv.writer(csv_file, delimiter = ',', quotechar = '"', quoting = csv.QUOTE_MINIMAL)
+    writer.writerow([label.encode("utf-8") for label in columns_label])
+    for row in rows:
+        writer.writerow(row)
+    return csv_file.getvalue().decode('utf-8'), None
+
+
+def params_and_pois_iter_to_geojson((params, pois_iter), state = default_state):
+    if pois_iter is None:
+        return None, None
+
+    geojson = {
+        'type': 'FeatureCollection',
+        'properties': {
+            'context': params.get('context'), # Parameter given in request that is returned as is.
+            'date': unicode(datetime.datetime.utcnow())
+        },
+        'features': [
+            {
+                'geometry': {
+                    'type': 'Point',
+                    'coordinates': [poi.geo[1], poi.geo[0]],
+                    },
+                'type': 'Feature',
+                'properties': {
+                    'id': str(poi._id),
+                    'name': poi.name,
+                    'postal_distribution': poi.postal_distribution_str,
+                    'street_address': poi.street_address,
+                    },
+                }
+            for poi in pois_iter
+            ],
+        }
+    return geojson, None
+
+
 def params_to_pois_csv(params, state = default_state):
     from . import ramdb
     data, errors = struct(
@@ -71,11 +173,13 @@ def params_to_pois_csv(params, state = default_state):
         categories_slug.add(data['category'].slug)
     pois_id = list(ramdb.iter_pois_id(categories_slug = categories_slug, presence_territory = data.get('territory'),
         term = data.get('term')))
-    pois = [
+    if not pois_id:
+        return None, None
+    pois_iter = (
         ramdb.pois_by_id[poi_id]
         for poi_id in pois_id
-        ]
-    return pois_to_csv(pois, state = state)
+        )
+    return params_and_pois_iter_to_csv((params, pois_iter), state = state)
 
 
 def params_to_pois_directory_data(params, state = default_state):
@@ -106,40 +210,9 @@ def params_to_pois_directory_data(params, state = default_state):
         )(params, state = state)
 
 
-def params_to_pois_geojson(params, state = default_state):
-    pois_iter, errors = params_to_pois_layer_iter(params, state = state)
-    if errors is not None:
-        return pois_iter, errors
-
-    geojson = {
-        'type': 'FeatureCollection',
-        'properties': {
-            'context': params.get('context'), # Parameter given in request that is returned as is.
-            'date': unicode(datetime.datetime.utcnow())
-        },
-        'features': [
-            {
-                'geometry': {
-                    'type': 'Point',
-                    'coordinates': [poi.geo[1], poi.geo[0]],
-                    },
-                'type': 'Feature',
-                'properties': {
-                    'id': str(poi._id),
-                    'name': poi.name,
-                    'postal_distribution': poi.postal_distribution_str,
-                    'street_address': poi.street_address,
-                    },
-                }
-            for poi in pois_iter
-            ],
-        }
-    return geojson, None
-
-
-def params_to_pois_layer_iter(params, state = default_state):
+def params_to_pois_layer_data(params, state = default_state):
     from . import ramdb
-    data, errors = pipe(
+    return pipe(
         struct(
             dict(
                 bbox = pipe(
@@ -196,42 +269,6 @@ def params_to_pois_layer_iter(params, state = default_state):
             ),
         rename_item('bbox', 'bounding_box'),
         )(params, state = state)
-    if errors is not None:
-        return data, errors
-
-    categories_slug = set(state.base_categories_slug or [])
-    if data.get('category') is not None:
-        categories_slug.add(data['category'].slug)
-    pois_id_iter = ramdb.iter_pois_id(categories_slug = categories_slug, presence_territory = data.get('territory'),
-        term = data.get('term'))
-    pois_by_id = ramdb.pois_by_id
-    if data.get('bounding_box') is None:
-        pois_iter = itertools.islice(
-            (
-                poi
-                for poi in (
-                    pois_by_id[poi_id]
-                    for poi_id in pois_id_iter
-                    )
-                if poi.geo is not None
-                ),
-            20) # TODO
-    else:
-        bottom = data['bounding_box']['bottom']
-        left = data['bounding_box']['left']
-        right = data['bounding_box']['right']
-        top = data['bounding_box']['top']
-        pois_iter = itertools.islice(
-            (
-                poi
-                for poi in (
-                    pois_by_id[poi_id]
-                    for poi_id in pois_id_iter
-                    )
-                if poi.geo is not None and bottom <= poi.geo[0] <= top and left <= poi.geo[1] <= right
-                ),
-            20) # TODO
-    return pois_iter, None
 
 
 def params_to_pois_list_data(params, state = default_state):
@@ -261,39 +298,6 @@ def params_to_pois_list_data(params, state = default_state):
             ),
         rename_item('page', 'page_number'),
         )(params, state = state)
-
-
-def pois_to_csv(pois, state = default_state):
-    if not pois:
-        return None, None
-
-    columns_label = []
-    columns_ref = []
-    rows = []
-    for poi in pois:
-        columns_index = {}
-        row = [None] * len(columns_ref)
-        for field_ref, field in poi.iter_csv_fields(state):
-            # Detect column number to use for field. Create a new column if needed.
-            column_ref = tuple(field_ref[:-1])
-            same_ref_columns_count = field_ref[-1]
-            if columns_ref.count(column_ref) == same_ref_columns_count:
-                column_index = len(columns_ref)
-                columns_label.append(field.label) # or u' - '.join(label for label in field_ref[::2])
-                columns_ref.append(column_ref)
-                row.append(None)
-            else:
-                column_index = columns_ref.index(column_ref, columns_index.get(column_ref, -1) + 1)
-            columns_index[column_ref] = column_index
-            row[column_index] = unicode(field.value).encode('utf-8')
-        rows.append(row)
-
-    csv_file = StringIO()
-    writer = csv.writer(csv_file, delimiter = ',', quotechar = '"', quoting = csv.QUOTE_MINIMAL)
-    writer.writerow([label.encode("utf-8") for label in columns_label])
-    for row in rows:
-        writer.writerow(row)
-    return csv_file.getvalue().decode('utf-8'), None
 
 
 def postal_distribution_to_territory(postal_distribution, state = default_state):
