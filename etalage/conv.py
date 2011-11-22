@@ -107,7 +107,7 @@ def params_to_pois_directory_data(params, state = default_state):
 
 
 def params_to_pois_geojson(params, state = default_state):
-    pois_iter, errors = params_to_pois_layer_iter(params, state = ctx)
+    pois_iter, errors = params_to_pois_layer_iter(params, state = state)
     if errors is not None:
         return pois_iter, errors
 
