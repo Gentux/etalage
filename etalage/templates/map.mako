@@ -54,6 +54,9 @@ from etalage import conf
 <![endif]-->
     <script src="/js/map.js"></script>
     <script>
+    % if territory is not None and territory.geo is not None:
+etalage.map.center = new L.LatLng(${territory.geo[0] | n, js}, ${territory.geo[1] | n, js});
+    % endif
 etalage.map.geojsonParams = ${dict(
     (name, value)
     for name, value in params.iteritems()

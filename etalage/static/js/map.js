@@ -82,8 +82,8 @@ etalage.map = (function ($) {
         icon.shadowSize = new L.Point(51, 27);
         icon.shadowUrl = etalage.map.markersUrl + '/misc/shadow.png';
 
-        var geojson = new L.GeoJSON();
-        geojson.on('featureparse', function(e) {
+        var geojsonLayer = new L.GeoJSON();
+        geojsonLayer.on('featureparse', function(e) {
             var properties = e.properties;
             etalage.map.layerByPoiId[properties.id] = e.layer;
             e.layer.options.icon = icon;
@@ -109,8 +109,8 @@ etalage.map = (function ($) {
                 });
             });
         });
-        leafletMap.addLayer(geojson);
-        etalage.map.geojson = geojson;
+        leafletMap.addLayer(geojsonLayer);
+        etalage.map.geojsonLayer = geojsonLayer;
 
         if (window.PIE) {
             leafletMap.on('layeradd', function(e) {
@@ -123,7 +123,15 @@ etalage.map = (function ($) {
 
         etalage.map.layerByPoiId = {};
         setGeoJSONData(geojsonData);
-        leafletMap.fitBounds(etalage.map.getBBox(geojsonData.features));
+        var bbox = etalage.map.getBBox(geojsonData.features);
+        if (bbox._northEast && bbox._southWest) {
+            leafletMap.fitBounds(bbox);
+        } else {
+            // No POI found.
+            if (etalage.map.center !== null) {
+                leafletMap.setView(etalage.map.center, leafletMap.getMaxZoom() - 3);
+            }
+        }
     }
 
     function fetchPois(params) {
@@ -156,7 +164,7 @@ etalage.map = (function ($) {
     }
 
     function setGeoJSONData(data) {
-        var geojson = etalage.map.geojson;
+        var geojsonLayer = etalage.map.geojsonLayer;
         var layerByPoiId = etalage.map.layerByPoiId;
         // Retrieve existing POIs layers.
         var obsoleteLayerByPoiId = {};
@@ -173,14 +181,14 @@ etalage.map = (function ($) {
                 poiId = feature.properties.id;
                 delete obsoleteLayerByPoiId[poiId];
                 if (!(poiId in layerByPoiId)) {
-                    geojson.addGeoJSON(feature);
+                    geojsonLayer.addGeoJSON(feature);
                 }
             }
         }
         // Delete obsolete POIs layers.
         for (var poiId in obsoleteLayerByPoiId) {
             if (obsoleteLayerByPoiId.hasOwnProperty(poiId)) {
-                geojson.removeLayer(obsoleteLayerByPoiId[poiId]);
+                geojsonLayer.removeLayer(obsoleteLayerByPoiId[poiId]);
                 delete layerByPoiId[poiId];
             }
         }
@@ -215,8 +223,9 @@ etalage.map = (function ($) {
     }
 
     return {
+        center: null,
         createMap: createMap,
-        geojson: null,
+        geojsonLayer: null,
         geojsonParams: null,
         geojsonUrl: null,
         getBBox: getBBox,

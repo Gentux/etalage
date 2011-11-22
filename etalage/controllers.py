@@ -559,19 +559,20 @@ def index_map(req):
         )
     params.update(base_params)
 
-    pois_iter, errors = conv.pipe(
-        conv.params_to_pois_layer_data,
-        conv.layer_data_to_pois_iter,
-        )(params, state = ctx)
+    geojson = None
+    territory = None
+    data, errors = conv.params_to_pois_layer_data(params, state = ctx)
     if errors is None:
-        geojson, errors = conv.params_and_pois_iter_to_geojson((params, pois_iter), state = ctx)
-    else:
-        geojson = None
+        pois_iter, errors = conv.layer_data_to_pois_iter(data, state = ctx)
+        if errors is None:
+            geojson, errors = conv.params_and_pois_iter_to_geojson((params, pois_iter), state = ctx)
+        territory = data.get('territory')
     return templates.render(ctx, '/map.mako',
         errors = errors,
         geojson = geojson,
         mode = mode,
         params = params,
+        territory = territory,
         )
 
 
