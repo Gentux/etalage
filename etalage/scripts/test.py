@@ -54,11 +54,11 @@ def main(argv = None):
     print time.time() - start_time
     print
 
-    print "ramdb.iter_pois_id(territory_id = conv(u'92 HAUTS DE SEINE'))"
-    print "============================================================="
+    print "ramdb.iter_pois_id(presence_territory = conv(u'92 HAUTS DE SEINE'))"
+    print "==================================================================="
     print
     start_time = time.time()
-    print len(list(ramdb.iter_pois_id(territory_id = conv.check(conv.pipe(
+    print len(list(ramdb.iter_pois_id(presence_territory = conv.check(conv.pipe(
         conv.str_to_postal_distribution,
         conv.postal_distribution_to_territory,
         ))(u'92 HAUTS DE SEINE'))))
@@ -81,14 +81,14 @@ def main(argv = None):
     print time.time() - start_time
     print
 
-    print "ramdb.iter_pois_id(categories_slug = [u'mairie'], term = u'Mairie', territory_id = conv(u'92 HAUTS DE SEINE'))"
-    print "=============================================================================================================="
+    print "ramdb.iter_pois_id(categories_slug = [u'mairie'], presence_territory = conv(u'92 HAUTS DE SEINE'), term = u'Mairie')"
+    print "===================================================================================================================="
     print
     start_time = time.time()
     print len(list(ramdb.iter_pois_id(
         categories_slug = [u'mairie'],
         term = u'Mairie',
-        territory_id = conv.check(conv.pipe(
+        presence_territory = conv.check(conv.pipe(
             conv.str_to_postal_distribution,
             conv.postal_distribution_to_territory,
             ))(u'92 HAUTS DE SEINE'),

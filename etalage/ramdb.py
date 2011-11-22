@@ -84,39 +84,30 @@ def iter_categories_slug(organism_types_only = False, tags_slug = None, term = N
     return categories_slug
 
 
-def iter_pois_id(add_competent = False, categories_slug = None, term = None, territory_id = None):
+def iter_pois_id(categories_slug = None, competence_territory = None, presence_territory = None, term = None):
     intersected_sets = []
 
-    if territory_id is not None:
-        territory = territories_by_id[territory_id]
-        ancestors_id = territory.ancestors_id
+    if competence_territory is not None:
         territory_competent_pois_id = union_set(
             pois_id_by_competence_territory_id.get(ancestor_id)
-            for ancestor_id in (ancestors_id or [])
-            ) if ancestors_id is not None and add_competent else None
-    else:
-        territory_competent_pois_id = None
+            for ancestor_id in (competence_territory.ancestors_id or [])
+            )
+        if not territory_competent_pois_id:
+            return set()
+        intersected_sets.append(territory_competent_pois_id)
+
+    if presence_territory is not None:
+        territory_present_pois_id = pois_id_by_territory_id.get(presence_territory._id)
+        if not territory_present_pois_id:
+            return set()
+        intersected_sets.append(territory_present_pois_id)
 
     for category_slug in set(categories_slug or []):
         if category_slug is not None:
             category_pois_id = pois_id_by_category_slug.get(category_slug)
-            if category_pois_id:
-                if territory_competent_pois_id is None:
-                    competent_pois_id = category_pois_id
-                else:
-                    competent_pois_id = category_pois_id.intersection(territory_competent_pois_id)
-                intersected_sets.append(competent_pois_id)
-            else:
-                intersected_sets.append(set())
-
-#    if territory_id is not None:
-#        if add_competent:
-#            intersected_sets.append(union_set(
-#                pois_id_by_competence_territory_id.get(ancestor_id)
-#                for ancestor_id in (ancestors_id or set())
-#                ))
-#        else:
-#            intersected_sets.append(pois_id_by_territory_id.get(territory_id))
+            if not category_pois_id:
+                return set()
+            intersected_sets.append(category_pois_id)
 
     # We should filter on term *after* having looked for competent organizations. Otherwise, when no organization
     # matching term is found, the nearest organizations will be used even when there are competent organizations (that

@@ -34,7 +34,7 @@ import urlparse
 
 from biryani import strings
 
-from . import contexts, conv, ramdb, templates, urls, wsgihelpers
+from . import contexts, conv, pagers, ramdb, templates, urls, wsgihelpers
 
 
 log = logging.getLogger(__name__)
@@ -406,8 +406,8 @@ def index_directory(req):
         for directory_category_slug in directory_categories_slug:
             categories_slug = set(ctx.base_categories_slug or [])
             categories_slug.add(directory_category_slug)
-            pois_id = ramdb.iter_pois_id(add_competent = True, categories_slug = categories_slug,
-                term = data.get('term'), territory_id = territory._id)
+            pois_id = ramdb.iter_pois_id(categories_slug = categories_slug, competence_territory = territory,
+                term = data.get('term'))
             pois = set(
                 poi
                 for poi in (
@@ -516,7 +516,20 @@ def index_list(req):
         )
     params.update(base_params)
 
-    pager, errors = conv.params_to_pois_list_pager(params, state = ctx)
+    data, errors = conv.params_to_pois_list_data(params, state = ctx)
+    if errors is not None:
+        pager = None
+    else:
+        categories_slug = set(ctx.base_categories_slug or [])
+        if data.get('category') is not None:
+            categories_slug.add(data['category'].slug)
+        pois_id = list(ramdb.iter_pois_id(categories_slug = categories_slug, presence_territory = data.get('territory'),
+            term = data.get('term')))
+        pager = pagers.Pager(item_count = len(pois_id), page_number = data['page_number'])
+        pager.items = [
+            ramdb.pois_by_id[poi_id]
+            for poi_id in pois_id[pager.first_item_index:pager.last_item_number]
+            ]
     return templates.render(ctx, '/list.mako',
         errors = errors,
         mode = mode,

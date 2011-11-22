@@ -69,9 +69,8 @@ def params_to_pois_csv(params, state = default_state):
     categories_slug = set(state.base_categories_slug or [])
     if data.get('category') is not None:
         categories_slug.add(data['category'].slug)
-    territory_id = data['territory']._id if data.get('territory') is not None else None
-    pois_id = list(ramdb.iter_pois_id(categories_slug = categories_slug, term = data.get('term'),
-        territory_id = territory_id))
+    pois_id = list(ramdb.iter_pois_id(categories_slug = categories_slug, presence_territory = data.get('territory'),
+        term = data.get('term')))
     pois = [
         ramdb.pois_by_id[poi_id]
         for poi_id in pois_id
@@ -172,9 +171,8 @@ def params_to_pois_geojson(params, state = default_state):
     categories_slug = set(state.base_categories_slug or [])
     if data.get('category') is not None:
         categories_slug.add(data['category'].slug)
-    territory_id = data['territory']._id if data.get('territory') is not None else None
-    pois_id_iter = ramdb.iter_pois_id(categories_slug = categories_slug,
-        term = data.get('term'), territory_id = territory_id)
+    pois_id_iter = ramdb.iter_pois_id(categories_slug = categories_slug, presence_territory = data.get('territory'),
+        term = data.get('term'))
     pois_by_id = ramdb.pois_by_id
     if data.get('bounding_box') is None:
         pois_iter = itertools.islice(
@@ -228,9 +226,9 @@ def params_to_pois_geojson(params, state = default_state):
     return geojson, None
 
 
-def params_to_pois_list_pager(params, state = default_state):
-    from . import pagers, ramdb
-    data, errors = pipe(
+def params_to_pois_list_data(params, state = default_state):
+    from . import ramdb
+    return pipe(
         struct(
             dict(
                 category = pipe(
@@ -255,21 +253,6 @@ def params_to_pois_list_pager(params, state = default_state):
             ),
         rename_item('page', 'page_number'),
         )(params, state = state)
-    if errors is not None:
-        return data, errors
-
-    categories_slug = set(state.base_categories_slug or [])
-    if data.get('category') is not None:
-        categories_slug.add(data['category'].slug)
-    territory_id = data['territory']._id if data.get('territory') is not None else None
-    pois_id = list(ramdb.iter_pois_id(categories_slug = categories_slug, term = data.get('term'),
-        territory_id = territory_id))
-    pager = pagers.Pager(item_count = len(pois_id), page_number = data['page_number'])
-    pager.items = [
-        ramdb.pois_by_id[poi_id]
-        for poi_id in pois_id[pager.first_item_index:pager.last_item_number]
-        ]
-    return pager, None
 
 
 def pois_to_csv(pois, state = default_state):
