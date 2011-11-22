@@ -27,7 +27,6 @@
 """Controllers for territories"""
 
 
-import datetime
 import itertools
 import logging
 import simplejson as json
@@ -340,33 +339,9 @@ def geojson(req):
         )
     params.update(base_params)
 
-    pois_iter, errors = conv.params_to_pois_layer_iter(params, state = ctx)
+    geojson, errors = conv.params_to_pois_geojson(params, state = ctx)
     if errors is not None:
         raise wsgihelpers.bad_request(ctx, explanation = ctx._('Error: {0}').format(errors))
-
-    geojson = {
-        'type': 'FeatureCollection',
-        'properties': {
-            'context': params.get('context'), # Parameter given in request that is returned as is.
-            'date': unicode(datetime.datetime.utcnow())
-        },
-        'features': [
-            {
-                'geometry': {
-                    'type': 'Point',
-                    'coordinates': [poi.geo[1], poi.geo[0]],
-                    },
-                'type': 'Feature',
-                'properties': {
-                    'id': str(poi._id),
-                    'name': poi.name,
-                    'postal_distribution': poi.postal_distribution_str,
-                    'street_address': poi.street_address,
-                    },
-                }
-            for poi in pois_iter
-            ],
-        }
 
     response = json.dumps(
         geojson,

@@ -29,6 +29,7 @@
 
 from cStringIO import StringIO
 import csv
+import datetime
 import itertools
 
 from biryani.baseconv import *
@@ -103,6 +104,37 @@ def params_to_pois_directory_data(params, state = default_state):
             keep_empty = True,
             ),
         )(params, state = state)
+
+
+def params_to_pois_geojson(params, state = default_state):
+    pois_iter, errors = params_to_pois_layer_iter(params, state = ctx)
+    if errors is not None:
+        return pois_iter, errors
+
+    geojson = {
+        'type': 'FeatureCollection',
+        'properties': {
+            'context': params.get('context'), # Parameter given in request that is returned as is.
+            'date': unicode(datetime.datetime.utcnow())
+        },
+        'features': [
+            {
+                'geometry': {
+                    'type': 'Point',
+                    'coordinates': [poi.geo[1], poi.geo[0]],
+                    },
+                'type': 'Feature',
+                'properties': {
+                    'id': str(poi._id),
+                    'name': poi.name,
+                    'postal_distribution': poi.postal_distribution_str,
+                    'street_address': poi.street_address,
+                    },
+                }
+            for poi in pois_iter
+            ],
+        }
+    return geojson, None
 
 
 def params_to_pois_layer_iter(params, state = default_state):
