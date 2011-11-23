@@ -146,6 +146,7 @@ def csv(req):
     base_params = init_base(ctx, params)
     params = dict(
         category = params.get('category'),
+        filter = params.get('filter'),
         term = params.get('term'),
         territory = params.get('territory'),
         )
@@ -173,6 +174,7 @@ def export_directory_csv(req):
     params = dict(
         accept = params.get('accept'),
         category = params.get('category'),
+        filter = params.get('filter'),
         submit = params.get('submit'),
         term = params.get('term'),
         territory = params.get('territory'),
@@ -213,6 +215,7 @@ def export_directory_geojson(req):
     params = dict(
         accept = params.get('accept'),
         category = params.get('category'),
+        filter = params.get('filter'),
         submit = params.get('submit'),
         term = params.get('term'),
         territory = params.get('territory'),
@@ -253,6 +256,7 @@ def export_directory_kml(req):
     params = dict(
         accept = params.get('accept'),
         category = params.get('category'),
+        filter = params.get('filter'),
         submit = params.get('submit'),
         term = params.get('term'),
         territory = params.get('territory'),
@@ -293,6 +297,7 @@ def export_geographical_coverage_csv(req):
     params = dict(
         accept = params.get('accept'),
         category = params.get('category'),
+        filter = params.get('filter'),
         submit = params.get('submit'),
         term = params.get('term'),
         territory = params.get('territory'),
@@ -332,6 +337,7 @@ def geojson(req):
     params = dict(
         bbox = params.get('bbox'),
         category = params.get('category'),
+        filter = params.get('filter'),
         context = params.get('context'),
         jsonp = params.get('jsonp'),
         term = params.get('term'),
@@ -392,6 +398,7 @@ def index_directory(req):
     mode = u'annuaire'
     params = dict(
         category = params.get('category'),
+        filter = params.get('filter'),
         term = params.get('term'),
         territory = params.get('territory'),
         )
@@ -412,13 +419,24 @@ def index_directory(req):
         for directory_category_slug in directory_categories_slug:
             categories_slug = set(ctx.base_categories_slug or [])
             categories_slug.add(directory_category_slug)
-            pois_id = ramdb.iter_pois_id(categories_slug = categories_slug, competence_territory = territory,
+            filter = data.get('filter')
+            if filter == 'competence':
+                competence_territory = data.get('territory')
+                presence_territory = None
+            elif filter == 'presence':
+                competence_territory = None
+                presence_territory = data.get('territory')
+            else:
+                competence_territory = None
+                presence_territory = None
+            pois_id_iter = ramdb.iter_pois_id(categories_slug = categories_slug,
+                competence_territory = competence_territory, presence_territory = presence_territory,
                 term = data.get('term'))
             pois = set(
                 poi
                 for poi in (
                     ramdb.pois_by_id.get(poi_id)
-                    for poi_id in pois_id
+                    for poi_id in pois_id_iter
                     )
                 if poi is not None
                 )
@@ -453,6 +471,7 @@ def index_export(req):
     mode = u'export'
     params = dict(
         category = params.get('category'),
+        filter = params.get('filter'),
 # TODO
         submit = params.get('submit'),
         term = params.get('term'),
@@ -486,6 +505,7 @@ def index_export(req):
                 url_args = ('export', type, format)
                 url_kwargs = dict(
                     category = params['category'],
+                    filter = params['filter'],
                     term = params['term'],
                     territory = params['territory'],
                     )
@@ -516,6 +536,7 @@ def index_list(req):
     mode = u'liste'
     params = dict(
         category = params.get('category'),
+        filter = params.get('filter'),
         page = params.get('page'),
         term = params.get('term'),
         territory = params.get('territory'),
@@ -529,7 +550,18 @@ def index_list(req):
         categories_slug = set(ctx.base_categories_slug or [])
         if data.get('category') is not None:
             categories_slug.add(data['category'].slug)
-        pois_id = list(ramdb.iter_pois_id(categories_slug = categories_slug, presence_territory = data.get('territory'),
+        filter = data.get('filter')
+        if filter == 'competence':
+            competence_territory = data.get('territory')
+            presence_territory = None
+        elif filter == 'presence':
+            competence_territory = None
+            presence_territory = data.get('territory')
+        else:
+            competence_territory = None
+            presence_territory = None
+        pois_id = list(ramdb.iter_pois_id(categories_slug = categories_slug,
+            competence_territory = competence_territory, presence_territory = presence_territory,
             term = data.get('term')))
         pager = pagers.Pager(item_count = len(pois_id), page_number = data['page_number'])
         pager.items = [
@@ -554,6 +586,7 @@ def index_map(req):
     mode = u'carte'
     params = dict(
         category = params.get('category'),
+        filter = params.get('filter'),
         term = params.get('term'),
         territory = params.get('territory'),
         )
@@ -681,6 +714,7 @@ def kml(req):
         bbox = params.get('bbox'),
         category = params.get('category'),
         context = params.get('context'),
+        filter = params.get('filter'),
         term = params.get('term'),
         territory = params.get('territory'),
         )

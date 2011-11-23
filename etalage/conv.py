@@ -51,8 +51,18 @@ def layer_data_to_pois_iter(data, state = default_state):
     categories_slug = set(state.base_categories_slug or [])
     if data.get('category') is not None:
         categories_slug.add(data['category'].slug)
-    pois_id_iter = ramdb.iter_pois_id(categories_slug = categories_slug, presence_territory = data.get('territory'),
-        term = data.get('term'))
+    filter = data.get('filter')
+    if filter == 'competence':
+        competence_territory = data.get('territory')
+        presence_territory = None
+    elif filter == 'presence':
+        competence_territory = None
+        presence_territory = data.get('territory')
+    else:
+        competence_territory = None
+        presence_territory = None
+    pois_id_iter = ramdb.iter_pois_id(categories_slug = categories_slug, competence_territory = competence_territory,
+        presence_territory = presence_territory, term = data.get('term'))
     pois_by_id = ramdb.pois_by_id
     if data.get('bounding_box') is None:
         pois_iter = itertools.islice(
@@ -150,12 +160,8 @@ def params_to_pois_csv(params, state = default_state):
     from . import ramdb
     data, errors = struct(
         dict(
-            category = pipe(
-                str_to_category_slug,
-                function(lambda slug: ramdb.categories_by_slug[slug]),
-                test(lambda category: (category.tags_slug or set()).issuperset(state.category_tags_slug or []),
-                    error = N_(u'Missing required tags for category')),
-                ),
+            category = str_to_slug_to_category,
+            filter = str_to_filter,
             term = str_to_slug,
             territory = pipe(
                 str_to_postal_distribution,
@@ -171,8 +177,18 @@ def params_to_pois_csv(params, state = default_state):
     categories_slug = set(state.base_categories_slug or [])
     if data.get('category') is not None:
         categories_slug.add(data['category'].slug)
-    pois_id = list(ramdb.iter_pois_id(categories_slug = categories_slug, presence_territory = data.get('territory'),
-        term = data.get('term')))
+    filter = data.get('filter')
+    if filter == 'competence':
+        competence_territory = data.get('territory')
+        presence_territory = None
+    elif filter == 'presence':
+        competence_territory = None
+        presence_territory = data.get('territory')
+    else:
+        competence_territory = None
+        presence_territory = None
+    pois_id = list(ramdb.iter_pois_id(categories_slug = categories_slug, competence_territory = competence_territory,
+        presence_territory = presence_territory, term = data.get('term')))
     if not pois_id:
         return None, None
     pois_iter = (
@@ -184,29 +200,23 @@ def params_to_pois_csv(params, state = default_state):
 
 def params_to_pois_directory_data(params, state = default_state):
     from . import model, ramdb
-    return pipe(
-        struct(
-            dict(
-                category = pipe(
-                    str_to_category_slug,
-                    function(lambda slug: ramdb.categories_by_slug[slug]),
-                    test(lambda category: (category.tags_slug or set()).issuperset(state.category_tags_slug or []),
-                        error = N_(u'Missing required tags for category')),
-                    ),
-                term = str_to_slug,
-                territory = pipe(
-                    str_to_postal_distribution,
-                    postal_distribution_to_territory,
-                    test(lambda territory: territory.__class__.__name__ in model.communes_kinds,
-                        error = N_(u'In "directory" mode, territory must be a commune')),
-                    test(lambda territory: territory.geo is not None,
-                        error = N_(u'In "directory" mode, commune must have geographical coordinates')),
-                    test_exists(error = N_(u'In "directory" mode, a commune is required')),
-                    ),
+    return struct(
+        dict(
+            category = str_to_slug_to_category,
+            filter = str_to_filter,
+            term = str_to_slug,
+            territory = pipe(
+                str_to_postal_distribution,
+                postal_distribution_to_territory,
+                test(lambda territory: territory.__class__.__name__ in model.communes_kinds,
+                    error = N_(u'In "directory" mode, territory must be a commune')),
+                test(lambda territory: territory.geo is not None,
+                    error = N_(u'In "directory" mode, commune must have geographical coordinates')),
+                test_exists(error = N_(u'In "directory" mode, a commune is required')),
                 ),
-            default = 'ignore',
-            keep_empty = True,
             ),
+        default = 'ignore',
+        keep_empty = True,
         )(params, state = state)
 
 
@@ -252,12 +262,8 @@ def params_to_pois_layer_data(params, state = default_state):
                         top = bounding_box[3],
                         )),
                     ),
-                category = pipe(
-                    str_to_category_slug,
-                    function(lambda slug: ramdb.categories_by_slug[slug]),
-                    test(lambda category: (category.tags_slug or set()).issuperset(state.category_tags_slug or []),
-                        error = N_(u'Missing required tags for category')),
-                    ),
+                category = str_to_slug_to_category,
+                filter = str_to_filter,
                 term = str_to_slug,
                 territory = pipe(
                     str_to_postal_distribution,
@@ -276,12 +282,8 @@ def params_to_pois_list_data(params, state = default_state):
     return pipe(
         struct(
             dict(
-                category = pipe(
-                    str_to_category_slug,
-                    function(lambda slug: ramdb.categories_by_slug[slug]),
-                    test(lambda category: (category.tags_slug or set()).issuperset(state.category_tags_slug or []),
-                        error = N_(u'Missing required tags for category')),
-                    ),
+                category = str_to_slug_to_category,
+                filter = str_to_filter,
                 page = pipe(
                     str_to_int,
                     test_greater_or_equal(1),
@@ -318,5 +320,21 @@ def str_to_category_slug(value, state = default_state):
     return pipe(
         str_to_slug,
         test(lambda slug: slug in ramdb.categories_by_slug, error = N_(u'Invalid category')),
+        )(value, state = state)
+
+
+str_to_filter = pipe(
+    str_to_slug,
+    test_in(['competence', 'presence']),
+    )
+
+
+def str_to_slug_to_category(value, state = default_state):
+    from . import ramdb
+    return pipe(
+        str_to_category_slug,
+        function(lambda slug: ramdb.categories_by_slug[slug]),
+        test(lambda category: (category.tags_slug or set()).issuperset(state.category_tags_slug or []),
+            error = N_(u'Missing required tags for category')),
         )(value, state = state)
 

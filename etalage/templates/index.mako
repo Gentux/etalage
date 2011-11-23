@@ -40,7 +40,8 @@ from etalage import conf, urls
     % for name, value in sorted(params.iteritems()):
 <%
         if name in (
-                'category' if not ctx.hide_category else None, 
+                'category' if not ctx.hide_category else None,
+                'filter',
                 'page',
                 'term',
                 'territory',
@@ -90,6 +91,37 @@ from etalage import conf, urls
                     <label for="territory">Territoire</label>
                     <div class="input">
                         <input class="span6" id="territory" name="territory" type="text" value="${params['territory'] or ''}">
+    % if error:
+                        <span class="help-inline">${error}</span>
+    % endif
+                    </div>
+                </div>
+<%
+    error = errors.get('filter') if errors is not None else None
+%>\
+                <div class="clearfix${' error' if error else ''}">
+                    <label for="filter">Afficher</label>
+                    <div class="input">
+                        <ul class="inputs-list">
+                            <li>
+                                <label>
+                                    <input${' checked' if not params['filter'] else ''} name="filter" type="radio" value="">
+                                    <span>Tous les organismes</span>
+                                </label>
+                            </li>
+                            <li>
+                                <label>
+                                    <input${' checked' if params['filter'] == 'competence' else ''} name="filter" type="radio" value="competence">
+                                    <span>Uniquement les organismes compétents pour le territoire</span>
+                                </label>
+                            </li>
+                            <li>
+                                <label>
+                                    <input${' checked' if params['filter'] == 'presence' else ''} name="filter" type="radio" value="presence">
+                                    <span>Uniquement les organismes présents sur le territoire</span>
+                                </label>
+                            </li>
+                        </ul>
     % if error:
                         <span class="help-inline">${error}</span>
     % endif
