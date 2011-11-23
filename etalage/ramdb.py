@@ -42,7 +42,6 @@ categories_slug_by_pivot_code = None
 categories_slug_by_tag_slug = None
 categories_slug_by_word = None
 dogpile = SyncReaderDogpile(24 * 3600) # Cache timeout can be very high, because it is not needed. TODO: Remove it.
-france_id = None
 inited = False
 log = logging.getLogger(__name__)
 pois_by_id = None
@@ -146,7 +145,6 @@ def load():
         categories_slug_by_pivot_code = {},
         categories_slug_by_tag_slug = {},
         categories_slug_by_word = {},
-        france_id = None,
         pois_by_id = {},
         pois_id_by_category_slug = {},
         pois_id_by_competence_territory_id = {},
@@ -202,9 +200,6 @@ def load():
         new_indexes['territories_id_by_postal_distribution'][(main_postal_distribution['postal_code'],
             main_postal_distribution['postal_routing'])] = territory_id
         territories_id_by_kind_code[(territory_bson['kind'], territory_bson['code'])] = territory_id
-        if territory_bson['kind'] == u'Country' and territory_bson['code'] == u'FR':
-            new_indexes['france_id'] = territory_id
-    assert new_indexes['france_id'] is not None
 
     for poi_bson in model.db[conf['pois_collection']].find({'metadata.deleted': {'$exists': False}}):
         metadata = poi_bson['metadata']
@@ -249,10 +244,7 @@ def load():
                 break
         else:
             poi_competence_territories_id = None
-        if poi_competence_territories_id is None:
-            # A POI that has no explicit competence territories is considered to be competent everywhere.
-            new_indexes['pois_id_by_competence_territory_id'].setdefault(new_indexes['france_id'], set()).add(poi._id)
-        else:
+        if poi_competence_territories_id is not None:
             for territory_id in (poi_competence_territories_id or set()):
                 new_indexes['pois_id_by_competence_territory_id'].setdefault(territory_id, set()).add(poi._id)
 
@@ -290,8 +282,6 @@ def load():
         categories_slug_by_tag_slug = new_indexes['categories_slug_by_tag_slug']
         global categories_slug_by_word
         categories_slug_by_word = new_indexes['categories_slug_by_word']
-        global france_id
-        france_id = new_indexes['france_id']
         global pois_by_id
         pois_by_id = new_indexes['pois_by_id']
         global pois_id_by_category_slug
