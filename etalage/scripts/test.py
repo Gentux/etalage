@@ -25,7 +25,7 @@ def main(argv = None):
     environment.load_environment(site_conf.global_conf, site_conf.local_conf)
 
     print 'pois_by_id:', len(ramdb.pois_by_id)
-    print 'pois_id_by_territory_id:', len(ramdb.pois_id_by_territory_id)
+    print 'pois_id_by_presence_territory_id:', len(ramdb.pois_id_by_presence_territory_id)
     print 'pois_id_by_word:', len(ramdb.pois_id_by_word)
     print 'Categories:', len(ramdb.categories_by_slug)
     print 'pois_id_by_category_slug:', len(ramdb.pois_id_by_category_slug)

@@ -421,17 +421,19 @@ def index_directory(req):
             categories_slug = set(ctx.base_categories_slug or [])
             categories_slug.add(directory_category_slug)
             filter = data.get('filter')
+            territory = data.get('territory')
+            related_territories_id = ramdb.get_territory_related_territories_id(territory)
             if filter == 'competence':
-                competence_territory = data.get('territory')
+                competence_territories_id = related_territories_id
                 presence_territory = None
             elif filter == 'presence':
-                competence_territory = None
-                presence_territory = data.get('territory')
+                competence_territories_id = None
+                presence_territory = territory
             else:
-                competence_territory = None
+                competence_territories_id = None
                 presence_territory = None
             pois_id_iter = ramdb.iter_pois_id(categories_slug = categories_slug,
-                competence_territory = competence_territory, presence_territory = presence_territory,
+                competence_territories_id = competence_territories_id, presence_territory = presence_territory,
                 term = data.get('term'))
             pois = set(
                 poi
@@ -553,17 +555,18 @@ def index_list(req):
             categories_slug.add(data['category'].slug)
         filter = data.get('filter')
         territory = data.get('territory')
+        related_territories_id = ramdb.get_territory_related_territories_id(territory)
         if filter == 'competence':
-            competence_territory = territory
+            competence_territories_id = related_territories_id
             presence_territory = None
         elif filter == 'presence':
-            competence_territory = None
+            competence_territories_id = None
             presence_territory = territory
         else:
-            competence_territory = None
+            competence_territories_id = None
             presence_territory = None
         pois_id_iter = ramdb.iter_pois_id(categories_slug = categories_slug,
-            competence_territory = competence_territory, presence_territory = presence_territory,
+            competence_territories_id = competence_territories_id, presence_territory = presence_territory,
             term = data.get('term'))
         pois = set(
             poi
@@ -581,22 +584,27 @@ def index_list(req):
                 for poi in itertools.islice(pois, pager.first_item_index, pager.last_item_number)
                 ]
         else:
-            distance_and_poi_couples = sorted(
+            incompetence_distance_and_poi_triples = sorted(
                 (
                     (
+                        # is not competent
+                        poi.competence_territories_id is not None
+                            and related_territories_id.isdisjoint(poi.competence_territories_id),
+                        # distance
                         ((poi.geo[0] - territory.geo[0]) ** 2 + (poi.geo[1] - territory.geo[1]) ** 2)
                             if poi.geo is not None
                             else (sys.float_info.max, poi),
+                        # POI
                         poi,
                         )
                     for poi in pois
                     ),
-                key = lambda distance_and_poi: distance_and_poi[0],
+                key = lambda incompetence_distance_and_poi_triple: incompetence_distance_and_poi_triple[:2],
                 )
             pager.items = [
                 poi
-                for distance, poi in itertools.islice(distance_and_poi_couples, pager.first_item_index,
-                    pager.last_item_number)
+                for incompetence, distance, poi in itertools.islice(incompetence_distance_and_poi_triples,
+                    pager.first_item_index, pager.last_item_number)
                 ]
     return templates.render(ctx, '/list.mako',
         errors = errors,

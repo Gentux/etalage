@@ -128,6 +128,8 @@ class Field(representations.UserRepresentable):
 
 class Poi(representations.UserRepresentable, monpyjama.Wrapper):
     collection_name = 'pois'
+    # IDs of territories for which POI is fully competent. None when POI has no notion of competence territory
+    competence_territories_id = None
     fields = None
     geo = None
     name = None

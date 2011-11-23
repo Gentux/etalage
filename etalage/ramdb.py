@@ -47,9 +47,10 @@ log = logging.getLogger(__name__)
 pois_by_id = None
 pois_id_by_category_slug = None
 pois_id_by_competence_territory_id = None
-pois_id_by_territory_id = None
+pois_id_by_presence_territory_id = None
 pois_id_by_word = None
 territories_by_id = None
+territories_id_by_ancestor_id = None
 territories_id_by_postal_distribution = None
 
 
@@ -83,20 +84,20 @@ def iter_categories_slug(organism_types_only = False, tags_slug = None, term = N
     return categories_slug
 
 
-def iter_pois_id(categories_slug = None, competence_territory = None, presence_territory = None, term = None):
+def iter_pois_id(categories_slug = None, competence_territories_id = None, presence_territory = None, term = None):
     intersected_sets = []
 
-    if competence_territory is not None:
+    if competence_territories_id is not None:
         territory_competent_pois_id = union_set(
-            pois_id_by_competence_territory_id.get(ancestor_id)
-            for ancestor_id in (competence_territory.ancestors_id or [])
+            pois_id_by_competence_territory_id.get(competence_territory_id)
+            for competence_territory_id in competence_territories_id
             )
         if not territory_competent_pois_id:
             return set()
         intersected_sets.append(territory_competent_pois_id)
 
     if presence_territory is not None:
-        territory_present_pois_id = pois_id_by_territory_id.get(presence_territory._id)
+        territory_present_pois_id = pois_id_by_presence_territory_id.get(presence_territory._id)
         if not territory_present_pois_id:
             return set()
         intersected_sets.append(territory_present_pois_id)
@@ -134,6 +135,15 @@ def iter_pois_id(categories_slug = None, competence_territory = None, presence_t
     return found_pois_id
 
 
+def get_territory_related_territories_id(territory):
+    related_territories_id = set()
+    for sub_territory_id in territories_id_by_ancestor_id[territory._id]:
+        sub_territory = territories_by_id[sub_territory_id]
+        for ancestor_id in sub_territory.ancestors_id:
+            related_territories_id.add(ancestor_id)
+    return related_territories_id
+
+
 def load():
     """Load MongoDB data into RAM-based database."""
     from . import model
@@ -148,9 +158,10 @@ def load():
         pois_by_id = {},
         pois_id_by_category_slug = {},
         pois_id_by_competence_territory_id = {},
-        pois_id_by_territory_id = {},
+        pois_id_by_presence_territory_id = {},
         pois_id_by_word = {},
         territories_by_id = {},
+        territories_id_by_ancestor_id = {},
         territories_id_by_postal_distribution = {},
         )
 
@@ -197,6 +208,8 @@ def load():
             name = territory_bson['name'],
             )
         new_indexes['territories_by_id'][territory_id] = territory
+        for ancestor_id in territory_bson['ancestors_id']:
+            new_indexes['territories_id_by_ancestor_id'].setdefault(ancestor_id, set()).add(territory_id)
         new_indexes['territories_id_by_postal_distribution'][(main_postal_distribution['postal_code'],
             main_postal_distribution['postal_routing'])] = territory_id
         territories_id_by_kind_code[(territory_bson['kind'], territory_bson['code'])] = territory_id
@@ -237,16 +250,13 @@ def load():
 
         for i, territory_metadata in enumerate(metadata.get('territories') or []):
             if strings.slugify(territory_metadata['label']) == u'territoires-de-competence':
-                poi_competence_territories_id = set(
+                poi.competence_territories_id = set(
                     territories_id_by_kind_code[(territory_kind_code['kind'], territory_kind_code['code'])]
                     for territory_kind_code in poi_bson['territories'][i]
                     )
+                for territory_id in poi.competence_territories_id:
+                    new_indexes['pois_id_by_competence_territory_id'].setdefault(territory_id, set()).add(poi._id)
                 break
-        else:
-            poi_competence_territories_id = None
-        if poi_competence_territories_id is not None:
-            for territory_id in (poi_competence_territories_id or set()):
-                new_indexes['pois_id_by_competence_territory_id'].setdefault(territory_id, set()).add(poi._id)
 
         poi_territories_id = set(
             territories_id_by_kind_code[(territory_kind_code['kind'], territory_kind_code['code'])]
@@ -254,7 +264,7 @@ def load():
             if territory_kind_code['kind'] not in (u'Country', u'InternationalOrganization', u'MetropoleOfCountry')
             ) if metadata.get('territories-index') is not None else None
         for territory_id in (poi_territories_id or set()):
-            new_indexes['pois_id_by_territory_id'].setdefault(territory_id, set()).add(poi._id)
+            new_indexes['pois_id_by_presence_territory_id'].setdefault(territory_id, set()).add(poi._id)
 
         for word in strings.slugify(poi.name).split(u'-'):
             new_indexes['pois_id_by_word'].setdefault(word, set()).add(poi._id)
@@ -288,12 +298,14 @@ def load():
         pois_id_by_category_slug = new_indexes['pois_id_by_category_slug']
         global pois_id_by_competence_territory_id
         pois_id_by_competence_territory_id = new_indexes['pois_id_by_competence_territory_id']
-        global pois_id_by_territory_id
-        pois_id_by_territory_id = new_indexes['pois_id_by_territory_id']
+        global pois_id_by_presence_territory_id
+        pois_id_by_presence_territory_id = new_indexes['pois_id_by_presence_territory_id']
         global pois_id_by_word
         pois_id_by_word = new_indexes['pois_id_by_word']
         global territories_by_id
         territories_by_id = new_indexes['territories_by_id']
+        global territories_id_by_ancestor_id
+        territories_id_by_ancestor_id = new_indexes['territories_id_by_ancestor_id']
         global territories_id_by_postal_distribution
         territories_id_by_postal_distribution = new_indexes['territories_id_by_postal_distribution']
 

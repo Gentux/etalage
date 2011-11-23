@@ -52,17 +52,20 @@ def layer_data_to_pois_iter(data, state = default_state):
     if data.get('category') is not None:
         categories_slug.add(data['category'].slug)
     filter = data.get('filter')
+    territory = data.get('territory')
+    related_territories_id = ramdb.get_territory_related_territories_id(territory)
     if filter == 'competence':
-        competence_territory = data.get('territory')
+        competence_territories_id = related_territories_id
         presence_territory = None
     elif filter == 'presence':
-        competence_territory = None
-        presence_territory = data.get('territory')
+        competence_territories_id = None
+        presence_territory = territory
     else:
-        competence_territory = None
+        competence_territories_id = None
         presence_territory = None
-    pois_id_iter = ramdb.iter_pois_id(categories_slug = categories_slug, competence_territory = competence_territory,
-        presence_territory = presence_territory, term = data.get('term'))
+    pois_id_iter = ramdb.iter_pois_id(categories_slug = categories_slug,
+        competence_territories_id = competence_territories_id, presence_territory = presence_territory,
+        term = data.get('term'))
     pois_by_id = ramdb.pois_by_id
     if data.get('bounding_box') is None:
         pois_iter = itertools.islice(
@@ -178,17 +181,20 @@ def params_to_pois_csv(params, state = default_state):
     if data.get('category') is not None:
         categories_slug.add(data['category'].slug)
     filter = data.get('filter')
+    territory = data.get('territory')
+    related_territories_id = ramdb.get_territory_related_territories_id(territory)
     if filter == 'competence':
-        competence_territory = data.get('territory')
+        competence_territories_id = related_territories_id
         presence_territory = None
     elif filter == 'presence':
-        competence_territory = None
-        presence_territory = data.get('territory')
+        competence_territories_id = None
+        presence_territory = territory
     else:
-        competence_territory = None
+        competence_territories_id = None
         presence_territory = None
-    pois_id = list(ramdb.iter_pois_id(categories_slug = categories_slug, competence_territory = competence_territory,
-        presence_territory = presence_territory, term = data.get('term')))
+    pois_id = list(ramdb.iter_pois_id(categories_slug = categories_slug,
+        competence_territories_id = competence_territories_id, presence_territory = presence_territory,
+        term = data.get('term')))
     if not pois_id:
         return None, None
     pois_iter = (
