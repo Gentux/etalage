@@ -29,10 +29,11 @@
 
 import itertools
 import logging
-import simplejson as json
+import sys
 import urlparse
 
 from biryani import strings
+import simplejson as json
 
 from . import contexts, conv, pagers, ramdb, templates, urls, wsgihelpers
 
@@ -551,23 +552,52 @@ def index_list(req):
         if data.get('category') is not None:
             categories_slug.add(data['category'].slug)
         filter = data.get('filter')
+        territory = data.get('territory')
         if filter == 'competence':
-            competence_territory = data.get('territory')
+            competence_territory = territory
             presence_territory = None
         elif filter == 'presence':
             competence_territory = None
-            presence_territory = data.get('territory')
+            presence_territory = territory
         else:
             competence_territory = None
             presence_territory = None
-        pois_id = list(ramdb.iter_pois_id(categories_slug = categories_slug,
+        pois_id_iter = ramdb.iter_pois_id(categories_slug = categories_slug,
             competence_territory = competence_territory, presence_territory = presence_territory,
-            term = data.get('term')))
-        pager = pagers.Pager(item_count = len(pois_id), page_number = data['page_number'])
-        pager.items = [
-            ramdb.pois_by_id[poi_id]
-            for poi_id in pois_id[pager.first_item_index:pager.last_item_number]
-            ]
+            term = data.get('term'))
+        pois = set(
+            poi
+            for poi in (
+                ramdb.pois_by_id.get(poi_id)
+                for poi_id in pois_id_iter
+                )
+            if poi is not None
+            )
+        pager = pagers.Pager(item_count = len(pois), page_number = data['page_number'])
+        if territory is None:
+            pois = sorted(pois, key = lambda poi: poi.name) # TODO: Use slug instead of name.
+            pager.items = [
+                poi
+                for poi in itertools.islice(pois, pager.first_item_index, pager.last_item_number)
+                ]
+        else:
+            distance_and_poi_couples = sorted(
+                (
+                    (
+                        ((poi.geo[0] - territory.geo[0]) ** 2 + (poi.geo[1] - territory.geo[1]) ** 2)
+                            if poi.geo is not None
+                            else (sys.float_info.max, poi),
+                        poi,
+                        )
+                    for poi in pois
+                    ),
+                key = lambda distance_and_poi: distance_and_poi[0],
+                )
+            pager.items = [
+                poi
+                for distance, poi in itertools.islice(distance_and_poi_couples, pager.first_item_index,
+                    pager.last_item_number)
+                ]
     return templates.render(ctx, '/list.mako',
         errors = errors,
         mode = mode,
