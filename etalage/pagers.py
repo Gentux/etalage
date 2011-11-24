@@ -72,7 +72,7 @@ class Pager(representations.UserRepresentable):
 
         # Compute the number of the first and last available page.
         if self.item_count > 0:
-            self.page_count = ((self.item_count - 1) / self.page_max_size) + 1
+            self.page_count = ((self.item_count - 1) // self.page_max_size) + 1
             self.last_page_number = self.first_page_number + self.page_count - 1
 
             # Ensure that the requested page number is the range of valid pages.

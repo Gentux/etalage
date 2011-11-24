@@ -770,7 +770,7 @@ def kml(req):
     req.response.content_type = 'application/vnd.google-earth.kml+xml; charset=utf-8'
     return templates.render(ctx, '/kml.mako',
         params = params,
-        pois_iter = pois_iter,
+        pois_iter = itertools.islice(pois_iter, 20), # TODO
         )
 
 

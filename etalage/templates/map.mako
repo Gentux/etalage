@@ -42,6 +42,18 @@ from etalage import conf
 
 
 <%def name="results()" filter="trim">
+<%
+    properties = geojson['properties']
+%>\
+    % if properties['currentItemCount'] < properties['totalItems']:
+    <div class="alert-message warning">
+        <p>${properties['currentItemCount']} organismes affichés sur ${properties['totalItems']} trouvés</p>
+    </div>
+    % else:
+    <div class="alert-message success">
+        <p>${properties['totalItems']} organismes trouvés</p>
+    </div>
+    % endif
     <div id="map" style="height: 400px;"></div>
 </%def>
 

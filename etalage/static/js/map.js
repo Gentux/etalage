@@ -93,13 +93,13 @@ etalage.map = (function ($) {
                     href: '/organismes/' + properties.id
                 }).text(properties.name)
             );
-            if (properties.street_address) {
-                $.each(properties.street_address.split('\n'), function (index, line) {
+            if (properties.streetAddress) {
+                $.each(properties.streetAddress.split('\n'), function (index, line) {
                     $div.append($('<div/>').text(line));
                 });
             }
-            if (properties.postal_distribution) {
-                $div.append($('<div/>').text(properties.postal_distribution));
+            if (properties.postalDistribution) {
+                $div.append($('<div/>').text(properties.postalDistribution));
             }
             e.layer.bindPopup($div.html())
             .on('click', function (e) {

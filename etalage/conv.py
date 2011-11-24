@@ -68,31 +68,27 @@ def layer_data_to_pois_iter(data, state = default_state):
         term = data.get('term'))
     pois_by_id = ramdb.pois_by_id
     if data.get('bounding_box') is None:
-        pois_iter = itertools.islice(
-            (
-                poi
-                for poi in (
-                    pois_by_id[poi_id]
-                    for poi_id in pois_id_iter
-                    )
-                if poi.geo is not None
-                ),
-            20) # TODO
+        pois_iter = (
+            poi
+            for poi in (
+                pois_by_id[poi_id]
+                for poi_id in pois_id_iter
+                )
+            if poi.geo is not None
+            )
     else:
         bottom = data['bounding_box']['bottom']
         left = data['bounding_box']['left']
         right = data['bounding_box']['right']
         top = data['bounding_box']['top']
-        pois_iter = itertools.islice(
-            (
-                poi
-                for poi in (
-                    pois_by_id[poi_id]
-                    for poi_id in pois_id_iter
-                    )
-                if poi.geo is not None and bottom <= poi.geo[0] <= top and left <= poi.geo[1] <= right
-                ),
-            20) # TODO
+        pois_iter = (
+            poi
+            for poi in (
+                pois_by_id[poi_id]
+                for poi_id in pois_id_iter
+                )
+            if poi.geo is not None and bottom <= poi.geo[0] <= top and left <= poi.geo[1] <= right
+            )
     return pois_iter, None
 
 
@@ -133,27 +129,36 @@ def params_and_pois_iter_to_geojson((params, pois_iter), state = default_state):
     if pois_iter is None:
         return None, None
 
+    items_per_page = 20
+    pois = list(pois_iter)
+    featured_pois = pois[:items_per_page]
     geojson = {
         'type': 'FeatureCollection',
         'properties': {
             'context': params.get('context'), # Parameter given in request that is returned as is.
-            'date': unicode(datetime.datetime.utcnow())
+            'currentItemCount': len(featured_pois),
+            'date': unicode(datetime.datetime.utcnow()),
+            'itemsPerPage': items_per_page,
+            'pageIndex': 1,
+            'startIndex': 1,
+            'totalItems': len(pois),
+            'totalPages': (len(pois) - 1) // items_per_page + 1,
         },
         'features': [
             {
+                'type': 'Feature',
                 'geometry': {
                     'type': 'Point',
                     'coordinates': [poi.geo[1], poi.geo[0]],
                     },
-                'type': 'Feature',
                 'properties': {
                     'id': str(poi._id),
                     'name': poi.name,
-                    'postal_distribution': poi.postal_distribution_str,
-                    'street_address': poi.street_address,
+                    'postalDistribution': poi.postal_distribution_str,
+                    'streetAddress': poi.street_address,
                     },
                 }
-            for poi in pois_iter
+            for poi in featured_pois
             ],
         }
     return geojson, None
