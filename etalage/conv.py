@@ -53,7 +53,7 @@ def layer_data_to_pois_iter(data, state = default_state):
         categories_slug.add(data['category'].slug)
     filter = data.get('filter')
     territory = data.get('territory')
-    related_territories_id = ramdb.get_territory_related_territories_id(territory)
+    related_territories_id = ramdb.get_territory_related_territories_id(territory) if territory is not None else None
     if filter == 'competence':
         competence_territories_id = related_territories_id
         presence_territory = None
@@ -182,7 +182,7 @@ def params_to_pois_csv(params, state = default_state):
         categories_slug.add(data['category'].slug)
     filter = data.get('filter')
     territory = data.get('territory')
-    related_territories_id = ramdb.get_territory_related_territories_id(territory)
+    related_territories_id = ramdb.get_territory_related_territories_id(territory) if territory is not None else None
     if filter == 'competence':
         competence_territories_id = related_territories_id
         presence_territory = None
