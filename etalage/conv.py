@@ -44,8 +44,8 @@ default_state = states.default_state
 N_ = lambda message: message
 
 
-def layer_data_to_pois_iter(data, state = default_state):
-    from . import ramdb
+def layer_data_to_pois_pager(data, state = default_state):
+    from . import pagers, ramdb
     if data is None:
         return None, None
     categories_slug = set(state.base_categories_slug or [])
@@ -76,11 +76,26 @@ def layer_data_to_pois_iter(data, state = default_state):
                 )
             if poi.geo is not None
             )
+        distance_and_poi_couples = sorted(
+            (
+                (
+                    # distance from given territory
+                    ((poi.geo[0] - territory.geo[0]) ** 2 + (poi.geo[1] - territory.geo[1]) ** 2)
+                        if poi.geo is not None else (sys.float_info.max, poi),
+                    # POI
+                    poi,
+                    )
+                for poi in pois_iter
+                ),
+            key = lambda distance_and_poi_couple: distance_and_poi_couple[0],
+            )
     else:
         bottom = data['bounding_box']['bottom']
         left = data['bounding_box']['left']
         right = data['bounding_box']['right']
         top = data['bounding_box']['top']
+        center_latitude = (bottom + top) / 2.0
+        center_longitude = (left + right) / 2.0
         pois_iter = (
             poi
             for poi in (
@@ -89,7 +104,62 @@ def layer_data_to_pois_iter(data, state = default_state):
                 )
             if poi.geo is not None and bottom <= poi.geo[0] <= top and left <= poi.geo[1] <= right
             )
-    return pois_iter, None
+        distance_and_poi_couples = sorted(
+            (
+                (
+                    # distance from center of map
+                    ((poi.geo[0] - center_latitude) ** 2 + (poi.geo[1] - center_longitude) ** 2)
+                        if poi.geo is not None else (sys.float_info.max, poi),
+                    # POI
+                    poi,
+                    )
+                for poi in pois_iter
+                ),
+            key = lambda distance_and_poi_couple: distance_and_poi_couple[0],
+            )
+    pois = [
+        poi
+        for distance, poi in distance_and_poi_couples
+        ]
+    pager = pagers.Pager(item_count = len(pois), page_number = data['page_number'])
+    pager.items = pois[pager.first_item_index:pager.last_item_number]
+    return pager, None
+
+
+def params_and_pager_to_geojson((params, pager), state = default_state):
+    if pager is None:
+        return pager, None
+
+    geojson = {
+        'type': 'FeatureCollection',
+        'properties': {
+            'context': params.get('context'), # Parameter given in request that is returned as is.
+            'currentItemCount': pager.page_size,
+            'date': unicode(datetime.datetime.utcnow()),
+            'itemsPerPage': pager.page_max_size,
+            'pageIndex': pager.page_number,
+            'startIndex': pager.first_item_number,
+            'totalItems': pager.item_count,
+            'totalPages': pager.page_count,
+        },
+        'features': [
+            {
+                'type': 'Feature',
+                'geometry': {
+                    'type': 'Point',
+                    'coordinates': [poi.geo[1], poi.geo[0]],
+                    },
+                'properties': {
+                    'id': str(poi._id),
+                    'name': poi.name,
+                    'postalDistribution': poi.postal_distribution_str,
+                    'streetAddress': poi.street_address,
+                    },
+                }
+            for poi in pager.items
+            ],
+        }
+    return geojson, None
 
 
 def params_and_pois_iter_to_csv((params, pois_iter), state = default_state):
@@ -123,45 +193,6 @@ def params_and_pois_iter_to_csv((params, pois_iter), state = default_state):
     for row in rows:
         writer.writerow(row)
     return csv_file.getvalue().decode('utf-8'), None
-
-
-def params_and_pois_iter_to_geojson((params, pois_iter), state = default_state):
-    if pois_iter is None:
-        return None, None
-
-    items_per_page = 20
-    pois = list(pois_iter)
-    featured_pois = pois[:items_per_page]
-    geojson = {
-        'type': 'FeatureCollection',
-        'properties': {
-            'context': params.get('context'), # Parameter given in request that is returned as is.
-            'currentItemCount': len(featured_pois),
-            'date': unicode(datetime.datetime.utcnow()),
-            'itemsPerPage': items_per_page,
-            'pageIndex': 1,
-            'startIndex': 1,
-            'totalItems': len(pois),
-            'totalPages': (len(pois) - 1) // items_per_page + 1,
-        },
-        'features': [
-            {
-                'type': 'Feature',
-                'geometry': {
-                    'type': 'Point',
-                    'coordinates': [poi.geo[1], poi.geo[0]],
-                    },
-                'properties': {
-                    'id': str(poi._id),
-                    'name': poi.name,
-                    'postalDistribution': poi.postal_distribution_str,
-                    'streetAddress': poi.street_address,
-                    },
-                }
-            for poi in featured_pois
-            ],
-        }
-    return geojson, None
 
 
 def params_to_pois_csv(params, state = default_state):
@@ -269,6 +300,11 @@ def params_to_pois_layer_data(params, state = default_state):
                     ),
                 category = str_to_slug_to_category,
                 filter = str_to_filter,
+                page = pipe(
+                    str_to_int,
+                    test_greater_or_equal(1),
+                    default(1),
+                    ),
                 term = str_to_slug,
                 territory = str_to_postal_distribution_to_geolocated_territory,
                 ),
@@ -276,6 +312,7 @@ def params_to_pois_layer_data(params, state = default_state):
             keep_empty = True,
             ),
         rename_item('bbox', 'bounding_box'),
+        rename_item('page', 'page_number'),
         )(params, state = state)
 
 

@@ -341,18 +341,19 @@ def geojson(req):
         filter = params.get('filter'),
         context = params.get('context'),
         jsonp = params.get('jsonp'),
+        page = params.get('page'),
         term = params.get('term'),
         territory = params.get('territory'),
         )
     params.update(base_params)
 
-    pois_iter, errors = conv.pipe(
+    pager, errors = conv.pipe(
         conv.params_to_pois_layer_data,
-        conv.layer_data_to_pois_iter,
+        conv.layer_data_to_pois_pager,
         )(params, state = ctx)
     if errors is not None:
         raise wsgihelpers.bad_request(ctx, explanation = ctx._('Error: {0}').format(errors))
-    geojson, errors = conv.params_and_pois_iter_to_geojson((params, pois_iter), state = ctx)
+    geojson, errors = conv.params_and_pager_to_geojson((params, pager), state = ctx)
     if errors is not None:
         raise wsgihelpers.bad_request(ctx, explanation = ctx._('Error: {0}').format(errors))
 
@@ -627,6 +628,7 @@ def index_map(req):
     params = dict(
         category = params.get('category'),
         filter = params.get('filter'),
+        page = params.get('page'),
         term = params.get('term'),
         territory = params.get('territory'),
         )
@@ -636,14 +638,15 @@ def index_map(req):
     territory = None
     data, errors = conv.params_to_pois_layer_data(params, state = ctx)
     if errors is None:
-        pois_iter, errors = conv.layer_data_to_pois_iter(data, state = ctx)
+        pager, errors = conv.layer_data_to_pois_pager(data, state = ctx)
         if errors is None:
-            geojson, errors = conv.params_and_pois_iter_to_geojson((params, pois_iter), state = ctx)
+            geojson, errors = conv.params_and_pager_to_geojson((params, pager), state = ctx)
         territory = data.get('territory')
     return templates.render(ctx, '/map.mako',
         errors = errors,
         geojson = geojson,
         mode = mode,
+        pager = pager,
         params = params,
         territory = territory,
         )
@@ -755,22 +758,23 @@ def kml(req):
         category = params.get('category'),
         context = params.get('context'),
         filter = params.get('filter'),
+        page = params.get('page'),
         term = params.get('term'),
         territory = params.get('territory'),
         )
     params.update(base_params)
 
-    pois_iter, errors = conv.pipe(
+    pager, errors = conv.pipe(
         conv.params_to_pois_layer_data,
-        conv.layer_data_to_pois_iter,
+        conv.layer_data_to_pois_pager,
         )(params, state = ctx)
     if errors is not None:
         raise wsgihelpers.bad_request(ctx, explanation = ctx._('Error: {0}').format(errors))
 
     req.response.content_type = 'application/vnd.google-earth.kml+xml; charset=utf-8'
     return templates.render(ctx, '/kml.mako',
+        pager = pager,
         params = params,
-        pois_iter = itertools.islice(pois_iter, 20), # TODO
         )
 
 

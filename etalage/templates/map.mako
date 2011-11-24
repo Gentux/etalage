@@ -42,19 +42,22 @@ from etalage import conf
 
 
 <%def name="results()" filter="trim">
-<%
-    properties = geojson['properties']
-%>\
-    % if properties['currentItemCount'] < properties['totalItems']:
-    <div class="alert-message warning">
-        <p>${properties['currentItemCount']} organismes affichés sur ${properties['totalItems']} trouvés</p>
-    </div>
-    % else:
-    <div class="alert-message success">
-        <p>${properties['totalItems']} organismes trouvés</p>
-    </div>
+    % if errors is None:
+        % if pager.item_count == 0:
+        <div>
+            <em>Aucun organisme trouvé.</em>
+        </div>
+        % else:
+        <div>
+            Organismes ${pager.first_item_number} à ${pager.last_item_number} sur ${pager.item_count}
+        </div>
+        % endif
+        <%self:pagination/>
     % endif
     <div id="map" style="height: 400px;"></div>
+    % if errors is None:
+        <%self:pagination/>
+    % endif
 </%def>
 
 
