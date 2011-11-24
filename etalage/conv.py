@@ -76,19 +76,26 @@ def layer_data_to_pois_pager(data, state = default_state):
                 )
             if poi.geo is not None
             )
-        distance_and_poi_couples = sorted(
-            (
+        if territory is None:
+            pois = list(pois_iter)
+        else:
+            distance_and_poi_couples = sorted(
                 (
-                    # distance from given territory
-                    ((poi.geo[0] - territory.geo[0]) ** 2 + (poi.geo[1] - territory.geo[1]) ** 2)
-                        if poi.geo is not None else (sys.float_info.max, poi),
-                    # POI
-                    poi,
-                    )
-                for poi in pois_iter
-                ),
-            key = lambda distance_and_poi_couple: distance_and_poi_couple[0],
-            )
+                    (
+                        # distance from given territory
+                        ((poi.geo[0] - territory.geo[0]) ** 2 + (poi.geo[1] - territory.geo[1]) ** 2)
+                            if poi.geo is not None else (sys.float_info.max, poi),
+                        # POI
+                        poi,
+                        )
+                    for poi in pois_iter
+                    ),
+                key = lambda distance_and_poi_couple: distance_and_poi_couple[0],
+                )
+            pois = [
+                poi
+                for distance, poi in distance_and_poi_couples
+                ]
     else:
         bottom = data['bounding_box']['bottom']
         left = data['bounding_box']['left']
@@ -117,10 +124,10 @@ def layer_data_to_pois_pager(data, state = default_state):
                 ),
             key = lambda distance_and_poi_couple: distance_and_poi_couple[0],
             )
-    pois = [
-        poi
-        for distance, poi in distance_and_poi_couples
-        ]
+        pois = [
+            poi
+            for distance, poi in distance_and_poi_couples
+            ]
     pager = pagers.Pager(item_count = len(pois), page_number = data['page_number'])
     pager.items = pois[pager.first_item_index:pager.last_item_number]
     return pager, None
