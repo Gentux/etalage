@@ -58,10 +58,8 @@ def main(argv = None):
     print "==================================================================="
     print
     start_time = time.time()
-    print len(list(ramdb.iter_pois_id(presence_territory = conv.check(conv.pipe(
-        conv.str_to_postal_distribution,
-        conv.postal_distribution_to_territory,
-        ))(u'92 HAUTS DE SEINE'))))
+    print len(list(ramdb.iter_pois_id(presence_territory = conv.check(
+        conv.str_to_postal_distribution_to_geolocated_territory)(u'92 HAUTS DE SEINE'))))
     print time.time() - start_time
     print
 
@@ -88,10 +86,7 @@ def main(argv = None):
     print len(list(ramdb.iter_pois_id(
         categories_slug = [u'mairie'],
         term = u'Mairie',
-        presence_territory = conv.check(conv.pipe(
-            conv.str_to_postal_distribution,
-            conv.postal_distribution_to_territory,
-            ))(u'92 HAUTS DE SEINE'),
+        presence_territory = conv.check(conv.str_to_postal_distribution_to_geolocated_territory)(u'92 HAUTS DE SEINE'),
         )))
     print time.time() - start_time
     print

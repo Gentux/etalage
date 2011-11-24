@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Etalage 0.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2011-11-20 10:51+0100\n"
-"PO-Revision-Date: 2011-11-20 10:52+0100\n"
+"POT-Creation-Date: 2011-11-24 11:17+0100\n"
+"PO-Revision-Date: 2011-11-24 11:18+0100\n"
 "Last-Translator: Emmanuel Raviart <eraviart@easter-eggs.com>\n"
 "Language-Team: fr <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n > 1)\n"
@@ -17,86 +17,85 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 0.9.6\n"
 
-#: etalage/controllers.py:157
-#: etalage/controllers.py:345
-#: etalage/controllers.py:664
+#: etalage/controllers.py:158
+#: etalage/controllers.py:354
+#: etalage/controllers.py:357
+#: etalage/controllers.py:768
 msgid "Error: {0}"
 msgstr "Erreur : {0}"
 
-#: etalage/controllers.py:192
-#: etalage/controllers.py:232
-#: etalage/controllers.py:272
-#: etalage/controllers.py:313
+#: etalage/controllers.py:194
+#: etalage/controllers.py:235
+#: etalage/controllers.py:276
+#: etalage/controllers.py:318
 msgid "You must accept license to be allowed to download data."
 msgstr "Vous devez accepter la licence afin de pouvoir télécharger les données."
 
-#: etalage/controllers.py:195
+#: etalage/controllers.py:197
 msgid "Directory Export in CSV Format"
 msgstr "Export de l'annuaire au format CSV"
 
-#: etalage/controllers.py:235
+#: etalage/controllers.py:238
 msgid "Directory Export in GeoJSON Format"
 msgstr "Export de l'annuaire au format GeoJSON"
 
-#: etalage/controllers.py:275
+#: etalage/controllers.py:279
 msgid "Directory Export in KML Format"
 msgstr "Export de l'annuaire au format KML"
 
-#: etalage/controllers.py:317
+#: etalage/controllers.py:322
 msgid "Geographical Coverage Export in CSV Format"
 msgstr "Export de la couverture géographique au format CSV"
 
-#: etalage/controllers.py:495
+#: etalage/controllers.py:524
 msgid "Missing value"
 msgstr "Valeur manquante"
 
-#: etalage/controllers.py:566
+#: etalage/controllers.py:665
 msgid "Base Categories Error: {0}"
 msgstr "Erreur dans les catégories de base : {0}"
 
-#: etalage/controllers.py:572
+#: etalage/controllers.py:671
 msgid "Category Tags Error: {0}"
 msgstr "Erreur dans les étiquettes de catégories : {0}"
 
-#: etalage/controllers.py:642
+#: etalage/controllers.py:741
 msgid "Hide Category Error: {0}"
 msgstr "Erreur dans le masquage de catégorie : {0}"
 
-#: etalage/controllers.py:711
+#: etalage/controllers.py:815
 msgid "POI ID Error: {0}"
 msgstr "Erreur dans l'identifiant de point d'intérêt : {0}"
 
-#: etalage/controllers.py:714
+#: etalage/controllers.py:818
 msgid "POI {0} doesn't exist."
 msgstr "Le point d'intérêt {0} n'existe pas."
 
-#: etalage/conv.py:55
-#: etalage/conv.py:91
-#: etalage/conv.py:156
-#: etalage/conv.py:240
-msgid "Missing required tags for category"
-msgstr "Étiquettes obligatoires de catégorie manquantes"
-
-#: etalage/conv.py:98
+#: etalage/conv.py:214
 msgid "In \"directory\" mode, territory must be a commune"
 msgstr "En mode \"annuaire\", le territoire doit être une commune"
 
-#: etalage/conv.py:100
-msgid "In \"directory\" mode, commune must have geographical coordinates"
-msgstr "En mode \"annuaire\", la commune doit avoir des coordonnées géographiques"
-
-#: etalage/conv.py:101
+#: etalage/conv.py:215
 msgid "In \"directory\" mode, a commune is required"
 msgstr "En mode \"annuaire\", la commune est nécessaire"
 
-#: etalage/conv.py:314
-#: etalage/conv.py:317
+#: etalage/conv.py:305
+#: etalage/conv.py:308
 msgid "Unknown territory"
 msgstr "Territoire inconnu"
 
-#: etalage/conv.py:325
+#: etalage/conv.py:316
 msgid "Invalid category"
 msgstr "Catégorie incorrecte"
+
+#: etalage/conv.py:329
+#| msgid "In \"directory\" mode, commune must have geographical coordinates"
+msgid "Territory has no geographical coordinates"
+msgstr "Le territoire n'a pas de coordonnées géographiques"
+
+#: etalage/conv.py:339
+msgid "Missing required tags for category"
+msgstr "Étiquettes obligatoires de catégorie manquantes"
 
 #: etalage/urls.py:113
 msgid "Page not found: {0}"
@@ -142,7 +141,7 @@ msgstr "Vous allez être redirigé vers la page"
 msgid "Redirection in progress..."
 msgstr "Redirection en cours..."
 
-#: etalage/templates/directory.mako:72
+#: etalage/templates/directory.mako:83
 msgid "Directory"
 msgstr "Annuaire"
 
@@ -155,7 +154,6 @@ msgid "Accept license"
 msgstr "Accepter la licence"
 
 #: etalage/templates/export-accept-license.mako:121
-#| msgid "Accept license"
 msgid "Accept License"
 msgstr "Accepter la licence"
 
@@ -187,7 +185,7 @@ msgstr "Erreur"
 msgid "Redirection"
 msgstr "Redirection"
 
-#: etalage/templates/index.mako:100
+#: etalage/templates/index.mako:131
 msgid "Search"
 msgstr "Rechercher"
 
@@ -203,7 +201,7 @@ msgstr "Suivant"
 msgid "List"
 msgstr "Liste"
 
-#: etalage/templates/map.mako:75
+#: etalage/templates/map.mako:78
 msgid "Map"
 msgstr "Carte"
 

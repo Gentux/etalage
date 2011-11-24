@@ -166,10 +166,7 @@ def params_to_pois_csv(params, state = default_state):
             category = str_to_slug_to_category,
             filter = str_to_filter,
             term = str_to_slug,
-            territory = pipe(
-                str_to_postal_distribution,
-                postal_distribution_to_territory,
-                ),
+            territory = str_to_postal_distribution_to_geolocated_territory,
             ),
         default = 'ignore',
         keep_empty = True,
@@ -212,12 +209,9 @@ def params_to_pois_directory_data(params, state = default_state):
             filter = str_to_filter,
             term = str_to_slug,
             territory = pipe(
-                str_to_postal_distribution,
-                postal_distribution_to_territory,
+                str_to_postal_distribution_to_geolocated_territory,
                 test(lambda territory: territory.__class__.__name__ in model.communes_kinds,
                     error = N_(u'In "directory" mode, territory must be a commune')),
-                test(lambda territory: territory.geo is not None,
-                    error = N_(u'In "directory" mode, commune must have geographical coordinates')),
                 test_exists(error = N_(u'In "directory" mode, a commune is required')),
                 ),
             ),
@@ -271,10 +265,7 @@ def params_to_pois_layer_data(params, state = default_state):
                 category = str_to_slug_to_category,
                 filter = str_to_filter,
                 term = str_to_slug,
-                territory = pipe(
-                    str_to_postal_distribution,
-                    postal_distribution_to_territory,
-                    ),
+                territory = str_to_postal_distribution_to_geolocated_territory,
                 ),
             default = 'ignore',
             keep_empty = True,
@@ -296,10 +287,7 @@ def params_to_pois_list_data(params, state = default_state):
                     default(1),
                     ),
                 term = str_to_slug,
-                territory = pipe(
-                    str_to_postal_distribution,
-                    postal_distribution_to_territory,
-                    ),
+                territory = str_to_postal_distribution_to_geolocated_territory,
                 ),
             default = 'ignore',
             keep_empty = True,
@@ -332,6 +320,13 @@ def str_to_category_slug(value, state = default_state):
 str_to_filter = pipe(
     str_to_slug,
     test_in(['competence', 'presence']),
+    )
+
+
+str_to_postal_distribution_to_geolocated_territory = pipe(
+    str_to_postal_distribution,
+    postal_distribution_to_territory,
+    test(lambda territory: territory.geo is not None, error = N_(u'Territory has no geographical coordinates')),
     )
 
 
