@@ -34,10 +34,21 @@ from suq import monpyjama, representations
 from . import conv, ramdb
 
 
-__all__ = ['Field', 'Poi']
+__all__ = ['Cluster', 'Field', 'Poi']
 
 
 log = logging.getLogger(__name__)
+
+
+class Cluster(representations.UserRepresentable):
+    bottom = None # South latitude of rectangle enclosing all POIs of cluster
+    count = None # Number of POIs in cluster
+    left = None # West longitude of rectangle enclosing all POIs of cluster
+    main_latitude = None # = copy of main_poi.geo[0] for quick access
+    main_longitude = None # = copy of main_poi.geo[1] for quick access
+    main_poi = None
+    right = None # East longitude of rectangle enclosing all POIs of cluster
+    top = None # North latitude of rectangle enclosing all POIs of cluster
 
 
 class Field(representations.UserRepresentable):

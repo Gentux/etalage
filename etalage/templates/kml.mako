@@ -44,10 +44,9 @@ $[address]
                 </text>
             </BalloonStyle>
         </Style>
-    % for poi in pager.items:
+    % for cluster in clusters:
 <%
-        if poi.geo is None:
-            continue
+        poi = cluster.main_poi
 %>\
         <Placemark id="${poi._id}">
             <name>${poi.name}</name>

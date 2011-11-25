@@ -44,8 +44,8 @@ default_state = states.default_state
 N_ = lambda message: message
 
 
-def layer_data_to_pois_pager(data, state = default_state):
-    from . import pagers, ramdb
+def layer_data_to_clusters(data, state = default_state):
+    from . import model, ramdb
     if data is None:
         return None, None
     categories_slug = set(state.base_categories_slug or [])
@@ -77,21 +77,55 @@ def layer_data_to_pois_pager(data, state = default_state):
             if poi.geo is not None
             )
         if territory is None:
-            pois = list(pois_iter)
+            bottom = None
+            left = None
+            right = None
+            top = None
+            pois = []
+            for poi in pois_iter:
+                poi_latitude = poi.geo[0]
+                poi_longitude = poi.geo[1]
+                if bottom is None:
+                    bottom = poi_latitude
+                    left = poi_longitude
+                    right = poi_longitude
+                    top = poi_latitude
+                else:
+                    if poi_latitude < bottom:
+                        bottom = poi_latitude
+                    elif poi_latitude > top:
+                        top = poi_latitude
+                    if poi_longitude < left:
+                        left = poi_longitude
+                    elif poi_longitude > right:
+                        right = poi_longitude
+                pois.append(poi)
         else:
-            distance_and_poi_couples = sorted(
-                (
-                    (
-                        # distance from given territory
-                        ((poi.geo[0] - territory.geo[0]) ** 2 + (poi.geo[1] - territory.geo[1]) ** 2)
-                            if poi.geo is not None else (sys.float_info.max, poi),
-                        # POI
-                        poi,
-                        )
-                    for poi in pois_iter
-                    ),
-                key = lambda distance_and_poi_couple: distance_and_poi_couple[0],
-                )
+            center_latitude = territory.geo[0]
+            center_longitude = territory.geo[1]
+            bottom = center_latitude
+            left = center_longitude
+            right = center_longitude
+            top = center_latitude
+            distance_and_poi_couples = []
+            for poi in pois_iter:
+                poi_latitude = poi.geo[0]
+                if poi_latitude < bottom:
+                    bottom = poi_latitude
+                elif poi_latitude > top:
+                    top = poi_latitude
+                poi_longitude = poi.geo[1]
+                if poi_longitude < left:
+                    left = poi_longitude
+                elif poi_longitude > right:
+                    right = poi_longitude
+                distance_and_poi_couples.append((
+                    # distance from given territory
+                    ((poi_latitude - center_latitude) ** 2 + (poi_longitude - center_longitude) ** 2),
+                    # POI
+                    poi,
+                    ))
+            distance_and_poi_couples.sort(key = lambda distance_and_poi_couple: distance_and_poi_couple[0])
             pois = [
                 poi
                 for distance, poi in distance_and_poi_couples
@@ -115,8 +149,7 @@ def layer_data_to_pois_pager(data, state = default_state):
             (
                 (
                     # distance from center of map
-                    ((poi.geo[0] - center_latitude) ** 2 + (poi.geo[1] - center_longitude) ** 2)
-                        if poi.geo is not None else (sys.float_info.max, poi),
+                    ((poi.geo[0] - center_latitude) ** 2 + (poi.geo[1] - center_longitude) ** 2),
                     # POI
                     poi,
                     )
@@ -128,42 +161,67 @@ def layer_data_to_pois_pager(data, state = default_state):
             poi
             for distance, poi in distance_and_poi_couples
             ]
-    pager = pagers.Pager(item_count = len(pois), page_number = data['page_number'])
-    pager.items = pois[pager.first_item_index:pager.last_item_number]
-    return pager, None
+    horizontal_iota = (right - left) / 16.0
+    vertical_iota = (top - bottom) / 12.0
+    clusters = []
+    for poi in pois:
+        poi_latitude = poi.geo[0]
+        poi_longitude = poi.geo[1]
+        for cluster in clusters:
+            if abs(poi_latitude - cluster.main_latitude) <= vertical_iota \
+                    and abs(poi_longitude - cluster.main_longitude) <= horizontal_iota:
+                cluster.count += 1
+                if poi_latitude < cluster.bottom:
+                    cluster.bottom = poi_latitude
+                elif poi_latitude > cluster.top:
+                    cluster.top = poi_latitude
+                if poi_longitude < cluster.left:
+                    cluster.left = poi_longitude
+                elif poi_longitude > cluster.right:
+                    cluster.right = poi_longitude
+                break
+        else:
+            cluster = model.Cluster()
+            cluster.count = 1
+            cluster.bottom = cluster.top = cluster.main_latitude = poi_latitude
+            cluster.left = cluster.right = cluster.main_longitude = poi_longitude
+            cluster.main_poi = poi
+            clusters.append(cluster)
+    return clusters, None
 
 
-def params_and_pager_to_geojson((params, pager), state = default_state):
-    if pager is None:
-        return pager, None
+def params_and_clusters_to_geojson((params, clusters), state = default_state):
+    if clusters is None:
+        return clusters, None
 
     geojson = {
         'type': 'FeatureCollection',
         'properties': {
             'context': params.get('context'), # Parameter given in request that is returned as is.
-            'currentItemCount': pager.page_size,
             'date': unicode(datetime.datetime.utcnow()),
-            'itemsPerPage': pager.page_max_size,
-            'pageIndex': pager.page_number,
-            'startIndex': pager.first_item_number,
-            'totalItems': pager.item_count,
-            'totalPages': pager.page_count,
         },
         'features': [
             {
                 'type': 'Feature',
+                'bbox': [
+                    cluster.left,
+                    cluster.bottom,
+                    cluster.right,
+                    cluster.top,
+                    ] if cluster.count > 1 else None,
                 'geometry': {
                     'type': 'Point',
-                    'coordinates': [poi.geo[1], poi.geo[0]],
+                    'coordinates': [cluster.main_longitude, cluster.main_latitude],
                     },
                 'properties': {
-                    'id': str(poi._id),
-                    'name': poi.name,
-                    'postalDistribution': poi.postal_distribution_str,
-                    'streetAddress': poi.street_address,
+                    'count': cluster.count,
+                    'id': str(cluster.main_poi._id),
+                    'name': cluster.main_poi.name,
+                    'postalDistribution': cluster.main_poi.postal_distribution_str,
+                    'streetAddress': cluster.main_poi.street_address,
                     },
                 }
-            for poi in pager.items
+            for cluster in clusters
             ],
         }
     return geojson, None

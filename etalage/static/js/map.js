@@ -36,7 +36,8 @@ etalage.map = (function ($) {
             scrollWheelZoom: false
         }).addLayer(
             new L.TileLayer(etalage.map.tileUrlTemplate, {
-                attribution: 'Fond de carte <a href="http://openstreetmap.org/" rel="external">OpenStreetMap</a>',
+                attribution: 'Données cartographiques CC-By-SA'
+                    + ' <a href="http://openstreetmap.org/" rel="external">OpenStreetMap</a>',
                 maxZoom: 18
             })
         );
@@ -70,8 +71,6 @@ etalage.map = (function ($) {
         }
 
         // Text settings
-        leafletMap.attributionControl.setPrefix(
-            'Carte par <a href="http://leaflet.cloudmade.com" rel="external">Leaflet</a>');
         $('.leaflet-control-zoom-in').attr('title', 'Zoomer');
         $('.leaflet-control-zoom-out').attr('title', 'Dézoomer');
 
@@ -100,6 +99,12 @@ etalage.map = (function ($) {
             }
             if (properties.postalDistribution) {
                 $div.append($('<div/>').text(properties.postalDistribution));
+            }
+            if (properties.count == 2) {
+                $div.append($('<div/>').append($('<em/>').text('Ainsi qu\'un autre organisme à proximité')));
+            } else if (properties.count > 2) {
+                $div.append($('<div/>').append($('<em/>').text('Ainsi que ' + (properties.count - 1)
+                    + ' autres organismes à proximité')));
             }
             e.layer.bindPopup($div.html())
             .on('click', function (e) {
@@ -201,7 +206,8 @@ etalage.map = (function ($) {
             scrollWheelZoom: false
         }).addLayer(
             new L.TileLayer(etalage.map.tileUrlTemplate, {
-                attribution: 'Fond de carte <a href="http://openstreetmap.org/" rel="external">OpenStreetMap</a>',
+                attribution: 'Données cartographiques CC-By-SA'
+                    + ' <a href="http://openstreetmap.org/" rel="external">OpenStreetMap</a>',
                 maxZoom: 18
             })
         );

@@ -347,13 +347,13 @@ def geojson(req):
         )
     params.update(base_params)
 
-    pager, errors = conv.pipe(
+    clusters, errors = conv.pipe(
         conv.params_to_pois_layer_data,
-        conv.layer_data_to_pois_pager,
+        conv.layer_data_to_clusters,
         )(params, state = ctx)
     if errors is not None:
         raise wsgihelpers.bad_request(ctx, explanation = ctx._('Error: {0}').format(errors))
-    geojson, errors = conv.params_and_pager_to_geojson((params, pager), state = ctx)
+    geojson, errors = conv.params_and_clusters_to_geojson((params, clusters), state = ctx)
     if errors is not None:
         raise wsgihelpers.bad_request(ctx, explanation = ctx._('Error: {0}').format(errors))
 
@@ -638,15 +638,14 @@ def index_map(req):
     territory = None
     data, errors = conv.params_to_pois_layer_data(params, state = ctx)
     if errors is None:
-        pager, errors = conv.layer_data_to_pois_pager(data, state = ctx)
+        clusters, errors = conv.layer_data_to_clusters(data, state = ctx)
         if errors is None:
-            geojson, errors = conv.params_and_pager_to_geojson((params, pager), state = ctx)
+            geojson, errors = conv.params_and_clusters_to_geojson((params, clusters), state = ctx)
         territory = data.get('territory')
     return templates.render(ctx, '/map.mako',
         errors = errors,
         geojson = geojson,
         mode = mode,
-        pager = pager,
         params = params,
         territory = territory,
         )
@@ -764,16 +763,16 @@ def kml(req):
         )
     params.update(base_params)
 
-    pager, errors = conv.pipe(
+    clusters, errors = conv.pipe(
         conv.params_to_pois_layer_data,
-        conv.layer_data_to_pois_pager,
+        conv.layer_data_to_clusters,
         )(params, state = ctx)
     if errors is not None:
         raise wsgihelpers.bad_request(ctx, explanation = ctx._('Error: {0}').format(errors))
 
     req.response.content_type = 'application/vnd.google-earth.kml+xml; charset=utf-8'
     return templates.render(ctx, '/kml.mako',
-        pager = pager,
+        clusters = clusters,
         params = params,
         )
 

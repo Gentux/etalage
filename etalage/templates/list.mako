@@ -34,6 +34,47 @@ from etalage import urls
 <%inherit file="/index.mako"/>
 
 
+<%def name="pagination()" filter="trim">
+    % if pager.page_count > 1:
+            <div class="pagination">
+                <ul>
+<%
+        url_args = dict(
+            (name, value)
+            for name, value in params.iteritems()
+            if name != 'page' and value is not None
+            )
+%>\
+                    <li class="prev${' disabled' if pager.page_number <= 1 else ''}">
+                        <a class="internal" href="${urls.get_url(ctx, mode, page = pager.page_number - 1, **url_args
+                                )}">&larr; ${_(u"Previous")}</a>
+                    </li>
+        % for page_number in range(max(pager.page_number - 5, 1), pager.page_number):
+                    <li>
+                        <a class="internal" href="${urls.get_url(ctx, mode, class_ = 'page', page = page_number,
+                                **url_args)}">${page_number}</a>
+                    </li>
+        % endfor
+                    <li class="active">
+                        <a class="internal" href="${urls.get_url(ctx, mode, page = pager.page_number, **url_args
+                                )}">${pager.page_number}</a>
+                    </li>
+        % for page_number in range(pager.page_number + 1, min(pager.page_number + 5, pager.last_page_number) + 1):
+                    <li>
+                        <a class="internal" href="${urls.get_url(ctx, mode, class_ = 'page', page = page_number,
+                                **url_args)}">${page_number}</a>
+                    </li>
+        % endfor
+                    <li class="next${' disabled' if pager.page_number >= pager.last_page_number else ''}">
+                        <a class="internal" href="${urls.get_url(ctx, mode, page = pager.page_number + 1, **url_args
+                                )}">${_(u"Next")} &rarr;</a>
+                    </li>
+                </ul>
+            </div>
+    % endif
+</%def>
+
+
 <%def name="results()" filter="trim">
     % if errors is None:
         % if pager.item_count == 0:
