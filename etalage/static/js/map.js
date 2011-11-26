@@ -100,14 +100,26 @@ etalage.map = (function ($) {
             if (properties.postalDistribution) {
                 $div.append($('<div/>').text(properties.postalDistribution));
             }
-            if (properties.count == 2) {
-                $div.append($('<div/>').append($('<em/>').text('Ainsi qu\'un autre organisme à proximité')));
-            } else if (properties.count > 2) {
-                $div.append($('<div/>').append($('<em/>').text('Ainsi que ' + (properties.count - 1)
-                    + ' autres organismes à proximité')));
+            if (properties.count > 1) {
+                var bbox = e.bbox;
+                var $a = $('<a/>', {
+                    'class': 'bbox',
+                    href: '/carte?' + $.param($.extend({bbox: bbox.join(",")}, etalage.map.geojsonParams || {}), true)
+                });
+                if (properties.count == 2) {
+                    $a.text('Ainsi qu\'un autre organisme à proximité');
+                } else {
+                    $a.text('Ainsi que ' + (properties.count - 1) + ' autres organismes à proximité');
+                }
+                $div.append($('<div/>').append($('<em/>').append($a)));
             }
             e.layer.bindPopup($div.html())
             .on('click', function (e) {
+                $('a.bbox', e.target._popup._contentNode).on('click', function () {
+                    leafletMap.fitBounds(new L.LatLngBounds(new L.LatLng(bbox[1], bbox[0]),
+                        new L.LatLng(bbox[3], bbox[2])));
+                    return false;
+                });
                 $('a.internal', e.target._popup._contentNode).on('click', function () {
                     rpc.requestNavigateTo($(this).attr('href'));
                     return false;

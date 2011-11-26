@@ -40,6 +40,7 @@ from etalage import conf, urls
     % for name, value in sorted(params.iteritems()):
 <%
         if name in (
+                'bbox',
                 'category' if not ctx.hide_category else None,
                 'filter',
                 'page',

@@ -626,6 +626,7 @@ def index_map(req):
     base_params = init_base(ctx, params)
     mode = u'carte'
     params = dict(
+        bbox = params.get('bbox'),
         category = params.get('category'),
         filter = params.get('filter'),
         page = params.get('page'),
