@@ -39,7 +39,8 @@ etalage.map = (function ($) {
                 maxZoom: 18
             })
         );
-        leafletMap.on('moveend', function(e) {
+        leafletMap.attributionControl.setPrefix(null); // Remove Leaflet attribution.
+        leafletMap.on('moveend', function (e) {
             try {
                 var bounds = leafletMap.getBounds();
             } catch(err) {
