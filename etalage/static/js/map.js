@@ -62,7 +62,7 @@ etalage.map = (function ($) {
 
         if (window.PIE) {
             $('.leaflet-control, .leaflet-control-zoom, .leaflet-control-zoom-in, .leaflet-control-zoom-out').each(
-                function() {
+                function () {
                     // Apply CSS3 border-radius for IE to zoom controls.
                     PIE.attach(this);
                 }
@@ -87,7 +87,7 @@ etalage.map = (function ($) {
         redMultipleIcon.shadowUrl = etalage.map.markersUrl + '/misc/shadow.png';
 
         var geojsonLayer = new L.GeoJSON();
-        geojsonLayer.on('featureparse', function(e) {
+        geojsonLayer.on('featureparse', function (e) {
             var properties = e.properties;
             etalage.map.layerByPoiId[properties.id] = e.layer;
             var $div = $('<div/>').append(
@@ -137,7 +137,7 @@ etalage.map = (function ($) {
         etalage.map.geojsonLayer = geojsonLayer;
 
         if (window.PIE) {
-            leafletMap.on('layeradd', function(e) {
+            leafletMap.on('layeradd', function (e) {
                 if (e.layer._wrapper && e.layer._opened === true && e.layer._content) {
                     // Apply CSS3 border-radius for IE to popup.
                     PIE.attach(e.layer._wrapper);
@@ -179,7 +179,7 @@ etalage.map = (function ($) {
     function getBBox(features) {
         var featureLatLng, coordinates = [];
 
-        $.each(features, function() {
+        $.each(features, function () {
             featureLatLng = new L.LatLng(this.geometry.coordinates[1], this.geometry.coordinates[0]);
             coordinates.push(featureLatLng);
         });
