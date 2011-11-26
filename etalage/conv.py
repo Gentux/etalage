@@ -168,9 +168,11 @@ def layer_data_to_clusters(data, state = default_state):
         poi_latitude = poi.geo[0]
         poi_longitude = poi.geo[1]
         for cluster in clusters:
-            if abs(poi_latitude - cluster.main_latitude) <= vertical_iota \
-                    and abs(poi_longitude - cluster.main_longitude) <= horizontal_iota:
+            if abs(poi_latitude - cluster.center_latitude) <= vertical_iota \
+                    and abs(poi_longitude - cluster.center_longitude) <= horizontal_iota:
                 cluster.count += 1
+                if poi_latitude == cluster.center_latitude and poi_longitude == cluster.center_longitude:
+                    cluster.center_pois.append(poi)
                 if poi_latitude < cluster.bottom:
                     cluster.bottom = poi_latitude
                 elif poi_latitude > cluster.top:
@@ -183,9 +185,9 @@ def layer_data_to_clusters(data, state = default_state):
         else:
             cluster = model.Cluster()
             cluster.count = 1
-            cluster.bottom = cluster.top = cluster.main_latitude = poi_latitude
-            cluster.left = cluster.right = cluster.main_longitude = poi_longitude
-            cluster.main_poi = poi
+            cluster.bottom = cluster.top = cluster.center_latitude = poi_latitude
+            cluster.left = cluster.right = cluster.center_longitude = poi_longitude
+            cluster.center_pois = [poi]
             clusters.append(cluster)
     return clusters, None
 
@@ -211,14 +213,20 @@ def params_and_clusters_to_geojson((params, clusters), state = default_state):
                     ] if cluster.count > 1 else None,
                 'geometry': {
                     'type': 'Point',
-                    'coordinates': [cluster.main_longitude, cluster.main_latitude],
+                    'coordinates': [cluster.center_longitude, cluster.center_latitude],
                     },
                 'properties': {
                     'count': cluster.count,
-                    'id': str(cluster.main_poi._id),
-                    'name': cluster.main_poi.name,
-                    'postalDistribution': cluster.main_poi.postal_distribution_str,
-                    'streetAddress': cluster.main_poi.street_address,
+                    'id': '{0}-{1}'.format(cluster.center_pois[0]._id, cluster.count),
+                    'centerPois': [
+                        {
+                            'id': str(poi._id),
+                            'name': poi.name,
+                            'postalDistribution': poi.postal_distribution_str,
+                            'streetAddress': poi.street_address,
+                            }
+                        for poi in cluster.center_pois
+                        ],
                     },
                 }
             for cluster in clusters

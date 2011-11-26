@@ -90,37 +90,71 @@ etalage.map = (function ($) {
         geojsonLayer.on('featureparse', function (e) {
             var properties = e.properties;
             etalage.map.layerByPoiId[properties.id] = e.layer;
-            var $div = $('<div/>').append(
-                $('<a/>', {
-                    'class': 'internal',
-                    href: '/organismes/' + properties.id
-                }).text(properties.name)
-            );
-            if (properties.streetAddress) {
-                $.each(properties.streetAddress.split('\n'), function (index, line) {
-                    $div.append($('<div/>').text(line));
-                });
-            }
-            if (properties.postalDistribution) {
-                $div.append($('<div/>').text(properties.postalDistribution));
-            }
+
             if (properties.count > 1) {
                 e.layer.options.icon = redMultipleIcon;
+            } else {
+                e.layer.options.icon = redBlankIcon;
+            }
+
+            var nearbyPoiCount = properties.count - properties.centerPois.length;
+            var poi;
+            var $popupDiv = $('<div/>');
+            if (properties.count == 1 || nearbyPoiCount > 0) {
+                poi = properties.centerPois[0];
+                $popupDiv.append(
+                    $('<a/>', {
+                        'class': 'internal',
+                        href: '/organismes/' + poi.id
+                    }).append($('<strong/>').text(poi.name))
+                );
+                if (poi.streetAddress) {
+                    $.each(poi.streetAddress.split('\n'), function (index, line) {
+                        $popupDiv.append($('<div/>').text(line));
+                    });
+                }
+                if (poi.postalDistribution) {
+                    $popupDiv.append($('<div/>').text(poi.postalDistribution));
+                }
+            } else {
+                var $ul = $('<ul/>');
+                var $li;
+                $.each(properties.centerPois, function (index, poi) {
+                    $li = $('<li>').append(
+                        $('<a/>', {
+                            'class': 'internal',
+                            href: '/organismes/' + poi.id
+                        }).append($('<strong/>').text(poi.name))
+                    );
+                    if (poi.streetAddress) {
+                        $.each(poi.streetAddress.split('\n'), function (index, line) {
+                            $li.append($('<div/>').text(line));
+                        });
+                    }
+                    if (poi.postalDistribution) {
+                        $li.append($('<div/>').text(poi.postalDistribution));
+                    }
+                    $ul.append($li);
+                });
+                $popupDiv.append($ul);
+            }
+
+            if (nearbyPoiCount > 0) {
                 var bbox = e.bbox;
                 var $a = $('<a/>', {
                     'class': 'bbox',
                     href: '/carte?' + $.param($.extend({bbox: bbox.join(",")}, etalage.map.geojsonParams || {}), true)
                 });
+                var $em = $('<em/>');
                 if (properties.count == 2) {
-                    $a.text('Ainsi qu\'un autre organisme à proximité');
+                    $em.text('Ainsi qu\'1 autre organisme à proximité');
                 } else {
-                    $a.text('Ainsi que ' + (properties.count - 1) + ' autres organismes à proximité');
+                    $em.text('Ainsi que ' + (properties.count - 1) + ' autres organismes à proximité');
                 }
-                $div.append($('<div/>').append($('<em/>').append($a)));
-            } else {
-                e.layer.options.icon = redBlankIcon;
+                $popupDiv.append($('<div/>').append($a.append($em)));
             }
-            e.layer.bindPopup($div.html())
+
+            e.layer.bindPopup($popupDiv.html())
             .on('click', function (e) {
                 $('a.bbox', e.target._popup._contentNode).on('click', function () {
                     leafletMap.fitBounds(new L.LatLngBounds(new L.LatLng(bbox[1], bbox[0]),

@@ -1,0 +1,4 @@
+.leaflet-popup-content {
+    max-height: 12em;
+    overflow-y: auto;
+}

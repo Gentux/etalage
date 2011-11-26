@@ -46,7 +46,7 @@ $[address]
         </Style>
     % for cluster in clusters:
 <%
-        poi = cluster.main_poi
+        poi = cluster.center_pois[0]
 %>\
         <Placemark id="${poi._id}">
             <name>${poi.name}</name>

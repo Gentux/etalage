@@ -42,11 +42,11 @@ log = logging.getLogger(__name__)
 
 class Cluster(representations.UserRepresentable):
     bottom = None # South latitude of rectangle enclosing all POIs of cluster
+    center_latitude = None # Copy of center_pois[*].geo[0] for quick access
+    center_longitude = None # Copy of center_pois[*].geo[1] for quick access
+    center_pois = None # POIs at the center of cluster, sharing the same coordinates
     count = None # Number of POIs in cluster
     left = None # West longitude of rectangle enclosing all POIs of cluster
-    main_latitude = None # = copy of main_poi.geo[0] for quick access
-    main_longitude = None # = copy of main_poi.geo[1] for quick access
-    main_poi = None
     right = None # East longitude of rectangle enclosing all POIs of cluster
     top = None # North latitude of rectangle enclosing all POIs of cluster
 

@@ -38,6 +38,7 @@ from etalage import conf, urls
 <!--[if lte IE 8]>
     <link rel="stylesheet" href="${conf['leaflet.ie.css']}">
 <![endif]-->
+    <link rel="stylesheet" href="/css/map.css">
 </%def>
 
 
