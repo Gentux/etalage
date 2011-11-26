@@ -30,8 +30,6 @@ etalage.map = (function ($) {
     var leafletMap;
 
     function createMap(mapDiv, geojsonData) {
-        var icon;
-
         leafletMap = new L.Map(mapDiv, {
             scrollWheelZoom: false
         }).addLayer(
@@ -75,17 +73,22 @@ etalage.map = (function ($) {
         $('.leaflet-control-zoom-out').attr('title', 'Dézoomer');
 
         // Icon settings
-        icon = new L.Icon(etalage.map.markersUrl + '/map-icons-collection-2.0/numeric/redblank.png');
-        icon.iconAnchor = new L.Point(14, 24);
-        icon.iconSize = new L.Point(27, 27);
-        icon.shadowSize = new L.Point(51, 27);
-        icon.shadowUrl = etalage.map.markersUrl + '/misc/shadow.png';
+        var redBlankIcon = new L.Icon(etalage.map.markersUrl + '/misc/redblank.png');
+        redBlankIcon.iconAnchor = new L.Point(14, 24);
+        redBlankIcon.iconSize = new L.Point(27, 27);
+        redBlankIcon.shadowSize = new L.Point(51, 27);
+        redBlankIcon.shadowUrl = etalage.map.markersUrl + '/misc/shadow.png';
+
+        var redMultipleIcon = new L.Icon(etalage.map.markersUrl + '/misc/redmultiple.png');
+        redMultipleIcon.iconAnchor = new L.Point(14, 24);
+        redMultipleIcon.iconSize = new L.Point(27, 27);
+        redMultipleIcon.shadowSize = new L.Point(51, 27);
+        redMultipleIcon.shadowUrl = etalage.map.markersUrl + '/misc/shadow.png';
 
         var geojsonLayer = new L.GeoJSON();
         geojsonLayer.on('featureparse', function(e) {
             var properties = e.properties;
             etalage.map.layerByPoiId[properties.id] = e.layer;
-            e.layer.options.icon = icon;
             var $div = $('<div/>').append(
                 $('<a/>', {
                     'class': 'internal',
@@ -101,6 +104,7 @@ etalage.map = (function ($) {
                 $div.append($('<div/>').text(properties.postalDistribution));
             }
             if (properties.count > 1) {
+                e.layer.options.icon = redMultipleIcon;
                 var bbox = e.bbox;
                 var $a = $('<a/>', {
                     'class': 'bbox',
@@ -112,6 +116,8 @@ etalage.map = (function ($) {
                     $a.text('Ainsi que ' + (properties.count - 1) + ' autres organismes à proximité');
                 }
                 $div.append($('<div/>').append($('<em/>').append($a)));
+            } else {
+                e.layer.options.icon = redBlankIcon;
             }
             e.layer.bindPopup($div.html())
             .on('click', function (e) {
@@ -224,7 +230,7 @@ etalage.map = (function ($) {
             })
         );
 
-        icon = new L.Icon(etalage.map.markersUrl + '/map-icons-collection-2.0/numeric/redblank.png');
+        icon = new L.Icon(etalage.map.markersUrl + '/misc/redblank.png');
         icon.iconAnchor = new L.Point(14, 24);
         icon.iconSize = new L.Point(27, 27);
         icon.shadowSize = new L.Point(51, 27);
