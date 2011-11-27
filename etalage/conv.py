@@ -161,8 +161,8 @@ def layer_data_to_clusters(data, state = default_state):
             poi
             for distance, poi in distance_and_poi_couples
             ]
-    horizontal_iota = (right - left) / 24.0
-    vertical_iota = (top - bottom) / 18.0
+    horizontal_iota = (right - left) / 20.0
+    vertical_iota = (top - bottom) / 15.0
     clusters = []
     for poi in pois:
         poi_latitude = poi.geo[0]
