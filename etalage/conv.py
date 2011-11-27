@@ -44,10 +44,113 @@ default_state = states.default_state
 N_ = lambda message: message
 
 
+def default_pois_layer_data_bounding_box(data, state = default_state):
+    """Compute bounding box and add it when it is missing from data. Return modified data."""
+    from . import model, ramdb
+    if data is None:
+        return data, None
+    if data.get('bounding_box') is not None:
+        return data, None
+    data = data.copy()
+    territory = data.get('territory')
+    if territory is None:
+        data['bounding_box'] = [-180.0, -90.0, 180.0, 90.0]
+        return data, None
+    categories_slug = set(state.base_categories_slug or [])
+    center_latitude = territory.geo[0]
+    center_longitude = territory.geo[1]
+    bottom = center_latitude
+    left = center_longitude
+    right = center_longitude
+    top = center_latitude
+    pois_by_id = ramdb.pois_by_id
+    if data.get('category') is not None:
+        categories_slug.add(data['category'].slug)
+    filter = data.get('filter')
+    if filter == 'competence':
+        competence_territories_id = ramdb.get_territory_related_territories_id(territory)
+        presence_territory = None
+        pois_id_iter = ramdb.iter_pois_id(categories_slug = categories_slug,
+            competence_territories_id = competence_territories_id, presence_territory = presence_territory,
+            term = data.get('term'))
+        pois = [
+            poi
+            for poi in (
+                pois_by_id[poi_id]
+                for poi_id in pois_id_iter
+                )
+            if poi.geo is not None
+            ]
+    elif filter == 'presence':
+        competence_territories_id = None
+        presence_territory = territory
+        pois_id_iter = ramdb.iter_pois_id(categories_slug = categories_slug,
+            competence_territories_id = competence_territories_id, presence_territory = presence_territory,
+            term = data.get('term'))
+        pois = [
+            poi
+            for poi in (
+                pois_by_id[poi_id]
+                for poi_id in pois_id_iter
+                )
+            if poi.geo is not None
+            ]
+    else:
+        # When no filter is given, use the bounding box of the territory (ie the bounding box enclosing every POI
+        # present in the territory).
+        competence_territories_id = None
+        presence_territory = territory
+        pois_id_iter = ramdb.iter_pois_id(categories_slug = categories_slug,
+            competence_territories_id = competence_territories_id, presence_territory = presence_territory,
+            term = data.get('term'))
+        pois = [
+            poi
+            for poi in (
+                pois_by_id[poi_id]
+                for poi_id in pois_id_iter
+                )
+            if poi.geo is not None
+            ]
+        if not pois:
+            # When no POI has been found in territory, use the bounding box enclosing every competent POI.
+            competence_territories_id = ramdb.get_territory_related_territories_id(territory)
+            presence_territory = None
+            pois_id_iter = ramdb.iter_pois_id(categories_slug = categories_slug,
+                competence_territories_id = competence_territories_id, presence_territory = presence_territory,
+                term = data.get('term'))
+            pois = [
+                poi
+                for poi in (
+                    pois_by_id[poi_id]
+                    for poi_id in pois_id_iter
+                    )
+                if poi.geo is not None
+                ]
+    for poi in pois:
+        poi_latitude = poi.geo[0]
+        if poi_latitude < bottom:
+            bottom = poi_latitude
+        elif poi_latitude > top:
+            top = poi_latitude
+        poi_longitude = poi.geo[1]
+        if poi_longitude < left:
+            left = poi_longitude
+        elif poi_longitude > right:
+            right = poi_longitude
+    data['bounding_box'] = [left, bottom, right, top]
+    return data, None
+
+
 def layer_data_to_clusters(data, state = default_state):
     from . import model, ramdb
     if data is None:
         return None, None
+    bottom = data['bounding_box']['bottom']
+    left = data['bounding_box']['left']
+    right = data['bounding_box']['right']
+    top = data['bounding_box']['top']
+    center_latitude = (bottom + top) / 2.0
+    center_longitude = (left + right) / 2.0
     categories_slug = set(state.base_categories_slug or [])
     if data.get('category') is not None:
         categories_slug.add(data['category'].slug)
@@ -67,100 +170,30 @@ def layer_data_to_clusters(data, state = default_state):
         competence_territories_id = competence_territories_id, presence_territory = presence_territory,
         term = data.get('term'))
     pois_by_id = ramdb.pois_by_id
-    if data.get('bounding_box') is None:
-        pois_iter = (
-            poi
-            for poi in (
-                pois_by_id[poi_id]
-                for poi_id in pois_id_iter
-                )
-            if poi.geo is not None
+    pois_iter = (
+        poi
+        for poi in (
+            pois_by_id[poi_id]
+            for poi_id in pois_id_iter
             )
-        if territory is None:
-            bottom = None
-            left = None
-            right = None
-            top = None
-            pois = []
-            for poi in pois_iter:
-                poi_latitude = poi.geo[0]
-                poi_longitude = poi.geo[1]
-                if bottom is None:
-                    bottom = poi_latitude
-                    left = poi_longitude
-                    right = poi_longitude
-                    top = poi_latitude
-                else:
-                    if poi_latitude < bottom:
-                        bottom = poi_latitude
-                    elif poi_latitude > top:
-                        top = poi_latitude
-                    if poi_longitude < left:
-                        left = poi_longitude
-                    elif poi_longitude > right:
-                        right = poi_longitude
-                pois.append(poi)
-        else:
-            center_latitude = territory.geo[0]
-            center_longitude = territory.geo[1]
-            bottom = center_latitude
-            left = center_longitude
-            right = center_longitude
-            top = center_latitude
-            distance_and_poi_couples = []
-            for poi in pois_iter:
-                poi_latitude = poi.geo[0]
-                if poi_latitude < bottom:
-                    bottom = poi_latitude
-                elif poi_latitude > top:
-                    top = poi_latitude
-                poi_longitude = poi.geo[1]
-                if poi_longitude < left:
-                    left = poi_longitude
-                elif poi_longitude > right:
-                    right = poi_longitude
-                distance_and_poi_couples.append((
-                    # distance from given territory
-                    ((poi_latitude - center_latitude) ** 2 + (poi_longitude - center_longitude) ** 2),
-                    # POI
-                    poi,
-                    ))
-            distance_and_poi_couples.sort(key = lambda distance_and_poi_couple: distance_and_poi_couple[0])
-            pois = [
-                poi
-                for distance, poi in distance_and_poi_couples
-                ]
-    else:
-        bottom = data['bounding_box']['bottom']
-        left = data['bounding_box']['left']
-        right = data['bounding_box']['right']
-        top = data['bounding_box']['top']
-        center_latitude = (bottom + top) / 2.0
-        center_longitude = (left + right) / 2.0
-        pois_iter = (
-            poi
-            for poi in (
-                pois_by_id[poi_id]
-                for poi_id in pois_id_iter
-                )
-            if poi.geo is not None and bottom <= poi.geo[0] <= top and left <= poi.geo[1] <= right
-            )
-        distance_and_poi_couples = sorted(
+        if poi.geo is not None and bottom <= poi.geo[0] <= top and left <= poi.geo[1] <= right
+        )
+    distance_and_poi_couples = sorted(
+        (
             (
-                (
-                    # distance from center of map
-                    ((poi.geo[0] - center_latitude) ** 2 + (poi.geo[1] - center_longitude) ** 2),
-                    # POI
-                    poi,
-                    )
-                for poi in pois_iter
-                ),
-            key = lambda distance_and_poi_couple: distance_and_poi_couple[0],
-            )
-        pois = [
-            poi
-            for distance, poi in distance_and_poi_couples
-            ]
+                # distance from center of map
+                ((poi.geo[0] - center_latitude) ** 2 + (poi.geo[1] - center_longitude) ** 2),
+                # POI
+                poi,
+                )
+            for poi in pois_iter
+            ),
+        key = lambda distance_and_poi_couple: distance_and_poi_couple[0],
+        )
+    pois = [
+        poi
+        for distance, poi in distance_and_poi_couples
+        ]
     horizontal_iota = (right - left) / 20.0
     vertical_iota = (top - bottom) / 15.0
     clusters = []
@@ -384,11 +417,6 @@ def params_to_pois_layer_data(params, state = default_state):
                     ),
                 category = str_to_slug_to_category,
                 filter = str_to_filter,
-                page = pipe(
-                    str_to_int,
-                    test_greater_or_equal(1),
-                    default(1),
-                    ),
                 term = str_to_slug,
                 territory = str_to_postal_distribution_to_geolocated_territory,
                 ),
@@ -396,7 +424,6 @@ def params_to_pois_layer_data(params, state = default_state):
             keep_empty = True,
             ),
         rename_item('bbox', 'bounding_box'),
-        rename_item('page', 'page_number'),
         )(params, state = state)
 
 

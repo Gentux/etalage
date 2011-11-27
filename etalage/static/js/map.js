@@ -29,7 +29,7 @@ var etalage = etalage || {};
 etalage.map = (function ($) {
     var leafletMap;
 
-    function createMap(mapDiv, geojsonData) {
+    function createMap(mapDiv, bbox) {
         leafletMap = new L.Map(mapDiv, {
             scrollWheelZoom: false
         }).addLayer(
@@ -42,22 +42,14 @@ etalage.map = (function ($) {
         leafletMap.attributionControl.setPrefix(null); // Remove Leaflet attribution.
         leafletMap.on('moveend', function (e) {
             try {
-                var bounds = leafletMap.getBounds();
+                leafletMap.getBounds();
             } catch(err) {
                 // Method getBounds fails when map center or zoom level are not yet set.
                 return;
             }
-            // When map is larger than 360 degrees, fix min and max longitude returned by getBounds().
-            var northEast = bounds.getNorthEast();
-            var southWest = bounds.getSouthWest();
-            var lowestX = leafletMap.layerPointToContainerPoint(leafletMap.latLngToLayerPoint(new L.LatLng(0, -180))).x;
-            var zeroX = leafletMap.layerPointToContainerPoint(leafletMap.latLngToLayerPoint(new L.LatLng(0, 0))).x;
-            // highestX = lowestX + 2 * (zeroX - lowestX) = 2 * zeroX - lowestX
-            var east = 2 * zeroX - lowestX > leafletMap.getSize().x ?  northEast.lng : 180;
-            var west = lowestX < 0 ? southWest.lng : -180;
-            fetchPois({
-                bbox: [west, southWest.lat, east, northEast.lat].join(",")
-            });
+//            etalage.map.geojsonLayer.clearLayers();
+//            etalage.map.layerByPoiId = {};
+            fetchPois();
         });
 
         if (window.PIE) {
@@ -216,10 +208,9 @@ etalage.map = (function ($) {
         }
 
         etalage.map.layerByPoiId = {};
-        setGeoJSONData(geojsonData);
-        var bbox = etalage.map.getBBox(geojsonData.features);
-        if (bbox._northEast && bbox._southWest) {
-            leafletMap.fitBounds(bbox);
+        if (bbox) {
+            leafletMap.fitBounds(new L.LatLngBounds(new L.LatLng(bbox[1], bbox[0]), new L.LatLng(bbox[3], bbox[2])));
+            fetchPois();
         } else {
             // No POI found.
             if (etalage.map.center !== null) {
@@ -228,14 +219,24 @@ etalage.map = (function ($) {
         }
     }
 
-    function fetchPois(params) {
+    function fetchPois() {
         var context = (new Date()).getTime();
+        // When map is larger than 360 degrees, fix min and max longitude returned by getBounds().
+        var bounds = leafletMap.getBounds();
+        var northEast = bounds.getNorthEast();
+        var southWest = bounds.getSouthWest();
+        var lowestX = leafletMap.layerPointToContainerPoint(leafletMap.latLngToLayerPoint(new L.LatLng(0, -180))).x;
+        var zeroX = leafletMap.layerPointToContainerPoint(leafletMap.latLngToLayerPoint(new L.LatLng(0, 0))).x;
+        // highestX = lowestX + 2 * (zeroX - lowestX) = 2 * zeroX - lowestX
+        var east = 2 * zeroX - lowestX > leafletMap.getSize().x ?  northEast.lng : 180;
+        var west = lowestX < 0 ? southWest.lng : -180;
         $.ajax({
             url: etalage.map.geojsonUrl,
             dataType: 'json',
             data: $.extend({
+                bbox: [west, southWest.lat, east, northEast.lat].join(","),
                 context: context
-            }, etalage.map.geojsonParams || {}, params || {}),
+            }, etalage.map.geojsonParams || {}),
             success: function (data) {
                 if (parseInt(data.properties.context) !== context) {
                     return;
@@ -244,17 +245,6 @@ etalage.map = (function ($) {
             },
             traditional: true
         });
-    }
-
-    function getBBox(features) {
-        var featureLatLng, coordinates = [];
-
-        $.each(features, function () {
-            featureLatLng = new L.LatLng(this.geometry.coordinates[1], this.geometry.coordinates[0]);
-            coordinates.push(featureLatLng);
-        });
-
-        return new L.LatLngBounds(coordinates);
     }
 
     function setGeoJSONData(data) {
@@ -323,7 +313,6 @@ etalage.map = (function ($) {
         geojsonLayer: null,
         geojsonParams: null,
         geojsonUrl: null,
-        getBBox: getBBox,
         layerByPoiId: null,
         markersUrl: null,
         singleMarkerMap: singleMarkerMap,

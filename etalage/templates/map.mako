@@ -61,7 +61,7 @@ etalage.map.center = new L.LatLng(${territory.geo[0] | n, js}, ${territory.geo[1
 etalage.map.geojsonParams = ${dict(
     (name, value)
     for name, value in params.iteritems()
-    if name not in ('bbox', 'context', 'page', 'jsonp') and value is not None
+    if name not in ('bbox', 'context', 'jsonp') and value is not None
     )| n, js};
 etalage.map.geojsonUrl = '/api/v1/annuaire/geojson';
 etalage.map.markersUrl = ${conf['markers_url'].rstrip('/') | n, js};
@@ -69,7 +69,7 @@ etalage.map.tileUrlTemplate = ${conf['tile_url_template'] | n, js};
 
 
 $(function () {
-    etalage.map.createMap('map', ${geojson if errors is None else None | n, js});
+    etalage.map.createMap('map', ${bounding_box | n, js});
 });
     </script>
 </%def>

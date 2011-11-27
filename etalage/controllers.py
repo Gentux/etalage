@@ -341,7 +341,6 @@ def geojson(req):
         filter = params.get('filter'),
         context = params.get('context'),
         jsonp = params.get('jsonp'),
-        page = params.get('page'),
         term = params.get('term'),
         territory = params.get('territory'),
         )
@@ -349,6 +348,7 @@ def geojson(req):
 
     clusters, errors = conv.pipe(
         conv.params_to_pois_layer_data,
+        conv.default_pois_layer_data_bounding_box,
         conv.layer_data_to_clusters,
         )(params, state = ctx)
     if errors is not None:
@@ -629,23 +629,24 @@ def index_map(req):
         bbox = params.get('bbox'),
         category = params.get('category'),
         filter = params.get('filter'),
-        page = params.get('page'),
         term = params.get('term'),
         territory = params.get('territory'),
         )
     params.update(base_params)
 
-    geojson = None
-    territory = None
-    data, errors = conv.params_to_pois_layer_data(params, state = ctx)
+    data, errors = conv.pipe(
+        conv.params_to_pois_layer_data,
+        conv.default_pois_layer_data_bounding_box,
+        )(params, state = ctx)
     if errors is None:
-        clusters, errors = conv.layer_data_to_clusters(data, state = ctx)
-        if errors is None:
-            geojson, errors = conv.params_and_clusters_to_geojson((params, clusters), state = ctx)
+        bounding_box = data['bounding_box']
         territory = data.get('territory')
+    else:
+        bounding_box = None
+        territory = None
     return templates.render(ctx, '/map.mako',
+        bounding_box = bounding_box,
         errors = errors,
-        geojson = geojson,
         mode = mode,
         params = params,
         territory = territory,
@@ -758,7 +759,6 @@ def kml(req):
         category = params.get('category'),
         context = params.get('context'),
         filter = params.get('filter'),
-        page = params.get('page'),
         term = params.get('term'),
         territory = params.get('territory'),
         )
@@ -766,6 +766,7 @@ def kml(req):
 
     clusters, errors = conv.pipe(
         conv.params_to_pois_layer_data,
+        conv.default_pois_layer_data_bounding_box,
         conv.layer_data_to_clusters,
         )(params, state = ctx)
     if errors is not None:
