@@ -74,11 +74,35 @@ etalage.map = (function ($) {
         $('.leaflet-control-zoom-out').attr('title', 'Dézoomer');
 
         // Icon settings
-        var redBlankIcon = new L.Icon(etalage.map.markersUrl + '/misc/redblank.png');
-        redBlankIcon.iconAnchor = new L.Point(14, 24);
-        redBlankIcon.iconSize = new L.Point(27, 27);
-        redBlankIcon.shadowSize = new L.Point(51, 27);
-        redBlankIcon.shadowUrl = etalage.map.markersUrl + '/misc/shadow.png';
+        var blueBlankIcon = new L.Icon(etalage.map.markersUrl + '/misc/blueblank.png');
+        blueBlankIcon.iconAnchor = new L.Point(14, 24);
+        blueBlankIcon.iconSize = new L.Point(27, 27);
+        blueBlankIcon.shadowSize = new L.Point(51, 27);
+        blueBlankIcon.shadowUrl = etalage.map.markersUrl + '/misc/shadow.png';
+
+        var blueMultipleIcon = new L.Icon(etalage.map.markersUrl + '/misc/bluemultiple.png');
+        blueMultipleIcon.iconAnchor = new L.Point(14, 24);
+        blueMultipleIcon.iconSize = new L.Point(27, 27);
+        blueMultipleIcon.shadowSize = new L.Point(51, 27);
+        blueMultipleIcon.shadowUrl = etalage.map.markersUrl + '/misc/shadow.png';
+
+        var greenValidIcon = new L.Icon(etalage.map.markersUrl + '/misc/greenvalid.png');
+        greenValidIcon.iconAnchor = new L.Point(14, 24);
+        greenValidIcon.iconSize = new L.Point(27, 27);
+        greenValidIcon.shadowSize = new L.Point(51, 27);
+        greenValidIcon.shadowUrl = etalage.map.markersUrl + '/misc/shadow.png';
+
+        var greenMultipleIcon = new L.Icon(etalage.map.markersUrl + '/misc/greenmultiple.png');
+        greenMultipleIcon.iconAnchor = new L.Point(14, 24);
+        greenMultipleIcon.iconSize = new L.Point(27, 27);
+        greenMultipleIcon.shadowSize = new L.Point(51, 27);
+        greenMultipleIcon.shadowUrl = etalage.map.markersUrl + '/misc/shadow.png';
+
+        var redInvalidIcon = new L.Icon(etalage.map.markersUrl + '/misc/redinvalid.png');
+        redInvalidIcon.iconAnchor = new L.Point(14, 24);
+        redInvalidIcon.iconSize = new L.Point(27, 27);
+        redInvalidIcon.shadowSize = new L.Point(51, 27);
+        redInvalidIcon.shadowUrl = etalage.map.markersUrl + '/misc/shadow.png';
 
         var redMultipleIcon = new L.Icon(etalage.map.markersUrl + '/misc/redmultiple.png');
         redMultipleIcon.iconAnchor = new L.Point(14, 24);
@@ -92,9 +116,21 @@ etalage.map = (function ($) {
             etalage.map.layerByPoiId[properties.id] = e.layer;
 
             if (properties.count > 1) {
-                e.layer.options.icon = redMultipleIcon;
+                if (properties.competent === true) {
+                    e.layer.options.icon = greenMultipleIcon;
+                } else if (properties.competent === false) {
+                    e.layer.options.icon = redMultipleIcon;
+                } else {
+                    e.layer.options.icon = blueMultipleIcon;
+                }
             } else {
-                e.layer.options.icon = redBlankIcon;
+                if (properties.competent === true) {
+                    e.layer.options.icon = greenValidIcon;
+                } else if (properties.competent === false) {
+                    e.layer.options.icon = redInvalidIcon;
+                } else {
+                    e.layer.options.icon = blueBlankIcon;
+                }
             }
 
             var nearbyPoiCount = properties.count - properties.centerPois.length;

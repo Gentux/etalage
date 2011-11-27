@@ -45,6 +45,9 @@ class Cluster(representations.UserRepresentable):
     center_latitude = None # Copy of center_pois[*].geo[0] for quick access
     center_longitude = None # Copy of center_pois[*].geo[1] for quick access
     center_pois = None # POIs at the center of cluster, sharing the same coordinates
+    # False = Not competent for current territory, None = Competent for any territory or unknown territory,
+    # True = Competent for current territory
+    competent = False
     count = None # Number of POIs in cluster
     left = None # West longitude of rectangle enclosing all POIs of cluster
     right = None # East longitude of rectangle enclosing all POIs of cluster

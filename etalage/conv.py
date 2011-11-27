@@ -184,11 +184,21 @@ def layer_data_to_clusters(data, state = default_state):
                 break
         else:
             cluster = model.Cluster()
+            cluster.competent = False # changed below
             cluster.count = 1
             cluster.bottom = cluster.top = cluster.center_latitude = poi_latitude
             cluster.left = cluster.right = cluster.center_longitude = poi_longitude
             cluster.center_pois = [poi]
             clusters.append(cluster)
+        if cluster.competent is False:
+            if related_territories_id is None or poi.competence_territories_id is None:
+                cluster.competent = None
+            elif not related_territories_id.isdisjoint(poi.competence_territories_id):
+                cluster.competent = True
+        elif cluster.competent is None and related_territories_id is not None \
+                and poi.competence_territories_id is not None \
+                and not related_territories_id.isdisjoint(poi.competence_territories_id):
+            cluster.competent = True
     return clusters, None
 
 
@@ -216,6 +226,7 @@ def params_and_clusters_to_geojson((params, clusters), state = default_state):
                     'coordinates': [cluster.center_longitude, cluster.center_latitude],
                     },
                 'properties': {
+                    'competent': cluster.competent,
                     'count': cluster.count,
                     'id': '{0}-{1}'.format(cluster.center_pois[0]._id, cluster.count),
                     'centerPois': [
