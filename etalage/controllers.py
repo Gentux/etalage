@@ -348,7 +348,7 @@ def geojson(req):
 
     clusters, errors = conv.pipe(
         conv.params_to_pois_layer_data,
-        conv.default_pois_layer_data_bounding_box,
+        conv.default_pois_layer_data_bbox,
         conv.layer_data_to_clusters,
         )(params, state = ctx)
     if errors is not None:
@@ -636,16 +636,16 @@ def index_map(req):
 
     data, errors = conv.pipe(
         conv.params_to_pois_layer_data,
-        conv.default_pois_layer_data_bounding_box,
+        conv.default_pois_layer_data_bbox,
         )(params, state = ctx)
     if errors is None:
-        bounding_box = data['bounding_box']
+        bbox = data['bbox']
         territory = data.get('territory')
     else:
-        bounding_box = None
+        bbox = None
         territory = None
     return templates.render(ctx, '/map.mako',
-        bounding_box = bounding_box,
+        bbox = bbox,
         errors = errors,
         mode = mode,
         params = params,
@@ -766,7 +766,7 @@ def kml(req):
 
     clusters, errors = conv.pipe(
         conv.params_to_pois_layer_data,
-        conv.default_pois_layer_data_bounding_box,
+        conv.default_pois_layer_data_bbox,
         conv.layer_data_to_clusters,
         )(params, state = ctx)
     if errors is not None:

@@ -69,7 +69,7 @@ etalage.map.tileUrlTemplate = ${conf['tile_url_template'] | n, js};
 
 
 $(function () {
-    etalage.map.createMap('map', ${bounding_box | n, js});
+    etalage.map.createMap('map', ${bbox | n, js});
 });
     </script>
 </%def>

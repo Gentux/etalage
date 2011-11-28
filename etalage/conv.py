@@ -44,17 +44,17 @@ default_state = states.default_state
 N_ = lambda message: message
 
 
-def default_pois_layer_data_bounding_box(data, state = default_state):
+def default_pois_layer_data_bbox(data, state = default_state):
     """Compute bounding box and add it when it is missing from data. Return modified data."""
     from . import model, ramdb
     if data is None:
         return data, None
-    if data.get('bounding_box') is not None:
+    if data.get('bbox') is not None:
         return data, None
     data = data.copy()
     territory = data.get('territory')
     if territory is None:
-        data['bounding_box'] = [-180.0, -90.0, 180.0, 90.0]
+        data['bbox'] = [-180.0, -90.0, 180.0, 90.0]
         return data, None
     categories_slug = set(state.base_categories_slug or [])
     center_latitude = territory.geo[0]
@@ -137,7 +137,7 @@ def default_pois_layer_data_bounding_box(data, state = default_state):
             left = poi_longitude
         elif poi_longitude > right:
             right = poi_longitude
-    data['bounding_box'] = [left, bottom, right, top]
+    data['bbox'] = [left, bottom, right, top]
     return data, None
 
 
@@ -145,10 +145,7 @@ def layer_data_to_clusters(data, state = default_state):
     from . import model, ramdb
     if data is None:
         return None, None
-    bottom = data['bounding_box']['bottom']
-    left = data['bounding_box']['left']
-    right = data['bounding_box']['right']
-    top = data['bounding_box']['top']
+    left, bottom, right, top = data['bbox']
     center_latitude = (bottom + top) / 2.0
     center_longitude = (left + right) / 2.0
     categories_slug = set(state.base_categories_slug or [])
@@ -379,7 +376,7 @@ def params_to_pois_layer_data(params, state = default_state):
         struct(
             dict(
                 bbox = pipe(
-                    function(lambda bounding_box: bounding_box.split(u',')),
+                    function(lambda bbox: bbox.split(u',')),
                     struct(
                         [
                             # West longitude
@@ -408,12 +405,6 @@ def params_to_pois_layer_data(params, state = default_state):
                                 ),
                             ],
                         ),
-                    function(lambda bounding_box: dict(
-                        bottom = bounding_box[1],
-                        left = bounding_box[0],
-                        right = bounding_box[2],
-                        top = bounding_box[3],
-                        )),
                     ),
                 category = str_to_slug_to_category,
                 filter = str_to_filter,
@@ -423,7 +414,6 @@ def params_to_pois_layer_data(params, state = default_state):
             default = 'ignore',
             keep_empty = True,
             ),
-        rename_item('bbox', 'bounding_box'),
         )(params, state = state)
 
 
