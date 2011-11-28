@@ -56,8 +56,18 @@ from etalage import ramdb, urls
                 % if pois:
 <%
                     category = ramdb.categories_by_slug[category_slug]
+                    url_args = dict(
+                        (name, value)
+                        for name, value in params.iteritems()
+                        if name != 'category' and value is not None
+                        )
+                    url_args['category'] = category.name
 %>\
-            <h3>${category.name}</h3>
+            <h3>
+                ${category.name}
+                <small>(<a class="internal" href="${urls.get_url(ctx, 'carte', **url_args)}">carte</a>,
+                <a class="internal" href="${urls.get_url(ctx, 'liste', **url_args)}">liste</a>)</small>
+            </h3>
             <ul>
                     % for poi in pois:
                 <li>

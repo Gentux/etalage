@@ -147,6 +147,7 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
     fields = None
     geo = None
     name = None
+    organism_type_slug = None
     parent_id = None
     postal_distribution_str = None
     street_address = None

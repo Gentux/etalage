@@ -411,52 +411,55 @@ def index_directory(req):
         directory = None
         territory = None
     else:
-        directory = {}
-        if data.get('category') is None:
-            directory_categories_slug = set(ramdb.iter_categories_slug(organism_types_only = True,
-                tags_slug = ctx.category_tags_slug))
-        else:
-            directory_categories_slug = set([data['category'].slug])
+        categories_slug = set(ctx.base_categories_slug or [])
+        if data.get('category') is not None:
+            categories_slug.add(data['category'].slug)
         territory = data['territory']
-        for directory_category_slug in directory_categories_slug:
-            categories_slug = set(ctx.base_categories_slug or [])
-            categories_slug.add(directory_category_slug)
-            filter = data.get('filter')
-            territory = data.get('territory')
-            related_territories_id = ramdb.get_territory_related_territories_id(territory) \
-                if territory is not None else None
-            if filter == 'competence':
-                competence_territories_id = related_territories_id
-                presence_territory = None
-            elif filter == 'presence':
-                competence_territories_id = None
-                presence_territory = territory
+        related_territories_id = ramdb.get_territory_related_territories_id(territory)
+        filter = data.get('filter')
+        if filter == 'competence':
+            competence_territories_id = related_territories_id
+            presence_territory = None
+        elif filter == 'presence':
+            competence_territories_id = None
+            presence_territory = territory
+        else:
+            competence_territories_id = None
+            presence_territory = None
+        pois_id_iter = ramdb.iter_pois_id(categories_slug = categories_slug,
+            competence_territories_id = competence_territories_id, presence_territory = presence_territory,
+            term = data.get('term'))
+        pois = set(
+            poi
+            for poi in (
+                ramdb.pois_by_id.get(poi_id)
+                for poi_id in pois_id_iter
+                )
+            if poi is not None
+            )
+        distance_and_poi_couples = sorted(
+            (
+                ((poi.geo[0] - territory.geo[0]) ** 2 + (poi.geo[1] - territory.geo[1]) ** 2, poi)
+                for poi in pois
+                if poi.geo is not None
+                ),
+            key = lambda distance_and_poi: distance_and_poi[0],
+            )
+        directory = {}
+        for distance, poi in distance_and_poi_couples:
+            if poi.organism_type_slug is None:
+                continue
+            organism_type_pois = directory.get(poi.organism_type_slug)
+            if organism_type_pois is not None and len(organism_type_pois) >= 3:
+                continue
+            if filter is None and poi.competence_territories_id is not None \
+                    and related_territories_id.isdisjoint(poi.competence_territories_id):
+                # In directory mode without filter, the incompetent organisms must not be shown.
+                continue
+            if organism_type_pois is None:
+                directory[poi.organism_type_slug] = [poi]
             else:
-                competence_territories_id = None
-                presence_territory = None
-            pois_id_iter = ramdb.iter_pois_id(categories_slug = categories_slug,
-                competence_territories_id = competence_territories_id, presence_territory = presence_territory,
-                term = data.get('term'))
-            pois = set(
-                poi
-                for poi in (
-                    ramdb.pois_by_id.get(poi_id)
-                    for poi_id in pois_id_iter
-                    )
-                if poi is not None
-                )
-            distance_and_poi_couples = sorted(
-                (
-                    ((poi.geo[0] - territory.geo[0]) ** 2 + (poi.geo[1] - territory.geo[1]) ** 2, poi)
-                    for poi in pois
-                    if poi.geo is not None
-                    ),
-                key = lambda distance_and_poi: distance_and_poi[0],
-                )
-            directory[directory_category_slug] = [
-                poi
-                for distance, poi in distance_and_poi_couples[:3]
-                ]
+                organism_type_pois.append(poi)
     return templates.render(ctx, '/directory.mako',
         directory = directory,
         errors = errors,

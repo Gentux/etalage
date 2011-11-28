@@ -239,6 +239,12 @@ def load():
             elif field.id == u'link' and field.kind == u'Organisme' and field.relation == u'parent':
                 assert poi.parent is None, str(poi)
                 poi.parent_id = field.value
+            elif field.id == u'organism-type':
+                organism_type_slug = new_indexes['categories_slug_by_pivot_code'].get(field.value)
+                if organism_type_slug is None:
+                    log.warning('Ignoring organism type "{0}" without matching category.'.format(field.value))
+                else:
+                    poi.organism_type_slug = organism_type_slug
             fields.append(field)
         if fields:
             poi.fields = fields
