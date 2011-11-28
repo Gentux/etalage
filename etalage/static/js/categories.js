@@ -29,6 +29,7 @@ var etalage = etalage || {};
 etalage.categories = (function ($) {
     function createAutocompleter($input) {
         $input.autocomplete({
+            minLength: 0,
             source: function(request, response) {
                 $.ajax({
                     url: '/api/v1/categories/autocomplete',
