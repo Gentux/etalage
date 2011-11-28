@@ -31,6 +31,7 @@ from cStringIO import StringIO
 import csv
 import datetime
 import itertools
+import math
 
 from biryani.baseconv import *
 from biryani.bsonconv import *
@@ -126,6 +127,16 @@ def default_pois_layer_data_bbox(data, state = default_state):
                     )
                 if poi.geo is not None
                 ]
+            if not pois:
+                # When no present nor competent POI has been found, compute bounding box using given distance.
+                delta = math.degrees(state.distance / 6372.8)
+                data['bbox'] = [
+                    center_longitude - delta, # left
+                    center_latitude - delta, # bottom
+                    center_longitude + delta, # left
+                    center_latitude + delta, # top
+                    ]
+                return data, None
     for poi in pois:
         poi_latitude = poi.geo[0]
         if poi_latitude < bottom:
@@ -147,6 +158,8 @@ def layer_data_to_clusters(data, state = default_state):
         return None, None
     left, bottom, right, top = data['bbox']
     center_latitude = (bottom + top) / 2.0
+    center_latitude_cos = math.cos(math.radians(center_latitude))
+    center_latitude_sin = math.sin(math.radians(center_latitude))
     center_longitude = (left + right) / 2.0
     categories_slug = set(state.base_categories_slug or [])
     if data.get('category') is not None:
@@ -179,7 +192,11 @@ def layer_data_to_clusters(data, state = default_state):
         (
             (
                 # distance from center of map
-                ((poi.geo[0] - center_latitude) ** 2 + (poi.geo[1] - center_longitude) ** 2),
+                6372.8 * math.acos(
+                    math.sin(math.radians(poi.geo[0])) * center_latitude_sin
+                    + math.cos(math.radians(poi.geo[0])) * center_latitude_cos
+                        * math.cos(math.radians(poi.geo[1] - center_longitude))
+                    ),
                 # POI
                 poi,
                 )

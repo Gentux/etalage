@@ -47,6 +47,7 @@ class Ctx(object):
         category_tags_slug = None,
         container_base_url = None,
         controller_name = None,
+        distance = None, # Max distance in km
         gadget_id = None,
         hide_category = False,
         req = None,

@@ -29,6 +29,7 @@
 
 import itertools
 import logging
+import math
 import sys
 import urlparse
 
@@ -437,9 +438,18 @@ def index_directory(req):
                 )
             if poi is not None
             )
+        territory_latitude_cos = math.cos(math.radians(territory.geo[0]))
+        territory_latitude_sin = math.sin(math.radians(territory.geo[0]))
         distance_and_poi_couples = sorted(
             (
-                ((poi.geo[0] - territory.geo[0]) ** 2 + (poi.geo[1] - territory.geo[1]) ** 2, poi)
+                (
+                    6372.8 * math.acos(
+                        math.sin(math.radians(poi.geo[0])) * territory_latitude_sin
+                        + math.cos(math.radians(poi.geo[0])) * territory_latitude_cos
+                            * math.cos(math.radians(poi.geo[1] - territory.geo[1]))
+                        ),
+                    poi,
+                    )
                 for poi in pois
                 if poi.geo is not None
                 ),
@@ -452,10 +462,15 @@ def index_directory(req):
             organism_type_pois = directory.get(poi.organism_type_slug)
             if organism_type_pois is not None and len(organism_type_pois) >= 3:
                 continue
-            if filter is None and poi.competence_territories_id is not None \
-                    and related_territories_id.isdisjoint(poi.competence_territories_id):
-                # In directory mode without filter, the incompetent organisms must not be shown.
-                continue
+            if filter is None:
+                if poi.competence_territories_id is None:
+                    # When no filter is given, when a POI has no notion of competence territory, only show it when it is
+                    # not too far away from center territory.
+                    if distance > ctx.distance:
+                        continue
+                elif related_territories_id.isdisjoint(poi.competence_territories_id):
+                    # In directory mode without filter, the incompetent organisms must not be shown.
+                    continue
             if organism_type_pois is None:
                 directory[poi.organism_type_slug] = [poi]
             else:
@@ -590,6 +605,8 @@ def index_list(req):
                 for poi in itertools.islice(pois, pager.first_item_index, pager.last_item_number)
                 ]
         else:
+            territory_latitude_cos = math.cos(math.radians(territory.geo[0]))
+            territory_latitude_sin = math.sin(math.radians(territory.geo[0]))
             incompetence_distance_and_poi_triples = sorted(
                 (
                     (
@@ -597,9 +614,11 @@ def index_list(req):
                         poi.competence_territories_id is not None
                             and related_territories_id.isdisjoint(poi.competence_territories_id),
                         # distance
-                        ((poi.geo[0] - territory.geo[0]) ** 2 + (poi.geo[1] - territory.geo[1]) ** 2)
-                            if poi.geo is not None
-                            else (sys.float_info.max, poi),
+                        6372.8 * math.acos(
+                            math.sin(math.radians(poi.geo[0])) * territory_latitude_sin
+                            + math.cos(math.radians(poi.geo[0])) * territory_latitude_cos
+                                * math.cos(math.radians(poi.geo[1] - territory.geo[1]))
+                            ) if poi.geo is not None else (sys.float_info.max, poi),
                         # POI
                         poi,
                         )
@@ -661,6 +680,7 @@ def init_base(ctx, params):
         base_category = params.getall('base_category'),
         category_tag = params.getall('category_tag'),
         container_base_url = params.get('container_base_url'),
+        distance = params.get('distance'),
         gadget = params.get('gadget'),
         hide_category = params.get('hide_category'),
         )
@@ -739,6 +759,14 @@ def init_base(ctx, params):
 #            return wsgihelpers.not_found(ctx, body = htmlhelpers.modify_html(ctx, templates.render(ctx,
 #                '/error-unknown-territory.mako', territory_code = user.territory['code'],
 #                territory_kind = user.territory['kind'])))
+
+    ctx.distance, error = conv.pipe(
+        conv.str_to_float,
+        conv.test_between(0.0, 40075.16),
+        conv.default(20.0),
+        )(base_params['distance'], state = ctx)
+    if error is not None:
+        raise wsgihelpers.bad_request(ctx, explanation = ctx._('Distance Error: {0}').format(error))
 
     ctx.hide_category, error = conv.pipe(
         conv.guess_bool,
