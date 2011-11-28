@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Etalage 0.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2011-11-24 11:17+0100\n"
+"POT-Creation-Date: 2011-11-28 17:36+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,77 +17,81 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 0.9.6\n"
 
-#: etalage/controllers.py:158 etalage/controllers.py:354 etalage/controllers.py:357
-#: etalage/controllers.py:768
+#: etalage/controllers.py:159 etalage/controllers.py:356 etalage/controllers.py:359
+#: etalage/controllers.py:804
 msgid "Error: {0}"
 msgstr ""
 
-#: etalage/controllers.py:194 etalage/controllers.py:235 etalage/controllers.py:276
-#: etalage/controllers.py:318
+#: etalage/controllers.py:195 etalage/controllers.py:236 etalage/controllers.py:277
+#: etalage/controllers.py:319
 msgid "You must accept license to be allowed to download data."
 msgstr ""
 
-#: etalage/controllers.py:197
+#: etalage/controllers.py:198
 msgid "Directory Export in CSV Format"
 msgstr ""
 
-#: etalage/controllers.py:238
+#: etalage/controllers.py:239
 msgid "Directory Export in GeoJSON Format"
 msgstr ""
 
-#: etalage/controllers.py:279
+#: etalage/controllers.py:280
 msgid "Directory Export in KML Format"
 msgstr ""
 
-#: etalage/controllers.py:322
+#: etalage/controllers.py:323
 msgid "Geographical Coverage Export in CSV Format"
 msgstr ""
 
-#: etalage/controllers.py:524
+#: etalage/controllers.py:543
 msgid "Missing value"
 msgstr ""
 
-#: etalage/controllers.py:665
+#: etalage/controllers.py:692
 msgid "Base Categories Error: {0}"
 msgstr ""
 
-#: etalage/controllers.py:671
+#: etalage/controllers.py:698
 msgid "Category Tags Error: {0}"
 msgstr ""
 
-#: etalage/controllers.py:741
+#: etalage/controllers.py:769
+msgid "Distance Error: {0}"
+msgstr ""
+
+#: etalage/controllers.py:776
 msgid "Hide Category Error: {0}"
 msgstr ""
 
-#: etalage/controllers.py:815
+#: etalage/controllers.py:851
 msgid "POI ID Error: {0}"
 msgstr ""
 
-#: etalage/controllers.py:818
+#: etalage/controllers.py:854
 msgid "POI {0} doesn't exist."
 msgstr ""
 
-#: etalage/conv.py:214
+#: etalage/conv.py:381
 msgid "In \"directory\" mode, territory must be a commune"
 msgstr ""
 
-#: etalage/conv.py:215
+#: etalage/conv.py:382
 msgid "In \"directory\" mode, a commune is required"
 msgstr ""
 
-#: etalage/conv.py:305 etalage/conv.py:308
+#: etalage/conv.py:465 etalage/conv.py:468
 msgid "Unknown territory"
 msgstr ""
 
-#: etalage/conv.py:316
+#: etalage/conv.py:476
 msgid "Invalid category"
 msgstr ""
 
-#: etalage/conv.py:329
+#: etalage/conv.py:489
 msgid "Territory has no geographical coordinates"
 msgstr ""
 
-#: etalage/conv.py:339
+#: etalage/conv.py:499
 msgid "Missing required tags for category"
 msgstr ""
 
@@ -131,7 +135,7 @@ msgstr ""
 msgid "Redirection in progress..."
 msgstr ""
 
-#: etalage/templates/directory.mako:83
+#: etalage/templates/directory.mako:93
 msgid "Directory"
 msgstr ""
 
@@ -175,7 +179,7 @@ msgstr ""
 msgid "Redirection"
 msgstr ""
 
-#: etalage/templates/index.mako:131
+#: etalage/templates/index.mako:132
 msgid "Search"
 msgstr ""
 
@@ -187,11 +191,23 @@ msgstr ""
 msgid "Next"
 msgstr ""
 
+#: etalage/templates/list.mako:93
+msgid "Name"
+msgstr ""
+
+#: etalage/templates/list.mako:94
+msgid "Street Address"
+msgstr ""
+
+#: etalage/templates/list.mako:95
+msgid "Commune"
+msgstr ""
+
 #: etalage/templates/list.mako:132
 msgid "List"
 msgstr ""
 
-#: etalage/templates/map.mako:78
+#: etalage/templates/map.mako:79
 msgid "Map"
 msgstr ""
 

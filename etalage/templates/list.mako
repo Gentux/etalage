@@ -90,9 +90,9 @@ from etalage import urls
         <table class="zebra-striped">
             <thead>
                 <tr>
-                    <th>Name</th>
-                    <th>Street Address</th>
-                    <th>Postal Code & Commune</th>
+                    <th>${_('Name')}</th>
+                    <th>${_('Street Address')}</th>
+                    <th>${_('Commune')}</th>
                 </tr>
             </thead>
             <tbody>
