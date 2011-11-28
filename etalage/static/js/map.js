@@ -90,6 +90,12 @@ etalage.map = (function ($) {
         greenMultipleIcon.shadowSize = new L.Point(51, 27);
         greenMultipleIcon.shadowUrl = etalage.map.markersUrl + '/misc/shadow.png';
 
+        var homeIcon = new L.Icon(etalage.map.markersUrl + '/map-icons-collection-2.0/icons/home.png');
+        homeIcon.iconAnchor = new L.Point(14, 24);
+        homeIcon.iconSize = new L.Point(27, 27);
+        homeIcon.shadowSize = new L.Point(51, 27);
+        homeIcon.shadowUrl = etalage.map.markersUrl + '/misc/shadow.png';
+
         var redInvalidIcon = new L.Icon(etalage.map.markersUrl + '/misc/redinvalid.png');
         redInvalidIcon.iconAnchor = new L.Point(14, 24);
         redInvalidIcon.iconSize = new L.Point(27, 27);
@@ -107,48 +113,33 @@ etalage.map = (function ($) {
             var properties = e.properties;
             etalage.map.layerByPoiId[properties.id] = e.layer;
 
-            if (properties.count > 1) {
-                if (properties.competent === true) {
-                    e.layer.options.icon = greenMultipleIcon;
-                } else if (properties.competent === false) {
-                    e.layer.options.icon = redMultipleIcon;
-                } else {
-                    e.layer.options.icon = blueMultipleIcon;
-                }
+            if (properties.home) {
+                e.layer.options.icon = homeIcon;
             } else {
-                if (properties.competent === true) {
-                    e.layer.options.icon = greenValidIcon;
-                } else if (properties.competent === false) {
-                    e.layer.options.icon = redInvalidIcon;
+                if (properties.count > 1) {
+                    if (properties.competent === true) {
+                        e.layer.options.icon = greenMultipleIcon;
+                    } else if (properties.competent === false) {
+                        e.layer.options.icon = redMultipleIcon;
+                    } else {
+                        e.layer.options.icon = blueMultipleIcon;
+                    }
                 } else {
-                    e.layer.options.icon = blueBlankIcon;
+                    if (properties.competent === true) {
+                        e.layer.options.icon = greenValidIcon;
+                    } else if (properties.competent === false) {
+                        e.layer.options.icon = redInvalidIcon;
+                    } else {
+                        e.layer.options.icon = blueBlankIcon;
+                    }
                 }
-            }
 
-            var nearbyPoiCount = properties.count - properties.centerPois.length;
-            var poi;
-            var $popupDiv = $('<div/>');
-            if (properties.count == 1 || nearbyPoiCount > 0) {
-                poi = properties.centerPois[0];
-                $popupDiv.append(
-                    $('<a/>', {
-                        'class': 'internal',
-                        href: '/organismes/' + poi.id
-                    }).append($('<strong/>').text(poi.name))
-                );
-                if (poi.streetAddress) {
-                    $.each(poi.streetAddress.split('\n'), function (index, line) {
-                        $popupDiv.append($('<div/>').text(line));
-                    });
-                }
-                if (poi.postalDistribution) {
-                    $popupDiv.append($('<div/>').text(poi.postalDistribution));
-                }
-            } else {
-                var $ul = $('<ul/>');
-                var $li;
-                $.each(properties.centerPois, function (index, poi) {
-                    $li = $('<li>').append(
+                var nearbyPoiCount = properties.count - properties.centerPois.length;
+                var poi;
+                var $popupDiv = $('<div/>');
+                if (properties.count == 1 || nearbyPoiCount > 0) {
+                    poi = properties.centerPois[0];
+                    $popupDiv.append(
                         $('<a/>', {
                             'class': 'internal',
                             href: '/organismes/' + poi.id
@@ -156,44 +147,63 @@ etalage.map = (function ($) {
                     );
                     if (poi.streetAddress) {
                         $.each(poi.streetAddress.split('\n'), function (index, line) {
-                            $li.append($('<div/>').text(line));
+                            $popupDiv.append($('<div/>').text(line));
                         });
                     }
                     if (poi.postalDistribution) {
-                        $li.append($('<div/>').text(poi.postalDistribution));
+                        $popupDiv.append($('<div/>').text(poi.postalDistribution));
                     }
-                    $ul.append($li);
-                });
-                $popupDiv.append($ul);
-            }
-
-            if (nearbyPoiCount > 0) {
-                var bbox = e.bbox;
-                var $a = $('<a/>', {
-                    'class': 'bbox',
-                    href: '/carte?' + $.param($.extend({bbox: bbox.join(",")}, etalage.map.geojsonParams || {}), true)
-                });
-                var $em = $('<em/>');
-                if (properties.count == 2) {
-                    $em.text('Ainsi qu\'1 autre organisme à proximité');
                 } else {
-                    $em.text('Ainsi que ' + (properties.count - 1) + ' autres organismes à proximité');
+                    var $ul = $('<ul/>');
+                    var $li;
+                    $.each(properties.centerPois, function (index, poi) {
+                        $li = $('<li>').append(
+                            $('<a/>', {
+                                'class': 'internal',
+                                href: '/organismes/' + poi.id
+                            }).append($('<strong/>').text(poi.name))
+                        );
+                        if (poi.streetAddress) {
+                            $.each(poi.streetAddress.split('\n'), function (index, line) {
+                                $li.append($('<div/>').text(line));
+                            });
+                        }
+                        if (poi.postalDistribution) {
+                            $li.append($('<div/>').text(poi.postalDistribution));
+                        }
+                        $ul.append($li);
+                    });
+                    $popupDiv.append($ul);
                 }
-                $popupDiv.append($('<div/>').append($a.append($em)));
-            }
 
-            e.layer.bindPopup($popupDiv.html())
-            .on('click', function (e) {
-                $('a.bbox', e.target._popup._contentNode).on('click', function () {
-                    leafletMap.fitBounds(new L.LatLngBounds(new L.LatLng(bbox[1], bbox[0]),
-                        new L.LatLng(bbox[3], bbox[2])));
-                    return false;
+                if (nearbyPoiCount > 0) {
+                    var bbox = e.bbox;
+                    var $a = $('<a/>', {
+                        'class': 'bbox',
+                        href: '/carte?' + $.param($.extend({bbox: bbox.join(",")}, etalage.map.geojsonParams || {}), true)
+                    });
+                    var $em = $('<em/>');
+                    if (properties.count == 2) {
+                        $em.text('Ainsi qu\'1 autre organisme à proximité');
+                    } else {
+                        $em.text('Ainsi que ' + (properties.count - 1) + ' autres organismes à proximité');
+                    }
+                    $popupDiv.append($('<div/>').append($a.append($em)));
+                }
+
+                e.layer.bindPopup($popupDiv.html())
+                .on('click', function (e) {
+                    $('a.bbox', e.target._popup._contentNode).on('click', function () {
+                        leafletMap.fitBounds(new L.LatLngBounds(new L.LatLng(bbox[1], bbox[0]),
+                            new L.LatLng(bbox[3], bbox[2])));
+                        return false;
+                    });
+                    $('a.internal', e.target._popup._contentNode).on('click', function () {
+                        rpc.requestNavigateTo($(this).attr('href'));
+                        return false;
+                    });
                 });
-                $('a.internal', e.target._popup._contentNode).on('click', function () {
-                    rpc.requestNavigateTo($(this).attr('href'));
-                    return false;
-                });
-            });
+            }
         });
         leafletMap.addLayer(geojsonLayer);
         etalage.map.geojsonLayer = geojsonLayer;

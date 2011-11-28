@@ -27,6 +27,7 @@
 """Controllers for territories"""
 
 
+import datetime
 import itertools
 import logging
 import math
@@ -347,16 +348,66 @@ def geojson(req):
         )
     params.update(base_params)
 
-    clusters, errors = conv.pipe(
+    data, errors = conv.pipe(
         conv.params_to_pois_layer_data,
         conv.default_pois_layer_data_bbox,
-        conv.layer_data_to_clusters,
         )(params, state = ctx)
     if errors is not None:
         raise wsgihelpers.bad_request(ctx, explanation = ctx._('Error: {0}').format(errors))
-    geojson, errors = conv.params_and_clusters_to_geojson((params, clusters), state = ctx)
+    clusters, errors = conv.layer_data_to_clusters(data, state = ctx)
     if errors is not None:
         raise wsgihelpers.bad_request(ctx, explanation = ctx._('Error: {0}').format(errors))
+
+    geojson = {
+        'type': 'FeatureCollection',
+        'properties': {
+            'context': params.get('context'), # Parameter given in request that is returned as is.
+            'date': unicode(datetime.datetime.utcnow()),
+        },
+        'features': [
+            {
+                'type': 'Feature',
+                'bbox': [
+                    cluster.left,
+                    cluster.bottom,
+                    cluster.right,
+                    cluster.top,
+                    ] if cluster.count > 1 else None,
+                'geometry': {
+                    'type': 'Point',
+                    'coordinates': [cluster.center_longitude, cluster.center_latitude],
+                    },
+                'properties': {
+                    'competent': cluster.competent,
+                    'count': cluster.count,
+                    'id': '{0}-{1}'.format(cluster.center_pois[0]._id, cluster.count),
+                    'centerPois': [
+                        {
+                            'id': str(poi._id),
+                            'name': poi.name,
+                            'postalDistribution': poi.postal_distribution_str,
+                            'streetAddress': poi.street_address,
+                            }
+                        for poi in cluster.center_pois
+                        ],
+                    },
+                }
+            for cluster in clusters
+            ],
+        }
+    territory = data.get('territory')
+    if territory is not None:
+        geojson['features'].insert(0, {
+            'type': 'Feature',
+            'geometry': {
+                'type': 'Point',
+                'coordinates': [territory.geo[1], territory.geo[0]],
+                },
+            'properties': {
+                'home': True,
+                'id': str(territory._id),
+                },
+            })
 
     response = json.dumps(
         geojson,

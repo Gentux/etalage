@@ -29,7 +29,6 @@
 
 from cStringIO import StringIO
 import csv
-import datetime
 import itertools
 import math
 
@@ -247,50 +246,6 @@ def layer_data_to_clusters(data, state = default_state):
                 and not related_territories_id.isdisjoint(poi.competence_territories_id):
             cluster.competent = True
     return clusters, None
-
-
-def params_and_clusters_to_geojson((params, clusters), state = default_state):
-    if clusters is None:
-        return clusters, None
-
-    geojson = {
-        'type': 'FeatureCollection',
-        'properties': {
-            'context': params.get('context'), # Parameter given in request that is returned as is.
-            'date': unicode(datetime.datetime.utcnow()),
-        },
-        'features': [
-            {
-                'type': 'Feature',
-                'bbox': [
-                    cluster.left,
-                    cluster.bottom,
-                    cluster.right,
-                    cluster.top,
-                    ] if cluster.count > 1 else None,
-                'geometry': {
-                    'type': 'Point',
-                    'coordinates': [cluster.center_longitude, cluster.center_latitude],
-                    },
-                'properties': {
-                    'competent': cluster.competent,
-                    'count': cluster.count,
-                    'id': '{0}-{1}'.format(cluster.center_pois[0]._id, cluster.count),
-                    'centerPois': [
-                        {
-                            'id': str(poi._id),
-                            'name': poi.name,
-                            'postalDistribution': poi.postal_distribution_str,
-                            'streetAddress': poi.street_address,
-                            }
-                        for poi in cluster.center_pois
-                        ],
-                    },
-                }
-            for cluster in clusters
-            ],
-        }
-    return geojson, None
 
 
 def params_and_pois_iter_to_csv((params, pois_iter), state = default_state):
