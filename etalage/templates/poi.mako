@@ -77,10 +77,10 @@ from etalage import conf, model, ramdb, urls
     if field.value is None:
         return ''
 %>\
-<div class="field">
-    <strong class="field-label">${field.label} :</strong>
-    <%self:field_value field="${field}"/>
-</div>
+        <div class="field">
+            <strong class="field-label">${field.label} :</strong>
+            <%self:field_value field="${field}"/>
+        </div>
 </%def>
 
 
@@ -104,9 +104,9 @@ from etalage import conf, model, ramdb, urls
         for slug, name in slug_and_name_couples
         ]
 %>\
-    <span class="field-value">${u', '.join(names)}</span>
+            <span class="field-value">${u', '.join(names)}</span>
     % elif field.id == 'adr':
-    <address class="field-value">
+            <address class="field-value">
         % for subfield in field.value:
 <%
             if subfield.value is None:
@@ -114,21 +114,21 @@ from etalage import conf, model, ramdb, urls
 %>\
             % if subfield.id == 'street-address':
                 % for line in subfield.value.split('\n'):
-        ${line}<br>
+                ${line}<br>
                 % endfor
             % elif subfield.id == 'commune':
 <%
                 continue
 %>\
             % elif subfield.id == 'postal-distribution':
-        ${subfield.value}
+                ${subfield.value}
             % endif
         % endfor
-    </address>
+            </address>
     % elif field.id == 'email':
-    <span class="field-value"><a href="mailto:${field.value}">${field.value}</a></span>
+            <span class="field-value"><a href="mailto:${field.value}">${field.value}</a></span>
     % elif field.id == 'feed':
-    <div class="field-value">
+            <div class="field-value">
 <%
         import feedparser
         d = feedparser.parse(field.value)
@@ -136,59 +136,59 @@ from etalage import conf, model, ramdb, urls
         % if d is None or 'status' not in d \
             or not d.version and d.status != 304 and d.status != 401 \
             or d.status >= 400:
-        <em class="error">Erreur dans le flux d'actualité <a href="${field.value}" rel="external">${field.value}</a></em>
+                <em class="error">Erreur dans le flux d'actualité <a href="${field.value}" rel="external">${field.value}</a></em>
         % else:
-        <strong>${d.feed.title}</strong>
-        <a href="${field.value}" rel="external"><img alt="" src="http://cdn.comarquage.fr/images/misc/feed.png"></a>
+                <strong>${d.feed.title}</strong>
+                <a href="${field.value}" rel="external"><img alt="" src="http://cdn.comarquage.fr/images/misc/feed.png"></a>
         % endif
-        <ul>
+                <ul>
         % for entry in d.entries[:10]:
-            <li class="feed-entry">${entry.title | n}
+                    <li class="feed-entry">${entry.title | n}
             % for content in entry.content:
-                <div>${content.value | n}</div>
+                        <div>${content.value | n}</div>
             % endfor
-            </li>
+                    </li>
         % endfor
         % if len(d.entries) > 10:
-            <li>...</li>
+                    <li>...</li>
         % endif
-        </ul>
-    </div>
+                </ul>
+            </div>
     % elif field.id == 'geo':
-        <div class="field-value">
+            <div class="field-value">
         % if field.value[2] <= 6:
-            <div class="alert-message error">
-                <p>Cet organisme est positionné <strong>très approximativement</strong>.</p>
-            </div>
+                <div class="alert-message error">
+                    <p>Cet organisme est positionné <strong>très approximativement</strong>.</p>
+                </div>
         % elif field.value[2] <= 6:
-            <div class="alert-message warning">
-                <p>Cet organisme est positionné <strong>approximativement dans la rue</strong>.</p>
-            </div>
+                <div class="alert-message warning">
+                    <p>Cet organisme est positionné <strong>approximativement dans la rue</strong>.</p>
+                </div>
         % endif
-            <div class="single-marker-map" id="map-poi" style="height: 500px;"></div>
-            <script type="text/javascript">
+                <div class="single-marker-map" id="map-poi" style="height: 500px;"></div>
+                <script type="text/javascript">
 var etalage = etalage || {};
 etalage.map.singleMarkerMap("map-poi", ${field.value[0]}, ${field.value[1]});
-            </script>
-            <div class="bigger-map-link">
-                Voir sur une carte plus grande avec
-                <a href="${u'http://www.openstreetmap.org/?mlat={0}&mlon={1}&zoom=15&layers=M'\
-.format(field.value[0], field.value[1])}" rel="external">OpenStreetMap</a>
-                ou
-                <a href="${u'http://maps.google.com/maps?q={0},{1}'.format(field.value[0], field.value[1])}" \
-rel="external">Google Maps</a>
+                </script>
+                <div class="bigger-map-link">
+                    Voir sur une carte plus grande avec
+                    <a href="${u'http://www.openstreetmap.org/?mlat={0}&mlon={1}&zoom=15&layers=M'.format(
+                            field.value[0], field.value[1])}" rel="external">OpenStreetMap</a>
+                    ou
+                    <a href="${u'http://maps.google.com/maps?q={0},{1}'.format(field.value[0], field.value[1]
+                            )}" rel="external">Google Maps</a>
+                </div>
             </div>
-        </div>
     % elif field.id == 'image':
-        <div class="field-value"><img alt="" src="${field.value}"></div>
+            <div class="field-value"><img alt="" src="${field.value}"></div>
     % elif field.id == 'link':
 <%
         target = ramdb.pois_by_id.get(field.value)
 %>\
         % if target is None:
-    <em class="field-value">Lien manquant</em>
+            <em class="field-value">Lien manquant</em>
         % else:
-    <a class="field-value internal" href="${urls.get_url(ctx, 'organismes', target._id)}">${target.name}</a>
+            <a class="field-value internal" href="${urls.get_url(ctx, 'organismes', target._id)}">${target.name}</a>
         % endif
     % elif field.id == 'links':
         % if len(field.value) == 1:
@@ -197,16 +197,16 @@ rel="external">Google Maps</a>
 %>\
 <%self:field_value field="${single_field}"/>
         % else:
-    <ul class="field-value">
+            <ul class="field-value">
             % for target_id in field.value:
 <%
                 target = ramdb.pois_by_id.get(target_id)
                 if target is None:
                     continue
 %>\
-        <li><a class="internal" href="${urls.get_url(ctx, 'organismes', target._id)}">${target.name}</a></li>
+                <li><a class="internal" href="${urls.get_url(ctx, 'organismes', target._id)}">${target.name}</a></li>
             % endfor
-    </ul>
+            </ul>
         % endif
     % elif field.id == 'organism-type':
 <%
@@ -214,13 +214,13 @@ rel="external">Google Maps</a>
     category = ramdb.categories_by_slug.get(category_slug) if category_slug is not None else None
     category_name = category.name if category is not None else field.value
 %>\
-    <span class="field-value">${category_name}</span>
+            <span class="field-value">${category_name}</span>
     % elif field.id == 'source':
-    <div class="field-value">
+            <div class="field-value">
         % for subfield in field.value:
-            <%self:field field="${subfield}"/>
+        <%self:field field="${subfield}"/>
         % endfor
-    </div>
+            </div>
     % elif field.id == 'tags':
 <%
     tags_name = [
@@ -232,7 +232,7 @@ rel="external">Google Maps</a>
         if tag is not None
         ]
 %>\
-    <span class="field-value">${u', '.join(tags_name)}</span>
+            <span class="field-value">${u', '.join(tags_name)}</span>
     % elif field.id == 'territories':
 <%
         territories_title_markup = [
@@ -249,27 +249,27 @@ rel="external">Google Maps</a>
 %>\
         % if territories_title_markup:
             % if len(territories_title_markup) == 1:
-    <span class="field-value">${territories_title_markup[0] | n}</span>
+            <span class="field-value">${territories_title_markup[0] | n}</span>
             % else:
-    <ul class="field-value">
+            <ul class="field-value">
                 % for territory_title_markup in territories_title_markup:
-        <li>${territory_title_markup | n}</li>
+                <li>${territory_title_markup | n}</li>
                 % endfor
-    </ul>
+            </ul>
             % endif
         % endif
     % elif field.id == 'text-block':
-    <div class="field-value">${markupsafe.Markup('<br>').join(field.value.split('\n'))}</div>
+            <div class="field-value">${markupsafe.Markup('<br>').join(field.value.split('\n'))}</div>
     % elif field.id == 'text-rich':
-    <div class="field-value">${field.value | n}</div>
+            <div class="field-value">${field.value | n}</div>
     % elif field.id in ('source-url', 'url'):
-    <a class="field-value" href="${field.value}" rel="external">${field.value}</a>
+            <a class="field-value" href="${field.value}" rel="external">${field.value}</a>
     % else:
 <%
         if field.id not in ('fax', 'name', 'org', 'source-organization', 'tel'):
             print 'Unknown ID for field {0}'.format(field)
 %>\
-    <span class="field-value">${field.value}</span>
+            <span class="field-value">${field.value}</span>
     % endif
 </%def>
 
