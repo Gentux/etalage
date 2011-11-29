@@ -52,23 +52,14 @@ def default_pois_layer_data_bbox(data, state = default_state):
     if data.get('bbox') is not None:
         return data, None
     data = data.copy()
-    territory = data.get('territory')
-    if territory is None:
-        data['bbox'] = [-180.0, -90.0, 180.0, 90.0]
-        return data, None
     categories_slug = set(state.base_categories_slug or [])
-    center_latitude = territory.geo[0]
-    center_longitude = territory.geo[1]
-    bottom = center_latitude
-    left = center_longitude
-    right = center_longitude
-    top = center_latitude
-    pois_by_id = ramdb.pois_by_id
     if data.get('category') is not None:
         categories_slug.add(data['category'].slug)
     filter = data.get('filter')
-    if filter == 'competence':
-        competence_territories_id = ramdb.get_territory_related_territories_id(territory)
+    territory = data.get('territory')
+    pois_by_id = ramdb.pois_by_id
+    if territory is None:
+        competence_territories_id = None
         presence_territory = None
         pois_id_iter = ramdb.iter_pois_id(categories_slug = categories_slug,
             competence_territories_id = competence_territories_id, presence_territory = presence_territory,
@@ -81,38 +72,19 @@ def default_pois_layer_data_bbox(data, state = default_state):
                 )
             if poi.geo is not None
             ]
-    elif filter == 'presence':
-        competence_territories_id = None
-        presence_territory = territory
-        pois_id_iter = ramdb.iter_pois_id(categories_slug = categories_slug,
-            competence_territories_id = competence_territories_id, presence_territory = presence_territory,
-            term = data.get('term'))
-        pois = [
-            poi
-            for poi in (
-                pois_by_id[poi_id]
-                for poi_id in pois_id_iter
-                )
-            if poi.geo is not None
-            ]
-    else:
-        # When no filter is given, use the bounding box of the territory (ie the bounding box enclosing every POI
-        # present in the territory).
-        competence_territories_id = None
-        presence_territory = territory
-        pois_id_iter = ramdb.iter_pois_id(categories_slug = categories_slug,
-            competence_territories_id = competence_territories_id, presence_territory = presence_territory,
-            term = data.get('term'))
-        pois = [
-            poi
-            for poi in (
-                pois_by_id[poi_id]
-                for poi_id in pois_id_iter
-                )
-            if poi.geo is not None
-            ]
         if not pois:
-            # When no POI has been found in territory, use the bounding box enclosing every competent POI.
+            data['bbox'] = [-180.0, -90.0, 180.0, 90.0]
+            return data, None
+        bottom = top = pois[0].geo[0]
+        left = right = pois[0].geo[1]
+    else:
+        center_latitude = territory.geo[0]
+        center_longitude = territory.geo[1]
+        bottom = center_latitude
+        left = center_longitude
+        right = center_longitude
+        top = center_latitude
+        if filter == 'competence':
             competence_territories_id = ramdb.get_territory_related_territories_id(territory)
             presence_territory = None
             pois_id_iter = ramdb.iter_pois_id(categories_slug = categories_slug,
@@ -126,16 +98,61 @@ def default_pois_layer_data_bbox(data, state = default_state):
                     )
                 if poi.geo is not None
                 ]
+        elif filter == 'presence':
+            competence_territories_id = None
+            presence_territory = territory
+            pois_id_iter = ramdb.iter_pois_id(categories_slug = categories_slug,
+                competence_territories_id = competence_territories_id, presence_territory = presence_territory,
+                term = data.get('term'))
+            pois = [
+                poi
+                for poi in (
+                    pois_by_id[poi_id]
+                    for poi_id in pois_id_iter
+                    )
+                if poi.geo is not None
+                ]
+        else:
+            # When no filter is given, use the bounding box of the territory (ie the bounding box enclosing every POI
+            # present in the territory).
+            competence_territories_id = None
+            presence_territory = territory
+            pois_id_iter = ramdb.iter_pois_id(categories_slug = categories_slug,
+                competence_territories_id = competence_territories_id, presence_territory = presence_territory,
+                term = data.get('term'))
+            pois = [
+                poi
+                for poi in (
+                    pois_by_id[poi_id]
+                    for poi_id in pois_id_iter
+                    )
+                if poi.geo is not None
+                ]
             if not pois:
-                # When no present nor competent POI has been found, compute bounding box using given distance.
-                delta = math.degrees(state.distance / 6372.8)
-                data['bbox'] = [
-                    center_longitude - delta, # left
-                    center_latitude - delta, # bottom
-                    center_longitude + delta, # left
-                    center_latitude + delta, # top
+                # When no POI has been found in territory, use the bounding box enclosing every competent POI.
+                competence_territories_id = ramdb.get_territory_related_territories_id(territory)
+                presence_territory = None
+                pois_id_iter = ramdb.iter_pois_id(categories_slug = categories_slug,
+                    competence_territories_id = competence_territories_id, presence_territory = presence_territory,
+                    term = data.get('term'))
+                pois = [
+                    poi
+                    for poi in (
+                        pois_by_id[poi_id]
+                        for poi_id in pois_id_iter
+                        )
+                    if poi.geo is not None
                     ]
-                return data, None
+                if not pois:
+                    # When no present nor competent POI has been found, compute bounding box using given distance.
+                    delta = math.degrees(state.distance / 6372.8)
+                    data['bbox'] = [
+                        center_longitude - delta, # left
+                        center_latitude - delta, # bottom
+                        center_longitude + delta, # left
+                        center_latitude + delta, # top
+                        ]
+                    return data, None
     for poi in pois:
         poi_latitude = poi.geo[0]
         if poi_latitude < bottom:
