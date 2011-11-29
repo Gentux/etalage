@@ -40,17 +40,21 @@ etalage.map = (function ($) {
             })
         );
         leafletMap.attributionControl.setPrefix(null); // Remove Leaflet attribution.
-        leafletMap.on('moveend', function (e) {
-            try {
-                leafletMap.getBounds();
-            } catch(err) {
-                // Method getBounds fails when map center or zoom level are not yet set.
-                return;
-            }
-//            etalage.map.geojsonLayer.clearLayers();
-//            etalage.map.layerByPoiId = {};
-            fetchPois();
-        });
+        leafletMap
+            .on('dragend', function (e) {
+                fetchPois();
+            })
+            .on('zoomend', function (e) {
+                try {
+                    leafletMap.getBounds();
+                } catch(err) {
+                    // Method getBounds fails when map center or zoom level are not yet set.
+                    return;
+                }
+                etalage.map.geojsonLayer.clearLayers();
+                etalage.map.layerByPoiId = {};
+                fetchPois();
+            });
 
         if (window.PIE) {
             $('.leaflet-control, .leaflet-control-zoom, .leaflet-control-zoom-in, .leaflet-control-zoom-out').each(
