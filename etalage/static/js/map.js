@@ -195,18 +195,19 @@ etalage.map = (function ($) {
                     $popupDiv.append($('<div/>').append($a.append($em)));
                 }
 
-                e.layer.bindPopup($popupDiv.html())
-                .on('click', function (e) {
-                    $('a.bbox', e.target._popup._contentNode).on('click', function () {
-                        leafletMap.fitBounds(new L.LatLngBounds(new L.LatLng(bbox[1], bbox[0]),
-                            new L.LatLng(bbox[3], bbox[2])));
-                        return false;
+                e.layer
+                    .bindPopup($popupDiv.html())
+                    .on('click', function (e) {
+                        $('a.bbox', e.target._popup._contentNode).on('click', function () {
+                            leafletMap.fitBounds(new L.LatLngBounds(new L.LatLng(bbox[1], bbox[0]),
+                                new L.LatLng(bbox[3], bbox[2])));
+                            return false;
+                        });
+                        $('a.internal', e.target._popup._contentNode).on('click', function () {
+                            rpc.requestNavigateTo($(this).attr('href'));
+                            return false;
+                        });
                     });
-                    $('a.internal', e.target._popup._contentNode).on('click', function () {
-                        rpc.requestNavigateTo($(this).attr('href'));
-                        return false;
-                    });
-                });
             }
         });
         leafletMap.addLayer(geojsonLayer);
