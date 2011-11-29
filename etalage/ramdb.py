@@ -114,20 +114,17 @@ def iter_pois_id(categories_slug = None, competence_territories_id = None, prese
     # don't match the term).
     if term:
         prefixes = strings.slugify(term).split(u'-')
-        iterables_by_prefix = {}
+        pois_id_by_prefix = {}
         for prefix in prefixes:
-            if prefix in iterables_by_prefix:
+            if prefix in pois_id_by_prefix:
                 # TODO? Handle pois with several words sharing the same prefix?
                 continue
-            iterables_by_prefix[prefix] = (
+            pois_id_by_prefix[prefix] = union_set(
                 pois_id
                 for word, pois_id in pois_id_by_word.iteritems()
                 if word.startswith(prefix)
                 )
-        intersected_sets.extend(
-            union_set(iterables_by_prefix.get(prefix))
-            for prefix in prefixes
-            )
+        intersected_sets.extend(pois_id_by_prefix.itervalues())
 
     found_pois_id = intersection_set(intersected_sets)
     if found_pois_id is None:
