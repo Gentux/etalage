@@ -42,7 +42,7 @@ from etalage import conf, urls
         if name in (
                 'bbox',
                 'category' if not ctx.hide_category else None,
-                'filter',
+                'filter' if ctx.show_filter else None,
                 'page',
                 'term',
                 'territory',
@@ -97,8 +97,9 @@ from etalage import conf, urls
     % endif
                     </div>
                 </div>
+    % if ctx.show_filter:
 <%
-    error = errors.get('filter') if errors is not None else None
+        error = errors.get('filter') if errors is not None else None
 %>\
                 <div class="clearfix${' error' if error else ''}">
                     <label for="filter">Afficher</label>
@@ -123,6 +124,7 @@ from etalage import conf, urls
                                 </label>
                             </li>
                         </ul>
+    % endif
     % if error:
                         <span class="help-inline">${error}</span>
     % endif

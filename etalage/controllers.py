@@ -734,6 +734,7 @@ def init_base(ctx, params):
         distance = params.get('distance'),
         gadget = params.get('gadget'),
         hide_category = params.get('hide_category'),
+        show_filter = params.get('show_filter'),
         )
 
     ctx.base_categories_slug, error = conv.uniform_sequence(
@@ -825,6 +826,13 @@ def init_base(ctx, params):
         )(base_params['hide_category'], state = ctx)
     if error is not None:
         raise wsgihelpers.bad_request(ctx, explanation = ctx._('Hide Category Error: {0}').format(error))
+
+    ctx.show_filter, error = conv.pipe(
+        conv.guess_bool,
+        conv.default(False),
+        )(base_params['show_filter'], state = ctx)
+    if error is not None:
+        raise wsgihelpers.bad_request(ctx, explanation = ctx._('Show Filter Error: {0}').format(error))
 
     return base_params
 

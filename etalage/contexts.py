@@ -51,6 +51,7 @@ class Ctx(object):
         gadget_id = None,
         hide_category = False,
         req = None,
+        show_filter = False,
         )
     env_keys = ('_lang', '_scopes', '_translator')
 
