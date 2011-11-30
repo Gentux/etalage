@@ -51,7 +51,7 @@ $[address]
         <Placemark id="${poi._id}">
             <name>${poi.name}</name>
             <styleUrl>#default-balloon-style</styleUrl>
-            <description>${urls.get_full_url(ctx, 'organismes', str(poi._id))}</description>
+            <description>${urls.get_full_url(ctx, 'organismes', poi.slug, poi._id)}</description>
             <Point>
                 <coordinates>${poi.geo[1]},${poi.geo[0]}</coordinates>
             </Point>

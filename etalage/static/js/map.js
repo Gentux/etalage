@@ -146,7 +146,7 @@ etalage.map = (function ($) {
                     $popupDiv.append(
                         $('<a/>', {
                             'class': 'internal',
-                            href: '/organismes/' + poi.id
+                            href: '/organismes/' + poi.slug + '/' + poi.id
                         }).append($('<strong/>').text(poi.name))
                     );
                     if (poi.streetAddress) {
@@ -164,7 +164,7 @@ etalage.map = (function ($) {
                         $li = $('<li>').append(
                             $('<a/>', {
                                 'class': 'internal',
-                                href: '/organismes/' + poi.id
+                                href: '/organismes/' + poi.slug + '/' + poi.id
                             }).append($('<strong/>').text(poi.name))
                         );
                         if (poi.streetAddress) {

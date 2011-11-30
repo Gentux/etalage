@@ -387,6 +387,7 @@ def geojson(req):
                             'id': str(poi._id),
                             'name': poi.name,
                             'postalDistribution': poi.postal_distribution_str,
+                            'slug': poi.slug,
                             'streetAddress': poi.street_address,
                             }
                         for poi in cluster.center_pois
@@ -890,6 +891,7 @@ def make_router():
         ('GET', '^/export/couverture-geographique/csv/?$', export_geographical_coverage_csv),
         ('GET', '^/liste/?$', index_list),
         ('GET', '^/organismes/(?P<poi_id>[a-z0-9]{24})/?$', poi),
+        ('GET', '^/organismes/(?P<slug>[^/]+)/(?P<poi_id>[a-z0-9]{24})/?$', poi),
         )
 
 
@@ -902,6 +904,7 @@ def poi(req):
     base_params = init_base(ctx, params)
     params = dict(
         poi_id = req.urlvars.get('poi_id'),
+        slug = req.urlvars.get('slug'),
         )
     params.update(base_params)
 
@@ -912,6 +915,12 @@ def poi(req):
         )(params['poi_id'], ctx)
     if error is not None:
         raise wsgihelpers.bad_request(ctx, explanation = ctx._('POI ID Error: {0}').format(error))
+
+    slug = poi.slug
+    if params['slug'] != slug:
+        if ctx.container_base_url is None or ctx.gadget_id is None:
+            raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, 'organismes', slug, poi._id))
+        # In gadget mode, there is no need to redirect.
 
     return templates.render(ctx, '/poi.mako', poi = poi)
 

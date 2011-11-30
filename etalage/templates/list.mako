@@ -99,7 +99,7 @@ from etalage import urls
         % for poi in pager.items:
                 <tr>
                     <td>
-                        <a class="internal" href="${urls.get_url(ctx, 'organismes', poi._id)}">${poi.name}</a>
+                        <a class="internal" href="${urls.get_url(ctx, 'organismes', poi.slug, poi._id)}">${poi.name}</a>
                     </td>
                     <td>${markupsafe.Markup(u'<br>').join((poi.street_address or u'').split(u'\n'))}</td>
                     <td>${poi.postal_distribution_str or ''}</td>

@@ -71,7 +71,7 @@ from etalage import ramdb, urls
             <ul>
                     % for poi in pois:
                 <li>
-                    <a class="internal" href="${urls.get_url(ctx, 'organismes', poi._id)}">${poi.name}</a>
+                    <a class="internal" href="${urls.get_url(ctx, 'organismes', poi.slug, poi._id)}">${poi.name}</a>
                         % if poi.street_address:
                     <div>${markupsafe.Markup(u'<br>').join((poi.street_address).split(u'\n'))}</div>
                         % endif

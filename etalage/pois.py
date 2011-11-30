@@ -29,6 +29,7 @@
 
 import logging
 
+from biryani import strings
 from suq import monpyjama, representations
 
 from . import conv, ramdb
@@ -184,3 +185,6 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
             else:
                 setattr(self, name, value)
 
+    @property
+    def slug(self):
+        return strings.slugify(self.name)
