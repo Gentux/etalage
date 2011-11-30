@@ -284,7 +284,7 @@ etalage.map.singleMarkerMap("map-poi", ${field.value[0]}, ${field.value[1]});
             <a class="field-value" href="${field.value}" rel="external">${field.value}</a>
     % else:
 <%
-        if field.id not in ('fax', 'name', 'org', 'source-organization', 'tel'):
+        if field.id not in ('fax', 'name', 'org', 'source-organization', 'tel', 'text-inline'):
             print 'Unknown ID for field {0}'.format(field)
 %>\
             <span class="field-value">${field.value}</span>
