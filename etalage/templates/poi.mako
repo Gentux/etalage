@@ -38,6 +38,10 @@ from etalage import conf, model, ramdb, urls
 <%def name="container_content()" filter="trim">
         <h2>${poi.name}</h2>
     % for field in (poi.fields or []):
+<%
+    if field.id in ('name', 'organism-type'):
+        continue
+%>\
         <%self:field field="${field}"/>
     % endfor
 <%
@@ -60,6 +64,17 @@ from etalage import conf, model, ramdb, urls
         % endfor
         </ul>
     %endif
+<%
+    field = model.Field(id = 'text-inline', label = u"Dernière mise à jour", value = u' par '.join(
+        unicode(fragment)
+        for fragment in (
+            poi.last_update_datetime.strftime('%Y-%m-%d %H:%M') if poi.last_update_datetime is not None else None,
+            poi.last_update_organization,
+            )
+        if fragment
+        ))
+%>\
+        <%self:field field="${field}"/>
 </%def>
 
 
@@ -106,7 +121,7 @@ from etalage import conf, model, ramdb, urls
 %>\
             <span class="field-value">${u', '.join(names)}</span>
     % elif field.id == 'adr':
-            <address class="field-value">
+            <address class="field-value offset1">
         % for subfield in field.value:
 <%
             if subfield.value is None:
@@ -128,7 +143,7 @@ from etalage import conf, model, ramdb, urls
     % elif field.id == 'email':
             <span class="field-value"><a href="mailto:${field.value}">${field.value}</a></span>
     % elif field.id == 'feed':
-            <div class="field-value">
+            <div class="field-value offset1">
 <%
         import feedparser
         d = feedparser.parse(field.value)
@@ -155,7 +170,7 @@ from etalage import conf, model, ramdb, urls
                 </ul>
             </div>
     % elif field.id == 'geo':
-            <div class="field-value">
+            <div class="field-value offset1">
         % if field.value[2] <= 6:
                 <div class="alert-message error">
                     <p>Cet organisme est positionné <strong>très approximativement</strong>.</p>
@@ -180,7 +195,7 @@ etalage.map.singleMarkerMap("map-poi", ${field.value[0]}, ${field.value[1]});
                 </div>
             </div>
     % elif field.id == 'image':
-            <div class="field-value"><img alt="" src="${field.value}"></div>
+            <div class="field-value offset1"><img alt="" src="${field.value}"></div>
     % elif field.id == 'link':
 <%
         target = ramdb.pois_by_id.get(field.value)
@@ -216,7 +231,7 @@ etalage.map.singleMarkerMap("map-poi", ${field.value[0]}, ${field.value[1]});
 %>\
             <span class="field-value">${category_name}</span>
     % elif field.id == 'source':
-            <div class="field-value">
+            <div class="field-value offset1">
         % for subfield in field.value:
         <%self:field field="${subfield}"/>
         % endfor
@@ -259,9 +274,9 @@ etalage.map.singleMarkerMap("map-poi", ${field.value[0]}, ${field.value[1]});
             % endif
         % endif
     % elif field.id == 'text-block':
-            <div class="field-value">${markupsafe.Markup('<br>').join(field.value.split('\n'))}</div>
+            <div class="field-value offset1">${markupsafe.Markup('<br>').join(field.value.split('\n'))}</div>
     % elif field.id == 'text-rich':
-            <div class="field-value">${field.value | n}</div>
+            <div class="field-value offset1">${field.value | n}</div>
     % elif field.id in ('source-url', 'url'):
             <a class="field-value" href="${field.value}" rel="external">${field.value}</a>
     % else:

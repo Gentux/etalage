@@ -146,6 +146,8 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
     competence_territories_id = None
     fields = None
     geo = None
+    last_update_datetime = None
+    last_update_organization = None
     name = None
     organism_type_slug = None
     parent_id = None

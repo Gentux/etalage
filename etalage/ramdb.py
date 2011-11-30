@@ -213,9 +213,12 @@ def load():
 
     for poi_bson in model.db[conf['pois_collection']].find({'metadata.deleted': {'$exists': False}}):
         metadata = poi_bson['metadata']
+        last_update = metadata['last-update']
         poi = model.Poi(
             _id = poi_bson['_id'],
             geo = poi_bson['geo'][0] if poi_bson.get('geo') is not None else None,
+            last_update_datetime = last_update['date'],
+            last_update_organization = last_update['organization'],
             name = metadata['title'],
             )
 
