@@ -340,8 +340,9 @@ def geojson(req):
     params = dict(
         bbox = params.get('bbox'),
         category = params.get('category'),
-        filter = params.get('filter'),
         context = params.get('context'),
+        current = params.get('current'),
+        filter = params.get('filter'),
         jsonp = params.get('jsonp'),
         term = params.get('term'),
         territory = params.get('territory'),
@@ -380,7 +381,7 @@ def geojson(req):
                 'properties': {
                     'competent': cluster.competent,
                     'count': cluster.count,
-                    'id': '{0}-{1}'.format(cluster.center_pois[0]._id, cluster.count),
+                    'id': str(cluster.center_pois[0]._id),
                     'centerPois': [
                         {
                             'id': str(poi._id),
@@ -848,6 +849,7 @@ def kml(req):
         bbox = params.get('bbox'),
         category = params.get('category'),
         context = params.get('context'),
+        current = params.get('current'),
         filter = params.get('filter'),
         term = params.get('term'),
         territory = params.get('territory'),
@@ -903,14 +905,13 @@ def poi(req):
         )
     params.update(base_params)
 
-    poi_id, error = conv.pipe(
+    poi, error = conv.pipe(
         conv.str_to_object_id,
+        conv.id_to_poi,
+        conv.exists,
         )(params['poi_id'], ctx)
     if error is not None:
         raise wsgihelpers.bad_request(ctx, explanation = ctx._('POI ID Error: {0}').format(error))
-    poi = ramdb.pois_by_id.get(poi_id)
-    if poi is None:
-        raise wsgihelpers.not_found(ctx, explanation = ctx._("POI {0} doesn't exist.").format(error))
 
     return templates.render(ctx, '/poi.mako', poi = poi)
 

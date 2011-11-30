@@ -29,7 +29,6 @@
 
 from cStringIO import StringIO
 import csv
-import itertools
 import math
 
 from biryani.baseconv import *
@@ -168,6 +167,16 @@ def default_pois_layer_data_bbox(data, state = default_state):
     return data, None
 
 
+def id_to_poi(poi_id, state = default_state):
+    import ramdb
+    if poi_id is None:
+        return poi_id, None
+    poi = ramdb.pois_by_id.get(poi_id)
+    if poi is None:
+        return poi_id, state._("POI {0} doesn't exist").format(poi_id)
+    return poi, None
+
+
 def layer_data_to_clusters(data, state = default_state):
     from . import model, ramdb
     if data is None:
@@ -196,13 +205,15 @@ def layer_data_to_clusters(data, state = default_state):
         competence_territories_id = competence_territories_id, presence_territory = presence_territory,
         term = data.get('term'))
     pois_by_id = ramdb.pois_by_id
+    current = data.get('current')
     pois_iter = (
         poi
         for poi in (
             pois_by_id[poi_id]
             for poi_id in pois_id_iter
             )
-        if poi.geo is not None and bottom <= poi.geo[0] <= top and left <= poi.geo[1] <= right
+        if poi.geo is not None and bottom <= poi.geo[0] <= top and left <= poi.geo[1] <= right and (
+            current is None or poi._id != current._id)
         )
     distance_and_poi_couples = sorted(
         (
@@ -396,6 +407,11 @@ def params_to_pois_layer_data(params, state = default_state):
                         ),
                     ),
                 category = str_to_slug_to_category,
+                current = pipe(
+                    str_to_object_id,
+                    id_to_poi,
+                    test(lambda poi: poi.geo is not None, error = N_('POI has no geographical coordinates')),
+                    ),
                 filter = str_to_filter,
                 term = str_to_slug,
                 territory = str_to_postal_distribution_to_geolocated_territory,

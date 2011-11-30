@@ -198,6 +198,7 @@ etalage.map = (function ($) {
                 e.layer
                     .bindPopup($popupDiv.html())
                     .on('click', function (e) {
+                        etalage.map.currentPoiId = properties.id;
                         $('a.bbox', e.target._popup._contentNode).on('click', function () {
                             leafletMap.fitBounds(new L.LatLngBounds(new L.LatLng(bbox[1], bbox[0]),
                                 new L.LatLng(bbox[3], bbox[2])));
@@ -208,6 +209,11 @@ etalage.map = (function ($) {
                             return false;
                         });
                     });
+                leafletMap.on('layerremove', function (e) {
+                    if (e.layer._closeButton) {
+                        delete etalage.map.currentPoiId;
+                    }
+                });
             }
         });
         leafletMap.addLayer(geojsonLayer);
@@ -251,7 +257,7 @@ etalage.map = (function ($) {
             data: $.extend({
                 bbox: [west, southWest.lat, east, northEast.lat].join(","),
                 context: context
-            }, etalage.map.geojsonParams || {}),
+            }, etalage.map.geojsonParams || {}, etalage.map.currentPoiId ? {current: etalage.map.currentPoiId} : {}),
             success: function (data) {
                 if (parseInt(data.properties.context) !== context) {
                     return;
@@ -325,6 +331,7 @@ etalage.map = (function ($) {
     return {
         center: null,
         createMap: createMap,
+        currentPoiId: null,
         geojsonLayer: null,
         geojsonParams: null,
         geojsonUrl: null,
