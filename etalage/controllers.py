@@ -32,6 +32,8 @@ import itertools
 import logging
 import math
 import sys
+import urllib
+import urllib2
 import urlparse
 
 from biryani import strings
@@ -889,10 +891,63 @@ def make_router():
         ('GET', '^/export/annuaire/geojson/?$', export_directory_geojson),
         ('GET', '^/export/annuaire/kml/?$', export_directory_kml),
         ('GET', '^/export/couverture-geographique/csv/?$', export_geographical_coverage_csv),
+        ('GET', '^/fragment/organismes/(?P<poi_id>[a-z0-9]{24})/?$', poi_embedded),
+        ('GET', '^/fragment/organismes/(?P<slug>[^/]+)/(?P<poi_id>[a-z0-9]{24})/?$', poi_embedded),
         ('GET', '^/liste/?$', index_list),
+        ('GET', '^/minisite/?$', minisite),
         ('GET', '^/organismes/(?P<poi_id>[a-z0-9]{24})/?$', poi),
         ('GET', '^/organismes/(?P<slug>[^/]+)/(?P<poi_id>[a-z0-9]{24})/?$', poi),
         )
+
+
+@wsgihelpers.wsgify
+@ramdb.ramdb_based
+def minisite(req):
+    ctx = contexts.Ctx(req)
+
+    params = req.params
+    base_params = init_base(ctx, params)
+    params = dict(
+        encoding = params.get('encoding') or u'',
+        path = params.get('path'),
+        )
+    params.update(base_params)
+
+    data, errors = conv.struct(
+        dict(
+            path = conv.pipe(
+                conv.make_str_to_url(remove_fragment = True),
+                conv.function(lambda url: urlparse.urlunsplit([None, None] + list(urlparse.urlsplit(url))[2:])),
+                conv.exists,
+                ),
+            encoding = conv.pipe(
+                conv.str_to_slug,
+                conv.translate({u'utf-8': None}),
+                conv.test_in([u'cp1252', u'iso-8859-1', u'iso-8859-15']),
+                ),
+            ),
+        default = 'ignore',
+        keep_empty = True,
+        )(params, state = ctx)
+
+    if not errors:
+        url = urlparse.urljoin(req.url, u'/fragment{0}'.format(data['path']))
+        split_url = list(urlparse.urlsplit(url))
+        query = urlparse.parse_qs(split_url[3])
+        if data.get('encoding') is None:
+            query.pop('encoding', None)
+        else:
+            query['encoding'] = data['encoding']
+        split_url[3] = urllib.urlencode(query, doseq = True)
+        url = urlparse.urlunsplit(split_url)
+        data['url'] = url
+        try:
+            fragment = urllib2.urlopen(url).read().decode(data.get('encoding') or 'utf-8')
+        except:
+            errors = dict(path = ctx._('Access to page failed'))
+        else:
+            data['fragment'] = fragment
+    return templates.render(ctx, '/minisite.mako', data = data, errors = errors, params = params)
 
 
 @wsgihelpers.wsgify
@@ -912,7 +967,7 @@ def poi(req):
         conv.str_to_object_id,
         conv.id_to_poi,
         conv.exists,
-        )(params['poi_id'], ctx)
+        )(params['poi_id'], state = ctx)
     if error is not None:
         raise wsgihelpers.bad_request(ctx, explanation = ctx._('POI ID Error: {0}').format(error))
 
@@ -923,4 +978,43 @@ def poi(req):
         # In gadget mode, there is no need to redirect.
 
     return templates.render(ctx, '/poi.mako', poi = poi)
+
+
+@wsgihelpers.wsgify
+@ramdb.ramdb_based
+def poi_embedded(req):
+    ctx = contexts.Ctx(req)
+
+    params = req.params
+    base_params = init_base(ctx, params)
+    params = dict(
+        encoding = params.get('encoding') or u'',
+        poi_id = req.urlvars.get('poi_id'),
+        slug = req.urlvars.get('slug'),
+        )
+    params.update(base_params)
+
+    poi, error = conv.pipe(
+        conv.str_to_object_id,
+        conv.id_to_poi,
+        conv.exists,
+        )(params['poi_id'], state = ctx)
+    if error is not None:
+        raise wsgihelpers.bad_request(ctx, explanation = ctx._('POI ID Error: {0}').format(error))
+
+    encoding, error = conv.pipe(
+        conv.str_to_slug,
+        conv.translate({u'utf-8': None}),
+        conv.test_in([u'cp1252', u'iso-8859-1', u'iso-8859-15']),
+        )(params['encoding'], state = ctx)
+    if error is not None:
+        raise wsgihelpers.bad_request(ctx, explanation = ctx._('Encoding Error: {0}').format(error))
+
+    text = templates.render(ctx, '/poi-embedded.mako', poi = poi)
+    if encoding is None:
+        req.response.content_type = 'text/plain; charset=utf-8'
+        return text
+    else:
+        req.response.content_type = 'text/plain; charset={0}'.format(encoding)
+        return text.encode(encoding, errors = 'xmlcharrefreplace')
 
