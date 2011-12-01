@@ -61,12 +61,22 @@ from etalage import conf
 </%def>
 
 
+<%def name="footer()" filter="trim">
+        <footer>
+            <p>Page réalisée en <a href="http://www.comarquage.fr/" rel="external">co-marquage</a>.
+        </footer>
+</%def>
+
+
 <%def name="metas()" filter="trim">
     <meta charset="utf-8">
 </%def>
 
 
 <%def name="scripts()" filter="trim">
+<!--[if lt IE 9]>
+    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+<![endif]-->
     <script src="${conf['jquery.js']}"></script>
     <script src="${conf['jquery-ui.js']}"></script>
     % if ctx.container_base_url is not None and ctx.gadget_id is not None:
