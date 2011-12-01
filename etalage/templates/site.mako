@@ -30,9 +30,18 @@ from etalage import conf
 
 
 <%def name="body_content()" filter="trim">
+    % if ctx.container_base_url is not None and ctx.gadget_id is not None:
     <div class="container-fluid">
         <%self:container_content/>
+        <%self:footer/>
     </div>
+    % else:
+    <%self:topbar/>
+    <div class="container">
+        <%self:container_content/>
+        <%self:footer/>
+    </div>
+    % endif
 </%def>
 
 
@@ -43,8 +52,11 @@ from etalage import conf
 <%def name="css()" filter="trim">
     <link rel="stylesheet" href="${conf['bootstrap.css']}">
     <link rel="stylesheet" href="${conf['jquery-ui.css']}">
+##    <link rel="stylesheet" href="/css/site.css">
     % if ctx.container_base_url is not None and ctx.gadget_id is not None:
     <link rel="stylesheet" href="/css/gadget.css">
+    % else:
+    <link rel="stylesheet" href="/css/standalone.css">
     % endif
 </%def>
 
@@ -114,7 +126,22 @@ $(function () {
 
 
 <%def name="title_content()" filter="trim">
-Open Data POIs Portal
+Étalage - Comarquage.fr
+</%def>
+
+
+<%def name="topbar()" filter="trim">
+    <div class="topbar">
+        <div class="topbar-inner">
+            <div class="container">
+                <a class="brand" href="http://www.comarquage.fr/">Comarquage.fr</a>
+                <ul class="nav">
+                    <li><a href="http://petitpois.comarquage.fr/">Annuaire</a></li>
+                    <li><a href="http://cosmetic3.comarquage.fr/">Droits et démarches</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
 </%def>
 
 

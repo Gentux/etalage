@@ -25,20 +25,11 @@
 
 
 <%!
-from etalage import conf, urls
+from etalage import urls
 %>
 
 
-<%def name="body_content()" filter="trim">
-    <div class="container">
-        <%self:breadcrumb/>
-        <%self:container_content/>
-    </div>
-</%def>
-
-
-<%def name="breadcrumb()" filter="trim">
-</%def>
+<%inherit file="/site.mako"/>
 
 
 <%def name="container_content()" filter="trim">
@@ -107,57 +98,7 @@ from etalage import conf, urls
 </%def>
 
 
-<%def name="css()" filter="trim">
-    <link rel="stylesheet" href="${conf['bootstrap.css']}">
-</%def>
-
-
-<%def name="metas()" filter="trim">
-    <meta charset="utf-8">
-</%def>
-
-
-<%def name="scripts()" filter="trim">
-    <script src="${conf['jquery.js']}"></script>
-</%def>
-
-
 <%def name="title_content()" filter="trim">
-Minisite - Étalage - Comarquage.fr
+Minisite - ${parent.title_content()}
 </%def>
-
-
-<%def name="topbar()" filter="trim">
-    <div class="topbar">
-        <div class="topbar-inner">
-            <div class="container">
-                <a class="brand" href="http://www.comarquage.fr/">Comarquage.fr</a>
-                <ul class="nav">
-                    <li><a href="http://petitpois.comarquage.fr/">Annuaire</a></li>
-                    <li><a href="http://cosmetic3.comarquage.fr/">Droits et démarches</a></li>
-                </ul>
-            </div>
-        </div>
-    </div>
-</%def>
-
-
-<%def name="trackers()" filter="trim">
-</%def>
-
-
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <%self:metas/>
-    <title>${self.title_content()}</title>
-    <%self:css/>
-    <%self:scripts/>
-</head>
-<body style="padding-top: 40px;">
-    <%self:topbar/>
-    <%self:body_content/>
-    <%self:trackers/>
-</body>
-</html>
 
