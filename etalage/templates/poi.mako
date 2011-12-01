@@ -32,7 +32,7 @@ from etalage import conf, model, ramdb, urls
 %>\
 
 
-<%inherit file="/site.mako"/>\
+<%inherit file="/site.mako"/>
 
 
 <%def name="container_content()" filter="trim">
@@ -182,8 +182,7 @@ from etalage import conf, model, ramdb, urls
                 </div>
         % endif
                 <div class="single-marker-map" id="map-poi" style="height: 500px;"></div>
-                <script type="text/javascript">
-var etalage = etalage || {};
+                <script>
 etalage.map.singleMarkerMap("map-poi", ${field.value[0]}, ${field.value[1]});
                 </script>
                 <div class="bigger-map-link">
