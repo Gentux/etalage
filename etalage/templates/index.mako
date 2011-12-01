@@ -124,12 +124,12 @@ from etalage import conf, urls
                                 </label>
                             </li>
                         </ul>
-    % endif
-    % if error:
+        % if error:
                         <span class="help-inline">${error}</span>
-    % endif
+        % endif
                     </div>
                 </div>
+    % endif
                 <div class="actions">
                     <input class="btn primary" type="submit" value="${_('Search')}">
                 </div>
