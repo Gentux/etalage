@@ -894,7 +894,8 @@ def make_router():
         ('GET', '^/fragment/organismes/(?P<poi_id>[a-z0-9]{24})/?$', poi_embedded),
         ('GET', '^/fragment/organismes/(?P<slug>[^/]+)/(?P<poi_id>[a-z0-9]{24})/?$', poi_embedded),
         ('GET', '^/liste/?$', index_list),
-        ('GET', '^/minisite/?$', minisite),
+        ('GET', '^/minisite/organismes/(?P<poi_id>[a-z0-9]{24})/?$', minisite),
+        ('GET', '^/minisite/organismes/(?P<slug>[^/]+)/(?P<poi_id>[a-z0-9]{24})/?$', minisite),
         ('GET', '^/organismes/(?P<poi_id>[a-z0-9]{24})/?$', poi),
         ('GET', '^/organismes/(?P<slug>[^/]+)/(?P<poi_id>[a-z0-9]{24})/?$', poi),
         )
@@ -909,42 +910,38 @@ def minisite(req):
     base_params = init_base(ctx, params)
     params = dict(
         encoding = params.get('encoding') or u'',
-        path = params.get('path'),
+        poi_id = req.urlvars.get('poi_id'),
+        slug = req.urlvars.get('slug'),
         )
     params.update(base_params)
 
-    data, errors = conv.struct(
-        dict(
-            path = conv.pipe(
-                conv.make_str_to_url(remove_fragment = True),
-                conv.function(lambda url: urlparse.urlunsplit([None, None] + list(urlparse.urlsplit(url))[2:])),
-                conv.exists,
+    data, errors = conv.pipe(
+        conv.struct(
+            dict(
+                poi_id = conv.pipe(
+                    conv.str_to_object_id,
+                    conv.id_to_poi,
+                    conv.exists,
+                    ),
+                encoding = conv.pipe(
+                    conv.str_to_slug,
+                    conv.translate({u'utf-8': None}),
+                    conv.test_in([u'cp1252', u'iso-8859-1', u'iso-8859-15']),
+                    ),
                 ),
-            encoding = conv.pipe(
-                conv.str_to_slug,
-                conv.translate({u'utf-8': None}),
-                conv.test_in([u'cp1252', u'iso-8859-1', u'iso-8859-15']),
-                ),
+            default = 'ignore',
+            keep_empty = True,
             ),
-        default = 'ignore',
-        keep_empty = True,
+        conv.rename_item('poi_id', 'poi'),
         )(params, state = ctx)
 
     if not errors:
-        url = urlparse.urljoin(req.url, u'/fragment{0}'.format(data['path']))
-        split_url = list(urlparse.urlsplit(url))
-        query = urlparse.parse_qs(split_url[3])
-        if data.get('encoding') is None:
-            query.pop('encoding', None)
-        else:
-            query['encoding'] = data['encoding']
-        split_url[3] = urllib.urlencode(query, doseq = True)
-        url = urlparse.urlunsplit(split_url)
-        data['url'] = url
+        data['url'] = url = urls.get_full_url(ctx, 'fragment', 'organismes', data['poi'].slug, data['poi']._id,
+            encoding = data.get('encoding'))
         try:
             fragment = urllib2.urlopen(url).read().decode(data.get('encoding') or 'utf-8')
         except:
-            errors = dict(path = ctx._('Access to page failed'))
+            errors = dict(fragment = ctx._('Access to organism failed'))
         else:
             data['fragment'] = fragment
     return templates.render(ctx, '/minisite.mako', data = data, errors = errors, params = params)

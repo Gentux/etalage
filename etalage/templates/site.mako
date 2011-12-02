@@ -63,8 +63,13 @@ from etalage import conf
 
 <%def name="footer()" filter="trim">
         <footer>
-            <p>Page réalisée en <a href="http://www.comarquage.fr/" rel="external">co-marquage</a>.
+            <p><%self:footer_p_content/></p>
         </footer>
+</%def>
+
+
+<%def name="footer_p_content()" filter="trim">
+Page réalisée en <a href="http://www.comarquage.fr/" rel="external">co-marquage</a>
 </%def>
 
 

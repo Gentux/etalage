@@ -36,21 +36,9 @@ from etalage import urls
         <div class="page-header">
             <h1>Génération d'une page Minisite</h1>
         </div>
-        <form action="${urls.get_url(ctx, 'minisite')}">
+        <form action="${urls.get_url(ctx, 'minisite', 'organismes', data['poi'].slug, data['poi']._id)}">
             <fieldset>
-                <legend>Paramètres d'intégration Minisite</legend>
-<%
-    error = errors.get('path') if errors is not None else None
-%>\
-                <div class="clearfix${' error' if error else ''}">
-                    <label for="path">URL à intégrer</label>
-                    <div class="input">
-                        <input class="span6" name="path" type="text" value="${params['path'] or ''}">
-    % if error:
-                        <span class="help-inline">${error}</span>
-    % endif
-                    </div>
-                </div>
+                <legend>${data['poi'].name}</legend>
 <%
     error = errors.get('encoding') if errors is not None else None
     encoding_and_label_couples = [
@@ -95,6 +83,12 @@ from etalage import urls
 
         <!-- Fin du contenu « Étalage - Comarquage.fr » récupéré et inséré dans la page -->
     % endif
+</%def>
+
+
+<%def name="metas()" filter="trim">
+    <parent:metas/>
+    <meta name="robots" content="nofollow,noindex">
 </%def>
 
 
