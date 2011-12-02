@@ -25,7 +25,7 @@
 
 
 <%!
-from etalage import urls
+from etalage import conf, urls
 %>
 
 
@@ -73,15 +73,28 @@ from etalage import urls
         <pre>${data['url']}</pre>
     % endif
     % if not errors:
-        <div class="page-header">
-            <h1>Contenu du fragment de page Minisite</h1>
-        </div>
+        <ul class="tabs" data-tabs="tabs">
+            <li class="active"><a href="#show-preview">Aperçu</a></li>
+            <li><a href="#show-source-code">Code Source</a></li>
+        </ul>
+        <div class="tab-content">
+            <div class="active tab-pane" id="show-preview">
+                <div class="fixed-width">
 
         <!-- Début du contenu « Étalage - Comarquage.fr »récupéré et inséré dans la page -->
 
         ${data['fragment'] | n, unicode}
 
         <!-- Fin du contenu « Étalage - Comarquage.fr » récupéré et inséré dans la page -->
+
+                </div>
+            </div>
+            <div class="tab-pane" id="show-source-code">
+                <pre class="prettyprint linenums">
+        ${data['fragment']}
+                </pre>
+            </div>
+        </div>
     % endif
 </%def>
 
@@ -89,6 +102,18 @@ from etalage import urls
 <%def name="metas()" filter="trim">
     <parent:metas/>
     <meta name="robots" content="nofollow,noindex">
+</%def>
+
+
+<%def name="scripts()" filter="trim">
+    <%parent:scripts/>
+    <script src="${conf['bootstrap-tabs.js']}"></script>
+    <script src="${conf['prettify.js']}"></script>
+    <script>
+$(function () {
+    prettyPrint();
+});
+    </script>
 </%def>
 
 
