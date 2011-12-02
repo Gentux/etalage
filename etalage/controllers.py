@@ -32,7 +32,6 @@ import itertools
 import logging
 import math
 import sys
-import urllib
 import urllib2
 import urlparse
 
