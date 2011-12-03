@@ -1,7 +1,6 @@
 /*
  * Etalage -- Open Data POIs portal
  * By: Emmanuel Raviart <eraviart@easter-eggs.com>
- *     Romain Soufflet <rsoufflet@easter-eggs.com>
  *
  * Copyright (C) 2011 Easter-eggs
  * http://gitorious.org/infos-pratiques/etalage

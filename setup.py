@@ -4,7 +4,6 @@
 
 # Etalage -- Open Data POIs portal
 # By: Emmanuel Raviart <eraviart@easter-eggs.com>
-#     Romain Soufflet <rsoufflet@easter-eggs.com>
 #
 # Copyright (C) 2011 Easter-eggs
 # http://gitorious.org/infos-pratiques/etalage
@@ -53,7 +52,7 @@ setup(
     name = 'Etalage',
     version = '0.1',
 
-    author = 'Emmanuel Raviart & Romain Soufflet',
+    author = 'Emmanuel Raviart',
     author_email = 'infos-pratiques-devel@listes.infos-pratiques.org',
     classifiers = [classifier for classifier in classifiers.split('\n') if classifier],
     description = doc_lines[0],
