@@ -50,6 +50,7 @@ def load_environment(global_conf, app_conf):
         'app_dir': app_dir,
         'cache_dir': os.path.join(os.path.dirname(app_dir), 'cache'),
         'categories_collection': 'categories',
+        'data_updates_collection': 'data_updates',
         'database': 'souk',
         'debug': False,
         'global_conf': global_conf,
@@ -84,8 +85,7 @@ def load_environment(global_conf, app_conf):
     # Connect to MongoDB database.
     monpyjama.Wrapper.db = model.db = pymongo.Connection()[conf['database']]
     # Initialize ramdb database from MongoDB.
-    with ramdb.dogpile.acquire(ramdb.load):
-        pass
+    ramdb.load()
 
     # Create the Mako TemplateLookup, with the default auto-escaping.
     templates.lookup = mako.lookup.TemplateLookup(
