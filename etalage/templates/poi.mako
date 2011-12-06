@@ -104,23 +104,7 @@ from etalage import conf, model, ramdb, urls
     if field.value is None:
         return ''
 %>\
-    % if field.id == 'autocompleters':
-<%
-    slug_and_name_couples = []
-    for name in field.value:
-        slug = strings.slugify(name)
-        category = ramdb.categories_by_slug.get(slug)
-        if category is not None:
-            name = category.name
-        slug_and_name_couples.append((slug, name))
-    slug_and_name_couples.sort()
-    names = [
-        name
-        for slug, name in slug_and_name_couples
-        ]
-%>\
-            <span class="field-value">${u', '.join(names)}</span>
-    % elif field.id == 'adr':
+    % if field.id == 'adr':
             <address class="field-value offset1">
         % for subfield in field.value:
 <%
@@ -140,6 +124,24 @@ from etalage import conf, model, ramdb, urls
             % endif
         % endfor
             </address>
+    % elif field.id == 'autocompleters':
+<%
+        slug_and_name_couples = []
+        for name in field.value:
+            slug = strings.slugify(name)
+            category = ramdb.categories_by_slug.get(slug)
+            if category is not None:
+                name = category.name
+            slug_and_name_couples.append((slug, name))
+        slug_and_name_couples.sort()
+        names = [
+            name
+            for slug, name in slug_and_name_couples
+            ]
+%>\
+            <span class="field-value">${u', '.join(names)}</span>
+    % elif field.id == 'boolean':
+            <span class="field-value">${u'Oui' if field.value and field.value != '0' else u'Non'}</span>
     % elif field.id == 'email':
             <span class="field-value"><a href="mailto:${field.value}">${field.value}</a></span>
     % elif field.id == 'feed':
