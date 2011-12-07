@@ -142,6 +142,22 @@ from etalage import conf, model, ramdb, urls
             <span class="field-value">${u', '.join(names)}</span>
     % elif field.id == 'boolean':
             <span class="field-value">${u'Oui' if field.value and field.value != '0' else u'Non'}</span>
+    % elif field.id == 'date-range':
+<%
+        begin_field = field.get_first_field('date-range-begin')
+        begin = begin_field.value if field is not None else None
+        end_field = field.get_first_field('date-range-end')
+        end = end_field.value if field is not None else None
+%>\
+        % if begin is None:
+            <span class="field-value">Jusqu'au ${end.strftime('%d/%m/%Y')}</span>
+        % elif end is None:
+            <span class="field-value">À partir du ${begin.strftime('%d/%m/%Y')}</span>
+        % elif begin == end:
+            <span class="field-value">Le ${begin.strftime('%d/%m/%Y')}</span>
+        % else:
+            <span class="field-value">Du ${begin.strftime('%d/%m/%Y')} au ${end.strftime('%d/%m/%Y')}</span>
+        % endif
     % elif field.id == 'email':
             <span class="field-value"><a href="mailto:${field.value}">${field.value}</a></span>
     % elif field.id == 'feed':

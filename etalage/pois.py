@@ -66,9 +66,18 @@ class Field(representations.UserRepresentable):
         if attributes:
             self.set_attributes(**attributes)
 
+    def get_first_field(self, id):
+        # Note: Only for composite fields.
+        if self.value is None:
+            return None
+        for field in self.value:
+            if field.id == id:
+                return field
+        return None
+
     @property
     def is_composite(self):
-        return self.id in ('adr', 'source')
+        return self.id in ('adr', 'date-range', 'source')
 
     def iter_csv_fields(self, ctx, counts_by_label, parent_ref = None):
         """Iter fields, entering inside composite fields."""
@@ -157,6 +166,14 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
     def __init__(self, **attributes):
         if attributes:
             self.set_attributes(**attributes)
+
+    def get_first_field(self, id):
+        if self.fields is None:
+            return None
+        for field in self.fields:
+            if field.id == id:
+                return field
+        return None
 
     def iter_csv_fields(self, ctx):
         counts_by_label = {}
