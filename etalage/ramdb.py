@@ -350,7 +350,7 @@ def ramdb_based(controller):
                 # Then update indexes.
                 delete_remaining(indexes, existing)
                 if poi_bson is None or poi_bson['metadata'].get('deleted', False):
-                    del pois_by_id[id]
+                    pois_by_id.pop(id, None)
                 else:
                     load_poi(poi_bson)
             finally:
