@@ -77,7 +77,7 @@ from etalage import conf
 
 
 <%def name="footer_data_p_content()" filter="trim">
-                Page réalisée en <a href="http://www.comarquage.fr/" rel="external">co-marquage</a>
+                Page réalisée en <a href="http://www.comarquage.fr/" rel="external" title="Comarquage.fr">co-marquage</a>
                 &mdash;
                 Données :
                 <a href="http://www.data.gouv.fr/Licence-Ouverte-Open-Licence" rel="external">Licence Ouverte / Open Licence</a>
