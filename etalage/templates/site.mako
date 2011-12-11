@@ -66,7 +66,8 @@ from etalage import conf
                 Logiciel :
                 <a href="http://gitorious.org/infos-pratiques/etalage" rel="external">Etalage</a>
                 &mdash;
-                <span>Copyright © 2011 <a href="http://www.easter-eggs.com/" rel="external">Easter-eggs</a></span>
+                <span>Copyright © 2011 <a href="http://www.easter-eggs.com/" rel="external"
+                        title="Easter-eggs, société de services en logiciels libres">Easter-eggs</a></span>
                 &mdash;
                 Licence libre
                 <a href="http://www.gnu.org/licenses/agpl.html" rel="external">${_(
@@ -77,10 +78,11 @@ from etalage import conf
 
 
 <%def name="footer_data_p_content()" filter="trim">
-                Page réalisée en <a href="http://www.comarquage.fr/" rel="external" title="Comarquage.fr">co-marquage</a>
+                Page réalisée en <a href="http://www.comarquage.fr/" rel="external"
+                        title="Comarquage.fr">co-marquage</a>
                 &mdash;
                 Données :
-                <a href="http://www.data.gouv.fr/Licence-Ouverte-Open-Licence" rel="external">Licence Ouverte / Open Licence</a>
+                <a href="http://www.data.gouv.fr/Licence-Ouverte-Open-Licence" rel="external">Licence ouverte</a>
 </%def>
 
 
