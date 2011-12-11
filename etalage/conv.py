@@ -236,9 +236,9 @@ def layer_data_to_clusters(data, state = default_state):
         ]
     if current is not None:
         pois.insert(0, current)
-    horizontal_iota = (right - left) / 30.0
-#    vertical_iota = (top - bottom) / 15.0
-    vertical_iota = horizontal_iota
+    horizontal_iota = (right - left) / 20.0
+    vertical_iota = (top - bottom) / 15.0
+#    vertical_iota = horizontal_iota = (right - left) / 30.0
     clusters = []
     for poi in pois:
         poi_latitude = poi.geo[0]
