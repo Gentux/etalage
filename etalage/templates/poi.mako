@@ -308,9 +308,9 @@ etalage.map.singleMarkerMap("map-poi", ${field.value[0]}, ${field.value[1]});
 </%def>
 
 
-<%def name="footer_p_content()" filter="trim">
-${parent.footer_p_content()} - <a class="internal" href="${urls.get_url(ctx, 'minisite', 'organismes', poi.slug, poi._id
-    )}" rel="nofollow">Minisite</a>
+<%def name="footer_data_p_content()" filter="trim">
+${parent.footer_data_p_content()} - <a class="internal" href="${urls.get_url(ctx, 'minisite', 'organismes', poi.slug,
+        poi._id)}" rel="nofollow">Minisite</a>
 </%def>
 
 

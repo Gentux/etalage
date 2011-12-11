@@ -62,13 +62,24 @@ from etalage import conf
 
 <%def name="footer()" filter="trim">
         <footer>
-            <p><%self:footer_p_content/></p>
+            <p><%self:footer_data_p_content/><br>
+                Logiciel :
+                <a href="http://gitorious.org/infos-pratiques/etalage" rel="external">Etalage</a>
+                &mdash;
+                <span>Copyright © 2011 <a href="http://www.easter-eggs.com/">Easter-eggs</a></span>
+                &mdash;
+                <a href="http://www.gnu.org/licenses/agpl.html" rel="external">${_(
+                    'GNU Affero General Public License')}</a>
+            </p>
         </footer>
 </%def>
 
 
-<%def name="footer_p_content()" filter="trim">
-Page réalisée en <a href="http://www.comarquage.fr/" rel="external">co-marquage</a>
+<%def name="footer_data_p_content()" filter="trim">
+                Page réalisée en <a href="http://www.comarquage.fr/" rel="external">co-marquage</a>
+                &mdash;
+                Données :
+                <a href="http://www.data.gouv.fr/Licence-Ouverte-Open-Licence" rel="external">Licence Ouverte / Open Licence</a>
 </%def>
 
 
