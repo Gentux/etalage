@@ -35,6 +35,10 @@ from etalage import conf, urls
         <div class="page-header">
             <h1>Génération d'une page Minisite</h1>
         </div>
+        <div class="alert-message info">
+            <p><strong>Note :</strong> Une page <em>Minisite</em> est destinée à être intégrée dans une page d'un autre
+                serveur web.</p>
+        </div>
         <form action="${urls.get_url(ctx, 'minisite', 'organismes', data['poi'].slug, data['poi']._id)}">
             <fieldset>
                 <legend>${data['poi'].name}</legend>
@@ -59,6 +63,9 @@ from etalage import conf, urls
                         </select>
     % if error:
                         <span class="help-inline">${error}</span>
+    % else:
+                        <span class="help-inline">Encodage des caractères utilisé par le serveur hébergeant la page
+                            <em>Minisite</em></span>
     % endif
                     </div>
                 </div>
@@ -72,6 +79,7 @@ from etalage import conf, urls
         <pre>${data['url']}</pre>
     % endif
     % if not errors:
+        <h3>Résultat</h3>
         <ul class="tabs" data-tabs="tabs">
             <li class="active"><a href="#show-preview">Aperçu</a></li>
             <li><a href="#show-source-code">Code Source</a></li>
