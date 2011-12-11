@@ -68,6 +68,7 @@ from etalage import conf
                 &mdash;
                 <span>Copyright © 2011 <a href="http://www.easter-eggs.com/">Easter-eggs</a></span>
                 &mdash;
+                Licence libre
                 <a href="http://www.gnu.org/licenses/agpl.html" rel="external">${_(
                     'GNU Affero General Public License')}</a>
             </p>
