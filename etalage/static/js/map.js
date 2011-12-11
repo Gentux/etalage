@@ -311,7 +311,7 @@ etalage.map = (function ($) {
             })
         );
 
-        icon = new L.Icon(etalage.map.markersUrl + '/misc/redblank.png');
+        icon = new L.Icon(etalage.map.markersUrl + '/misc/blueblank.png');
         icon.iconAnchor = new L.Point(14, 24);
         icon.iconSize = new L.Point(27, 27);
         icon.shadowSize = new L.Point(51, 27);
