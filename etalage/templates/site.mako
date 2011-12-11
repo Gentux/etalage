@@ -66,7 +66,7 @@ from etalage import conf
                 Logiciel :
                 <a href="http://gitorious.org/infos-pratiques/etalage" rel="external">Etalage</a>
                 &mdash;
-                <span>Copyright © 2011 <a href="http://www.easter-eggs.com/">Easter-eggs</a></span>
+                <span>Copyright © 2011 <a href="http://www.easter-eggs.com/" rel="external">Easter-eggs</a></span>
                 &mdash;
                 Licence libre
                 <a href="http://www.gnu.org/licenses/agpl.html" rel="external">${_(
