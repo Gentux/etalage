@@ -43,6 +43,11 @@ etalage.map = (function ($) {
             .on('dragend', function (e) {
                 fetchPois();
             })
+            .on('layerremove', function (e) {
+                if (e.layer._closeButton) {
+                    delete etalage.map.currentPoiId;
+                }
+            })
             .on('zoomend', function (e) {
                 try {
                     leafletMap.getBounds();
@@ -208,11 +213,6 @@ etalage.map = (function ($) {
                             return false;
                         });
                     });
-                leafletMap.on('layerremove', function (e) {
-                    if (e.layer._closeButton) {
-                        delete etalage.map.currentPoiId;
-                    }
-                });
             }
         });
         leafletMap.addLayer(geojsonLayer);
