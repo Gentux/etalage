@@ -41,7 +41,7 @@ categories_by_slug = {}
 categories_slug_by_pivot_code = {}
 categories_slug_by_tag_slug = {}
 categories_slug_by_word = {}
-last_timestamp = {}
+last_timestamp = None
 read_write_lock = threading2.SHLock()
 log = logging.getLogger(__name__)
 pois_by_id = {}
@@ -199,7 +199,7 @@ def load():
         territories_id_by_postal_distribution[(main_postal_distribution['postal_code'],
             main_postal_distribution['postal_routing'])] = territory_id
 
-    for poi_bson in model.db[conf['pois_collection']].find({'metadata.deleted': {'$exists': False}}):
+    for poi_bson in model.Poi.get_collection().find({'metadata.deleted': {'$exists': False}}):
         load_poi(poi_bson)
 
 #    # Remove unused categories.
@@ -335,11 +335,11 @@ def ramdb_based(controller):
                 timestamp = {'$gt': last_timestamp},
                 )).sort('timestamp'):
             id = data_update['document_id']
-            poi_bson = model.db[conf['pois_collection']].find_one(id)
+            poi_bson = model.Poi.get_collection().find_one(id)
             read_write_lock.acquire()
             try:
-                # Note: POI's whose parent_id == id are not updated here. They will be updated when publisher will publish their
-                # change.
+                # Note: POI's whose parent_id == id are not updated here. They will be updated when publisher will
+                # publish their change.
                 # First find changes to do on indexes.
                 existing = {}
                 indexes = sys.modules[__name__].__dict__
