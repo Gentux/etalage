@@ -31,6 +31,7 @@ from etalage import conf
 
 
 <%namespace file="/poi.mako" name="pois"/>
+<%namespace file="/site.mako" name="site"/>
 
 
         <script src="${conf['leaflet.js']}"></script>
@@ -50,3 +51,7 @@ from etalage import conf
 })(jQuery);
         </script>
         <%pois:container_content/>
+        <hr>
+        <div>
+            <%site:footer_content/>
+        </div>

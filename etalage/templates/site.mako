@@ -62,7 +62,15 @@ from etalage import conf
 
 <%def name="footer()" filter="trim">
         <footer>
-            <p><%self:footer_data_p_content/><br>
+            <%self:footer_content/>
+        </footer>
+</%def>
+
+
+<%def name="footer_content()" filter="trim">
+            <p>
+                <%self:footer_data_p_content/>
+                <br>
                 Logiciel :
                 <a href="http://gitorious.org/infos-pratiques/etalage" rel="external">Etalage</a>
                 &mdash;
@@ -73,7 +81,6 @@ from etalage import conf
                 <a href="http://www.gnu.org/licenses/agpl.html" rel="external">${_(
                     'GNU Affero General Public License')}</a>
             </p>
-        </footer>
 </%def>
 
 
