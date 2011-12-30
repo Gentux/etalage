@@ -32,9 +32,8 @@ from etalage import urls
 
 
 <%def name="results()" filter="trim">
-        <form action="${urls.get_url(ctx, mode)}" class="internal" id="export-form" method="get">
-            <fieldset>
-                <legend>${_('Select export options')}</legend>
+        <form action="${urls.get_url(ctx, mode)}" class="horizontal-form internal" id="export-form" method="get">
+            <legend>${_('Select export options')}</legend>
     % for name, value in sorted(params.iteritems()):
 <%
         if name in (
@@ -56,47 +55,38 @@ from etalage import urls
 <%
     error = errors.get('type_and_format') if errors is not None else None
 %>\
-                <div class="clearfix${' error' if error else ''}">
-                    <label>${_(u"Export Type")}</label>
-                    <div class="input">
-                        <ul class="inputs-list">
-                            <li>
-                                <label>
-                                    <input type="radio" value="annuaire-csv" name="type_and_format">
-                                    <span>Annuaire (format CSV) &mdash; Les informations détaillées,
-                                        organisme par organisme</span>
-                                </label>
-                            </li>
-                            <li>
-                                <label>
-                                    <input type="radio" value="couverture-geographique-csv" name="type_and_format">
-                                    <span>Couverture géographique (format CSV) &mdash; Les organismes compétents,
-                                        commune par commune</span>
-                                </label>
-                            </li>
-                            <li>
-                                <label>
-                                    <input type="radio" value="annuaire-geojson" name="type_and_format">
-                                    <span>GeoJSON &mdash; Pour récupérer les organismes en temps réel dans vos
-                                        applications</span>
-                                </label>
-                            </li>
-                            <li>
-                                <label>
-                                    <input type="radio" value="annuaire-kml" name="type_and_format">
-                                    <span>KML &mdash; Pour visualiser les organismes dans certains sites et applications
-                                        cartographiques</span>
-                                </label>
-                            </li>
-                        </ul>
-    % if error:
-                        <span class="help-block">${error}</span>
-    % endif
+            <fieldset class="control-group${' error' if error else ''}">
+                <label class="control-label">${_(u"Export Type")}</label>
+                <div class="controls">
+                    <div class="control-list">
+                        <label>
+                            <input type="radio" value="annuaire-csv" name="type_and_format">
+                            <span>Annuaire (format CSV) &mdash; Les informations détaillées,
+                                organisme par organisme</span>
+                        </label>
+                        <label>
+                            <input type="radio" value="couverture-geographique-csv" name="type_and_format">
+                            <span>Couverture géographique (format CSV) &mdash; Les organismes compétents,
+                                commune par commune</span>
+                        </label>
+                        <label>
+                            <input type="radio" value="annuaire-geojson" name="type_and_format">
+                            <span>GeoJSON &mdash; Pour récupérer les organismes en temps réel dans vos
+                                applications</span>
+                        </label>
+                        <label>
+                            <input type="radio" value="annuaire-kml" name="type_and_format">
+                            <span>KML &mdash; Pour visualiser les organismes dans certains sites et applications
+                                cartographiques</span>
+                        </label>
                     </div>
+    % if error:
+                    <p class="help-text">${error}</p>
+    % endif
                 </div>
-                <div class="actions">
-                    <input class="btn primary" name="submit" type="submit" value="${_(u'Select')}">
-                </div>
+            </fieldset>
+            <fieldset class="form-actions">
+                <input class="btn primary" name="submit" type="submit" value="${_(u'Select')}">
             </fieldset>
         </form>
 </%def>

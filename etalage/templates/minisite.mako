@@ -40,8 +40,7 @@ from etalage import conf, urls
                 serveur web.</p>
         </div>
         <form action="${urls.get_url(ctx, 'minisite', 'organismes', data['poi'].slug, data['poi']._id)}">
-            <fieldset>
-                <legend>${data['poi'].name}</legend>
+            <legend>${data['poi'].name}</legend>
 <%
     error = errors.get('encoding') if errors is not None else None
     encoding_and_label_couples = [
@@ -52,26 +51,25 @@ from etalage import conf, urls
         ]
     print str((params,))
 %>\
-                <div class="clearfix${' error' if error else ''}">
-                    <label for="encoding">Encodage</label>
-                    <div class="input">
-                        <select class="span6" name="encoding">
+            <fieldset class="control-group${' error' if error else ''}">
+                <label class="control-label" for="encoding">Encodage</label>
+                <div class="controls">
+                    <select name="encoding">
     % for encoding, label in encoding_and_label_couples:
-                            <option${' selected' if params['encoding'] == encoding else ''} value="${\
-                                    encoding}">${label}</option>
+                        <option${' selected' if params['encoding'] == encoding else ''} value="${\
+                                encoding}">${label}</option>
     % endfor
-                        </select>
+                    </select>
     % if error:
-                        <span class="help-inline">${error}</span>
+                    <span class="help-inline">${error}</span>
     % else:
-                        <span class="help-inline">Encodage des caractères utilisé par le serveur hébergeant la page
-                            <em>Minisite</em></span>
+                    <span class="help-inline">Encodage des caractères utilisé par le serveur hébergeant la page
+                        <em>Minisite</em></span>
     % endif
-                    </div>
                 </div>
-                <div class="actions">
-                    <input class="btn primary" type="submit" value="Générer">
-                </div>
+            </fieldset>
+            <fieldset class="form-actions">
+                <input class="btn primary" type="submit" value="Générer">
             </fieldset>
         </form>
     % if data.get('url'):
@@ -79,14 +77,16 @@ from etalage import conf, urls
         <pre>${data['url']}</pre>
     % endif
     % if not errors:
+        <hr>
         <h3>Résultat</h3>
-        <ul class="tabs" data-tabs="tabs">
-            <li class="active"><a href="#show-preview">Aperçu</a></li>
-            <li><a href="#show-source-code">Code Source</a></li>
-        </ul>
-        <div class="tab-content">
-            <div class="active tab-pane" id="show-preview">
-                <div class="fixed-width">
+        <div class="tabbable">
+            <ul class="tabs" data-tabs="tabs">
+                <li class="active"><a href="#show-preview">Aperçu</a></li>
+                <li><a href="#show-source-code">Code Source</a></li>
+            </ul>
+            <div class="tab-content">
+                <div class="active tab-pane" id="show-preview">
+                    <div class="fixed-width">
 
         <!-- Début du contenu « Étalage - Comarquage.fr »récupéré et inséré dans la page -->
 
@@ -94,12 +94,13 @@ from etalage import conf, urls
 
         <!-- Fin du contenu « Étalage - Comarquage.fr » récupéré et inséré dans la page -->
 
+                    </div>
                 </div>
-            </div>
-            <div class="tab-pane" id="show-source-code">
-                <pre class="prettyprint linenums">
+                <div class="tab-pane" id="show-source-code">
+                    <pre class="prettyprint linenums">
         ${data['fragment']}
-                </pre>
+                    </pre>
+                </div>
             </div>
         </div>
     % endif

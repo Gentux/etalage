@@ -86,7 +86,7 @@ from etalage import urls
         </div>
         % endif
         <%self:pagination/>
-        <table class="zebra-striped">
+        <table class="striped-table">
             <thead>
                 <tr>
                     <th>${_('Name')}</th>

@@ -34,8 +34,7 @@ from etalage import conf, urls
 
 
 <%def name="container_content()" filter="trim">
-        <form action="${urls.get_url(ctx, mode)}" class="internal" id="search-form" method="get">
-            <fieldset>
+        <form action="${urls.get_url(ctx, mode)}" class="horizontal-form internal" id="search-form" method="get">
     % for name, value in sorted(params.iteritems()):
 <%
         if name in (
@@ -52,86 +51,79 @@ from etalage import conf, urls
 %>\
         % if isinstance(value, list):
             % for item_value in value:
-                <input name="${name}" type="hidden" value="${item_value or ''}">
+            <input name="${name}" type="hidden" value="${item_value or ''}">
             % endfor
         % else:
-                <input name="${name}" type="hidden" value="${value or ''}">
+            <input name="${name}" type="hidden" value="${value or ''}">
         % endif
     % endfor
     % if not ctx.hide_category:
 <%
         error = errors.get('category') if errors is not None else None
 %>\
-                <div class="clearfix${' error' if error else ''}">
-                    <label for="category">Catégorie</label>
-                    <div class="input">
-                        <input class="span6" id="category" name="category" type="text" value="${params['category'] or ''}">
+            <fieldset class="control-group${' error' if error else ''}">
+                <label class="control-label" for="category">Catégorie</label>
+                <div class="controls">
+                    <input class="input-xlarge" id="category" name="category" type="text" value="${params['category'] or ''}">
         % if error:
-                        <span class="help-inline">${error}</span>
+                    <span class="help-inline">${error}</span>
         % endif
-                    </div>
                 </div>
+            </fieldset>
     % endif
 <%
     error = errors.get('term') if errors is not None else None
 %>\
-                <div class="clearfix${' error' if error else ''}">
-                    <label for="term">Intitulé</label>
-                    <div class="input">
-                        <input class="span6" id="term" name="term" type="text" value="${params['term'] or ''}">
+            <fieldset class="control-group${' error' if error else ''}">
+                <label class="control-label" for="term">Intitulé</label>
+                <div class="controls">
+                    <input class="input-xlarge" id="term" name="term" type="text" value="${params['term'] or ''}">
     % if error:
-                        <span class="help-inline">${error}</span>
+                    <span class="help-inline">${error}</span>
     % endif
-                    </div>
                 </div>
+            </fieldset>
 <%
     error = errors.get('territory') if errors is not None else None
 %>\
-                <div class="clearfix${' error' if error else ''}">
-                    <label for="territory">Territoire</label>
-                    <div class="input">
-                        <input class="span6" id="territory" name="territory" type="text" value="${params['territory'] or ''}">
+            <fieldset class="control-group${' error' if error else ''}">
+                <label class="control-label" for="territory">Territoire</label>
+                <div class="controls">
+                    <input class="input-xlarge" id="territory" name="territory" type="text" value="${params['territory'] or ''}">
     % if error:
-                        <span class="help-inline">${error}</span>
+                    <span class="help-inline">${error}</span>
     % endif
-                    </div>
                 </div>
+            </fieldset>
     % if ctx.show_filter:
 <%
         error = errors.get('filter') if errors is not None else None
 %>\
-                <div class="clearfix${' error' if error else ''}">
-                    <label for="filter">Afficher</label>
-                    <div class="input">
-                        <ul class="inputs-list">
-                            <li>
-                                <label>
-                                    <input${' checked' if not params['filter'] else ''} name="filter" type="radio" value="">
-                                    <span>Tous les organismes</span>
-                                </label>
-                            </li>
-                            <li>
-                                <label>
-                                    <input${' checked' if params['filter'] == 'competence' else ''} name="filter" type="radio" value="competence">
-                                    <span>Uniquement les organismes compétents pour le territoire</span>
-                                </label>
-                            </li>
-                            <li>
-                                <label>
-                                    <input${' checked' if params['filter'] == 'presence' else ''} name="filter" type="radio" value="presence">
-                                    <span>Uniquement les organismes présents sur le territoire</span>
-                                </label>
-                            </li>
-                        </ul>
-        % if error:
-                        <span class="help-inline">${error}</span>
-        % endif
+            <fieldset class="control-group${' error' if error else ''}">
+                <label class="control-label" for="filter">Afficher</label>
+                <div class="controls">
+                    <div class="control-list">
+                        <label>
+                            <input${' checked' if not params['filter'] else ''} name="filter" type="radio" value="">
+                            <span>Tous les organismes</span>
+                        </label>
+                        <label>
+                            <input${' checked' if params['filter'] == 'competence' else ''} name="filter" type="radio" value="competence">
+                            <span>Uniquement les organismes compétents pour le territoire</span>
+                        </label>
+                        <label>
+                            <input${' checked' if params['filter'] == 'presence' else ''} name="filter" type="radio" value="presence">
+                            <span>Uniquement les organismes présents sur le territoire</span>
+                        </label>
                     </div>
+        % if error:
+                    <p class="help-text">${error}</p>
+        % endif
                 </div>
+            </fieldset>
     % endif
-                <div class="actions">
-                    <input class="btn primary" type="submit" value="${_('Search')}">
-                </div>
+            <fieldset class="form-actions">
+                <input class="btn primary" type="submit" value="${_('Search')}">
             </fieldset>
         </form>
         <ul class="tabs">
@@ -149,13 +141,9 @@ from etalage import conf, urls
             </li>
     % endfor
         </ul>
-        ## There is a bug in the tabs CSS above that requires a style="clear: left;".
-        ## Remove the div below once it is repaired.
-        <div style="clear: left;">
 ##    % if errors is None:
         <%self:results/>
 ##    % endif
-        </div>
 </%def>
 
 

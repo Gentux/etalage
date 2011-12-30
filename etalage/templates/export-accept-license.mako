@@ -92,9 +92,7 @@ from etalage import urls
                 </li>
             </ul>
         </div>
-        <form action="${urls.get_url(ctx, mode, type, format)}" id="export-form" method="get">
-            <fieldset>
-                <legend>${_('Accept license')}</legend>
+        <form action="${urls.get_url(ctx, mode, type, format)}" class="horizontal-form" id="export-form" method="get">
     % for name, value in sorted(params.iteritems()):
 <%
         if name in (
@@ -110,26 +108,29 @@ from etalage import urls
                 <input name="${name}" type="hidden" value="${item_value or ''}">
             % endfor
         % else:
-                <input name="${name}" type="hidden" value="${value or ''}">
+            <input name="${name}" type="hidden" value="${value or ''}">
         % endif
     % endfor
 <%
     error = errors.get('accept') if errors is not None else None
 %>\
-                <div class="clearfix${' error' if error else ''}">
-                    <label for="accept">${_(u"Accept License")}</label>
-                    <div class="input">
-                        <input id="accept" name="accept" type="checkbox" value="1">
-                        <span class="help-inline">J'ai pris connaissance de la licence d'utilisation des données et
-                            j'en accepte les conditions.</span>
-    % if error:
-                        <span class="help-block">${error}</span>
-    % endif
+            <fieldset class="control-group${' error' if error else ''}">
+                <label class="control-label" for="accept">${_(u"Accept License")}</label>
+                <div class="controls">
+                    <div class="control-list">
+                        <label>
+                            <input id="accept" name="accept" type="checkbox" value="1">
+                            <span>J'ai pris connaissance de la licence d'utilisation des données et
+                                j'en accepte les conditions.</span>
+                        </label>
                     </div>
+    % if error:
+                    <p class="help-text">${error}</p>
+    % endif
                 </div>
-                <div class="actions">
-                    <input class="btn primary" name="submit" type="submit" value="${_(u'Download')}">
-                </div>
+            </fieldset>
+            <fieldset class="form-actions">
+                <input class="btn primary" name="submit" type="submit" value="${_(u'Download')}">
             </fieldset>
         </form>
 </%def>
