@@ -325,9 +325,6 @@ def load_poi(poi_bson):
 def ramdb_based(controller):
     """A decorator that allow to use ramdb data and update it regularily from MongoDB data."""
     def invoke(req):
-        # Currently, ramdb works only when used inside a single process.
-        assert not req.environ['wsgi.multiprocess']
-
         from . import model
         global last_timestamp
         for data_update in model.db[conf['data_updates_collection']].find(dict(
