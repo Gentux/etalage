@@ -50,11 +50,11 @@ from etalage import urls
                     <ul>
                         <li>
                             Une licence ouverte, libre et gratuite, qui apporte la sécurité juridique nécessaire aux
-                            producteurs et aux réutilisateurs des données publiques ;
+                            producteurs et aux réutilisateurs des données publiques ;
                         </li>
                         <li>
                             Une licence qui promeut  la réutilisation la plus large en autorisant la reproduction,
-                            la redistribution, l’adaptation et l’exploitation commerciale des données ;
+                            la redistribution, l’adaptation et l’exploitation commerciale des données ;
                         </li>
                         <li>
                             Une licence qui s’inscrit dans un contexte international en étant compatible avec les
