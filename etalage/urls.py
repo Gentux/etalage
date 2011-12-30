@@ -57,7 +57,7 @@ def get_full_url(ctx, *path, **query):
     query = dict(
         (str(name), strings.deep_encode(value))
         for name, value in sorted(query.iteritems())
-        if value is not None
+        if value not in (None, [], (), '')
         )
     return u'{0}/{1}{2}'.format(get_base_url(ctx, full = True), u'/'.join(path),
         ('?' + urllib.urlencode(query, doseq = True)) if query else '')
@@ -74,7 +74,7 @@ def get_url(ctx, *path, **query):
     query = dict(
         (str(name), strings.deep_encode(value))
         for name, value in sorted(query.iteritems())
-        if value is not None
+        if value not in (None, [], (), '')
         )
     return u'{0}/{1}{2}'.format(get_base_url(ctx), u'/'.join(path),
         ('?' + urllib.urlencode(query, doseq = True)) if query else '')
