@@ -44,7 +44,7 @@ N_ = lambda message: message
 
 def default_pois_layer_data_bbox(data, state = default_state):
     """Compute bounding box and add it when it is missing from data. Return modified data."""
-    from . import model, ramdb
+    from . import ramdb
     if data is None:
         return data, None
     if data.get('bbox') is not None:
@@ -354,7 +354,7 @@ def params_to_pois_csv(params, state = default_state):
 
 
 def params_to_pois_directory_data(params, state = default_state):
-    from . import model, ramdb
+    from . import model
     return struct(
         dict(
             category = str_to_slug_to_category,
@@ -373,7 +373,6 @@ def params_to_pois_directory_data(params, state = default_state):
 
 
 def params_to_pois_layer_data(params, state = default_state):
-    from . import ramdb
     return pipe(
         struct(
             dict(
@@ -425,7 +424,6 @@ def params_to_pois_layer_data(params, state = default_state):
 
 
 def params_to_pois_list_data(params, state = default_state):
-    from . import ramdb
     return pipe(
         struct(
             dict(
