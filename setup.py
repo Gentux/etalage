@@ -5,7 +5,7 @@
 # Etalage -- Open Data POIs portal
 # By: Emmanuel Raviart <eraviart@easter-eggs.com>
 #
-# Copyright (C) 2011 Easter-eggs
+# Copyright (C) 2011, 2012 Easter-eggs
 # http://gitorious.org/infos-pratiques/etalage
 #
 # This file is part of Etalage.

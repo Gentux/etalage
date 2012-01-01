@@ -5,7 +5,7 @@
 ## By: Valéry Febvre <vfebvre@easter-eggs.com>
 ##     Emmanuel Raviart <eraviart@easter-eggs.com>
 ##
-## Copyright (C) 2008, 2009, 2010, 2011 Easter-eggs
+## Copyright (C) 2008, 2009, 2010, 2011, 2012 Easter-eggs
 ## http://wiki.infos-pratiques.org/wiki/Cosmetic
 ##
 ## This file is part of Cosmetic.

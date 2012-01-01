@@ -1,14 +1,14 @@
 # French translations for Etalage.
-# Copyright (C) 2011 ORGANIZATION
+# Copyright (C) 2011, 2012 ORGANIZATION
 # This file is distributed under the same license as the Etalage project.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2011.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2011, 2012.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Etalage 0.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2011-11-28 17:36+0100\n"
-"PO-Revision-Date: 2011-11-28 17:36+0100\n"
+"POT-Creation-Date: 2011, 2012-11-28 17:36+0100\n"
+"PO-Revision-Date: 2011, 2012-11-28 17:36+0100\n"
 "Last-Translator: Emmanuel Raviart <eraviart@easter-eggs.com>\n"
 "Language-Team: fr <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n > 1)\n"
