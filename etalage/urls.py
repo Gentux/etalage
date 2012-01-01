@@ -108,8 +108,7 @@ def make_router(*routings):
                     req.path_info = req.path_info[match.end():]
                     return req.get_response(app)
         ctx = contexts.Ctx(req)
-        _ = ctx.translator.ugettext
-        return wsgihelpers.not_found(ctx, explanation = _("Page not found: {0}").format(req.path_info))
+        return wsgihelpers.not_found(ctx, explanation = ctx._("Page not found: {0}").format(req.path_info))
 
     return router
 

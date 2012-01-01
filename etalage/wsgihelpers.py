@@ -77,7 +77,6 @@ def discard_empty_items(data):
 
 
 def error(ctx, code, **kw):
-    _ = ctx.translator.ugettext
     response = webob.exc.status_map[code](headers = kw.pop('headers', None))
     if code != 204: # No content
         body = kw.pop('body', None)
@@ -86,16 +85,16 @@ def error(ctx, code, **kw):
             explanation = kw.pop('explanation', None)
             if explanation is None:
                 explanation = errors_explanation.get(code)
-                explanation = _(explanation) if explanation is not None else response.explanation
+                explanation = ctx._(explanation) if explanation is not None else response.explanation
             message = kw.pop('message', None)
             if message is None:
                 message = errors_message.get(code)
                 if message is not None:
-                    message = _(message)
+                    message = ctx._(message)
             title = kw.pop('title', None)
             if title is None:
                 title = errors_title.get(code)
-                title = _(title) if title is not None else response.status
+                title = ctx._(title) if title is not None else response.status
             body = templates.render(ctx, template_path,
                 comment = kw.pop('comment', None),
                 explanation = explanation,
@@ -124,7 +123,6 @@ def not_found(ctx, **kw):
 
 
 def redirect(ctx, code = 302, location = None, **kw):
-    _ = ctx.translator.ugettext
     assert location is not None
     location_str = location.encode('utf-8') if isinstance(location, unicode) else location
     response = webob.exc.status_map[code](headers = kw.pop('headers', None), location = location_str)
@@ -133,15 +131,15 @@ def redirect(ctx, code = 302, location = None, **kw):
         template_path = kw.pop('template_path', '/http-error.mako')
         explanation = kw.pop('explanation', None)
         if explanation is None:
-            explanation = Markup(u'{0} <a href="{1}">{1}</a>.').format(_(u"You'll be redirected to page"), location)
+            explanation = Markup(u'{0} <a href="{1}">{1}</a>.').format(ctx._(u"You'll be redirected to page"), location)
         message = kw.pop('message', None)
         if message is None:
             message = errors_message.get(code)
             if message is not None:
-                message = _(message)
+                message = ctx._(message)
         title = kw.pop('title', None)
         if title is None:
-            title = _("Redirection in progress...")
+            title = ctx._("Redirection in progress...")
         body = templates.render(ctx, template_path,
             comment = kw.pop('comment', None),
             explanation = explanation,
@@ -160,7 +158,6 @@ def respond_json(ctx, data, code = None, headers = None, jsonp = None):
     `Google JSON Style Guide <http://google-styleguide.googlecode.com/svn/trunk/jsoncstyleguide.xml>`_, but will handle
     any JSON except for HTTP errors.
     """
-    _ = ctx.translator.ugettext
     if isinstance(data, collections.Mapping):
         # Remove null properties as recommended by Google JSON Style Guide.
         data = discard_empty_items(data)
@@ -183,7 +180,7 @@ def respond_json(ctx, data, code = None, headers = None, jsonp = None):
             error['code'] = code
         if error.get('message') is None:
             title = errors_title.get(code)
-            title = _(title) if title is not None else response.status
+            title = ctx._(title) if title is not None else response.status
             error['message'] = title
     else:
         response = ctx.req.response
