@@ -1,21 +1,20 @@
 ## -*- coding: utf-8 -*-
 
 
-## Cosmetic -- Co-branding of web sites for french collectivities
-## By: Valéry Febvre <vfebvre@easter-eggs.com>
-##     Emmanuel Raviart <eraviart@easter-eggs.com>
+## Etalage -- Open Data POIs portal
+## By: Emmanuel Raviart <eraviart@easter-eggs.com>
 ##
-## Copyright (C) 2008, 2009, 2010, 2011, 2012 Easter-eggs
-## http://wiki.infos-pratiques.org/wiki/Cosmetic
+## Copyright (C) 2011, 2012 Easter-eggs
+## http://gitorious.org/infos-pratiques/etalage
 ##
-## This file is part of Cosmetic.
+## This file is part of Etalage.
 ##
-## Cosmetic is free software; you can redistribute it and/or modify
+## Etalage is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU Affero General Public License as
 ## published by the Free Software Foundation, either version 3 of the
 ## License, or (at your option) any later version.
 ##
-## Cosmetic is distributed in the hope that it will be useful,
+## Etalage is distributed in the hope that it will be useful,
 ## but WITHOUT ANY WARRANTY; without even the implied warranty of
 ## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ## GNU Affero General Public License for more details.
