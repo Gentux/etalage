@@ -185,7 +185,7 @@ $(function () {
 
 
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="${ctx.lang[0][:2]}">
 <head>
     <%self:metas/>
     <title>${self.title_content()}</title>
