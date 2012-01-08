@@ -50,7 +50,7 @@ from etalage import urls
                     </li>
         % for page_number in range(max(pager.page_number - 5, 1), pager.page_number):
                     <li>
-                        <a class="internal" href="${urls.get_url(ctx, mode, class_ = 'page', page = page_number,
+                        <a class="internal" href="${urls.get_url(ctx, mode, page = page_number,
                                 **url_args)}">${page_number}</a>
                     </li>
         % endfor
@@ -60,7 +60,7 @@ from etalage import urls
                     </li>
         % for page_number in range(pager.page_number + 1, min(pager.page_number + 5, pager.last_page_number) + 1):
                     <li>
-                        <a class="internal" href="${urls.get_url(ctx, mode, class_ = 'page', page = page_number,
+                        <a class="internal" href="${urls.get_url(ctx, mode, page = page_number,
                                 **url_args)}">${page_number}</a>
                     </li>
         % endfor
@@ -108,22 +108,6 @@ from etalage import urls
         </table>
         <%self:pagination/>
     % endif
-</%def>
-
-
-<%def name="scripts()" filter="trim">
-    <%parent:scripts/>
-    <script>
-etalage.pager = ${dict(
-    # Name of items follow Google JSON Style Guide http://google-styleguide.googlecode.com/svn/trunk/jsoncstyleguide.xml
-    currentItemCount = pager.page_size,
-    itemsPerPage = pager.page_max_size,
-    pageIndex = pager.page_number,
-    startIndex = pager.first_item_number,
-    totalItems = pager.item_count,
-    totalPages = pager.page_count,
-    ) if errors is None else None | n, js};
-    </script>
 </%def>
 
 
