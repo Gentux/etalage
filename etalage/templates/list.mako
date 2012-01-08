@@ -33,6 +33,12 @@ from etalage import urls
 <%inherit file="/index.mako"/>
 
 
+<%def name="metas()" filter="trim">
+    <%parent:metas/>
+    <meta name="robots" content="noindex">
+</%def>
+
+
 <%def name="pagination()" filter="trim">
     % if pager.page_count > 1:
             <div class="pagination">
