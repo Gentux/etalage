@@ -39,8 +39,8 @@ from etalage import conf, urls
             <p><strong>Note :</strong> Une page <em>Minisite</em> est destinée à être intégrée dans une page d'un autre
                 serveur web.</p>
         </div>
-        <form action="${urls.get_url(ctx, 'minisite', 'organismes', data['poi'].slug, data['poi']._id)}">
-            <legend>${data['poi'].name}</legend>
+        <form action="${urls.get_url(ctx, 'minisite', 'organismes', poi.slug, poi._id)}">
+            <legend>${poi.name}</legend>
 <%
     error = errors.get('encoding') if errors is not None else None
     encoding_and_label_couples = [
@@ -49,7 +49,6 @@ from etalage import conf, urls
         (u'iso-8859-15', u'ISO-8859-15'),
         (u'', u'UTF-8'),
         ]
-    print str((params,))
 %>\
             <fieldset class="control-group${' error' if error else ''}">
                 <label class="control-label" for="encoding">Encodage</label>
@@ -72,9 +71,9 @@ from etalage import conf, urls
                 <input class="btn primary" type="submit" value="Générer">
             </fieldset>
         </form>
-    % if data.get('url'):
+    % if url:
         <h3>URL du fragment de page Minisite</h3>
-        <pre>${data['url']}</pre>
+        <pre>${url}</pre>
     % endif
     % if not errors:
         <hr>
@@ -90,7 +89,7 @@ from etalage import conf, urls
 
         <!-- Début du contenu « Étalage - Comarquage.fr »récupéré et inséré dans la page -->
 
-        ${data['fragment'] | n, unicode}
+        ${fragment | n, unicode}
 
         <!-- Fin du contenu « Étalage - Comarquage.fr » récupéré et inséré dans la page -->
 
@@ -98,7 +97,7 @@ from etalage import conf, urls
                 </div>
                 <div class="tab-pane" id="show-source-code">
                     <pre class="prettyprint linenums">
-        ${data['fragment']}
+        ${fragment}
                     </pre>
                 </div>
             </div>

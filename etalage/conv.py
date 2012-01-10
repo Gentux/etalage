@@ -368,7 +368,7 @@ def params_to_pois_directory_data(params, state = default_state):
                 ),
             ),
         default = 'ignore',
-        keep_empty = True,
+        keep_missing_values = True,
         )(params, state = state)
 
 
@@ -418,7 +418,7 @@ def params_to_pois_layer_data(params, state = default_state):
                 territory = str_to_postal_distribution_to_geolocated_territory,
                 ),
             default = 'ignore',
-            keep_empty = True,
+            keep_missing_values = True,
             ),
         )(params, state = state)
 
@@ -438,7 +438,7 @@ def params_to_pois_list_data(params, state = default_state):
                 territory = str_to_postal_distribution_to_geolocated_territory,
                 ),
             default = 'ignore',
-            keep_empty = True,
+            keep_missing_values = True,
             ),
         rename_item('page', 'page_number'),
         )(params, state = state)

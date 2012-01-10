@@ -80,6 +80,7 @@ def autocomplete_category(req):
                 term = conv.make_str_to_slug(separator = u' ', transform = strings.upper),
                 ),
             default = 'ignore',
+            keep_missing_values = True,
             ),
         conv.rename_item('page', 'page_number'),
         conv.rename_item('tag', 'tags_slug'),
@@ -112,8 +113,8 @@ def autocomplete_category(req):
         ramdb.categories_by_slug[category_slug].name
         for category_slug in itertools.islice(
             sorted(ramdb.iter_categories_slug(
-                tags_slug = data.get('tags_slug'),
-                term = data.get('term'),
+                tags_slug = data['tags_slug'],
+                term = data['term'],
                 )),
             (data['page_number'] - 1) * page_size,
             data['page_number'] * page_size,
@@ -397,7 +398,7 @@ def geojson(req):
             for cluster in clusters
             ],
         }
-    territory = data.get('territory')
+    territory = data['territory']
     if territory is not None:
         geojson['features'].insert(0, {
             'type': 'Feature',
@@ -466,11 +467,11 @@ def index_directory(req):
         territory = None
     else:
         categories_slug = set(ctx.base_categories_slug or [])
-        if data.get('category') is not None:
+        if data['category'] is not None:
             categories_slug.add(data['category'].slug)
         territory = data['territory']
         related_territories_id = ramdb.get_territory_related_territories_id(territory)
-        filter = data.get('filter')
+        filter = data['filter']
         if filter == 'competence':
             competence_territories_id = related_territories_id
             presence_territory = None
@@ -482,7 +483,7 @@ def index_directory(req):
             presence_territory = None
         pois_id_iter = ramdb.iter_pois_id(categories_slug = categories_slug,
             competence_territories_id = competence_territories_id, presence_territory = presence_territory,
-            term = data.get('term'))
+            term = data['term'])
         pois = set(
             poi
             for poi in (
@@ -570,11 +571,11 @@ def index_export(req):
                 ),
             ),
         default = 'ignore',
-        keep_empty = True,
+        keep_missing_values = True,
         )(params, state = ctx)
     if errors is None:
         if params['submit']:
-            if data.get('type_and_format') is not None:
+            if data['type_and_format'] is not None:
                 type, format = data['type_and_format'].rsplit(u'-', 1)
 
                 # Form submitted. Redirect to another page.
@@ -624,10 +625,10 @@ def index_list(req):
         pager = None
     else:
         categories_slug = set(ctx.base_categories_slug or [])
-        if data.get('category') is not None:
+        if data['category'] is not None:
             categories_slug.add(data['category'].slug)
-        filter = data.get('filter')
-        territory = data.get('territory')
+        filter = data['filter']
+        territory = data['territory']
         related_territories_id = ramdb.get_territory_related_territories_id(territory) \
             if territory is not None else None
         if filter == 'competence':
@@ -641,7 +642,7 @@ def index_list(req):
             presence_territory = None
         pois_id_iter = ramdb.iter_pois_id(categories_slug = categories_slug,
             competence_territories_id = competence_territories_id, presence_territory = presence_territory,
-            term = data.get('term'))
+            term = data['term'])
         pois = set(
             poi
             for poi in (
@@ -715,7 +716,7 @@ def index_map(req):
         )(params, state = ctx)
     if errors is None:
         bbox = data['bbox']
-        territory = data.get('territory')
+        territory = data['territory']
     else:
         bbox = None
         territory = None
@@ -928,21 +929,21 @@ def minisite(req):
                     ),
                 ),
             default = 'ignore',
-            keep_empty = True,
+            keep_missing_values = True,
             ),
         conv.rename_item('poi_id', 'poi'),
         )(params, state = ctx)
 
     if not errors:
         data['url'] = url = urls.get_full_url(ctx, 'fragment', 'organismes', data['poi'].slug, data['poi']._id,
-            encoding = data.get('encoding'))
+            encoding = data['encoding'])
         try:
-            fragment = urllib2.urlopen(url).read().decode(data.get('encoding') or 'utf-8')
+            fragment = urllib2.urlopen(url).read().decode(data['encoding'] or 'utf-8')
         except:
             errors = dict(fragment = ctx._('Access to organism failed'))
         else:
             data['fragment'] = fragment
-    return templates.render(ctx, '/minisite.mako', data = data, errors = errors, params = params)
+    return templates.render(ctx, '/minisite.mako', errors = errors, params = params, **data)
 
 
 @wsgihelpers.wsgify
