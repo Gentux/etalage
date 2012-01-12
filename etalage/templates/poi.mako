@@ -24,6 +24,8 @@
 
 
 <%!
+import urlparse
+
 import markupsafe
 from biryani import strings
 
@@ -309,8 +311,13 @@ etalage.map.singleMarkerMap("map-poi", ${field.value[0]}, ${field.value[1]});
 
 
 <%def name="footer_data_p_content()" filter="trim">
-${parent.footer_data_p_content()} - <a class="internal" href="${urls.get_url(ctx, 'minisite', 'organismes', poi.slug,
-        poi._id)}" rel="nofollow">Minisite</a>
+${parent.footer_data_p_content()}\
+    % if conf.get('petitpois_url'):
+ &mdash; <a class="btn" href="${urlparse.urljoin(conf['petitpois_url'], '/poi/view/{0}'.format(poi._id)
+        )}" rel="external">Modifier la fiche</a>\
+    % endif
+ &mdash; <a class="internal" href="${urls.get_url(
+        ctx, 'minisite', 'organismes', poi.slug, poi._id)}" rel="nofollow">Minisite</a>
 </%def>
 
 

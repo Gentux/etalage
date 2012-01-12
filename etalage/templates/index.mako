@@ -147,6 +147,15 @@ from etalage import conf, urls
 </%def>
 
 
+<%def name="footer_data_p_content()" filter="trim">
+${parent.footer_data_p_content()}
+    % if conf.get('petitpois_url'):
+ &mdash; <a class="btn" href="${urlparse.urljoin(conf['petitpois_url'], '/poi/search'
+        )}" rel="external">Ajouter une fiche</a>
+    % endif
+</%def>
+
+
 <%def name="scripts()" filter="trim">
     <%parent:scripts/>
     <script src="/js/categories.js"></script>
