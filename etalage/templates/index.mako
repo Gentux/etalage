@@ -132,6 +132,7 @@ from etalage import conf, urls
         (u'carte', u'Carte'),
         (u'liste', u'Liste'),
         (u'annuaire', u'Annuaire'),
+        (u'gadget', u'Partage'),
         (u'export', u'Export'),
         )
 %>\

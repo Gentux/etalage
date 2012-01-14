@@ -605,6 +605,31 @@ def index_export(req):
 
 @wsgihelpers.wsgify
 @ramdb.ramdb_based
+def index_gadget(req):
+    ctx = contexts.Ctx(req)
+
+    params = req.GET
+    base_params = init_base(ctx, params)
+    mode = u'gadget'
+    params = dict(
+        category = params.get('category'),
+        filter = params.get('filter'),
+        term = params.get('term'),
+        territory = params.get('territory'),
+        )
+    params.update(base_params)
+
+    data, errors = conv.params_to_pois_list_data(params, state = ctx)
+
+    return templates.render(ctx, '/gadget.mako',
+        errors = errors,
+        mode = mode,
+        params = params,
+        **data)
+
+
+@wsgihelpers.wsgify
+@ramdb.ramdb_based
 def index_list(req):
     ctx = contexts.Ctx(req)
 
@@ -892,6 +917,7 @@ def make_router():
         ('GET', '^/export/couverture-geographique/csv/?$', export_geographical_coverage_csv),
         ('GET', '^/fragment/organismes/(?P<poi_id>[a-z0-9]{24})/?$', poi_embedded),
         ('GET', '^/fragment/organismes/(?P<slug>[^/]+)/(?P<poi_id>[a-z0-9]{24})/?$', poi_embedded),
+        ('GET', '^/gadget/?$', index_gadget),
         ('GET', '^/liste/?$', index_list),
         ('GET', '^/minisite/organismes/(?P<poi_id>[a-z0-9]{24})/?$', minisite),
         ('GET', '^/minisite/organismes/(?P<slug>[^/]+)/(?P<poi_id>[a-z0-9]{24})/?$', minisite),
