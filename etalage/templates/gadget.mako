@@ -83,9 +83,7 @@ textarea {
 
 
 <%def name="results()" filter="trim">
-        <div class="page-header">
-            <h1>Installation de l'annuaire sur votre site web</h1>
-        </div>
+        <h2>Installation de l'annuaire sur votre site web</h2>
         <p>
             Cet annuaire vous intéresse ? Vous pouvez l'installer sur votre site web !
         </p>
