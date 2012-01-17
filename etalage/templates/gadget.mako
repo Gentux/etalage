@@ -95,7 +95,7 @@ textarea {
         </div>
     % else:
         <p>
-            Il vous suffit de copier fragment HTML ci-dessos et de le coller dans une page web.
+            Il vous suffit de copier le fragment HTML ci-dessous et de le coller dans une page web.
         </p>
 <%
         gadget = capture(self.gadget)
