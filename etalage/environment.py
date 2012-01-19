@@ -30,6 +30,7 @@ import logging
 import os
 import sys
 
+from biryani import strings
 import mako.lookup
 import pymongo
 from suq import monpyjama
@@ -63,8 +64,8 @@ def load_environment(global_conf, app_conf):
         'static_files_dir': os.path.join(app_dir, 'static'),
         'territories_collection': 'territories',
         })
-    conf.update(global_conf)
-    conf.update(app_conf)
+    conf.update(strings.deep_decode(global_conf))
+    conf.update(strings.deep_decode(app_conf))
     conf['debug'] = conv.check(conv.pipe(conv.guess_bool, conv.default(False)))(conf['debug'])
     conf['log_level'] = getattr(logging, conf['log_level'].upper())
     conf['static_files'] = conv.check(conv.pipe(conv.guess_bool, conv.default(False)))(conf['static_files'])
