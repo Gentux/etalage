@@ -311,9 +311,13 @@ def load_poi(poi_bson):
             break
 
     poi_territories_id = set(
-        territories_id_by_kind_code[(territory_kind_code['kind'], territory_kind_code['code'])]
-        for territory_kind_code in metadata['territories-index']
-        if territory_kind_code['kind'] not in (u'Country', u'InternationalOrganization', u'MetropoleOfCountry')
+        territory_id
+        for territory_id in (
+            territories_id_by_kind_code.get((territory_kind_code['kind'], territory_kind_code['code']))
+            for territory_kind_code in metadata['territories-index']
+            if territory_kind_code['kind'] not in (u'Country', u'InternationalOrganization', u'MetropoleOfCountry')
+            )
+        if territory_id is not None
         ) if metadata.get('territories-index') is not None else None
     for territory_id in (poi_territories_id or set()):
         pois_id_by_presence_territory_id.setdefault(territory_id, set()).add(poi._id)
