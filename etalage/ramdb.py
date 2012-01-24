@@ -64,20 +64,17 @@ def iter_categories_slug(organism_types_only = False, tags_slug = None, term = N
             intersected_sets.append(categories_slug_by_tag_slug.get(tag_slug))
     if term:
         prefixes = strings.slugify(term).split(u'-')
-        iterables_by_prefix = {}
+        categories_slug_by_prefix = {}
         for prefix in prefixes:
-            if prefix in iterables_by_prefix:
+            if prefix in categories_slug_by_prefix:
                 # TODO? Handle categories with several words sharing the same prefix?
                 continue
-            iterables_by_prefix[prefix] = (
-                category_slug
-                for word, category_slug in categories_slug_by_word.iteritems()
+            categories_slug_by_prefix[prefix] = union_set(
+                word_categories_slug
+                for word, word_categories_slug in categories_slug_by_word.iteritems()
                 if word.startswith(prefix)
-                )
-        intersected_sets.extend(
-            union_set(iterables_by_prefix.get(prefix))
-            for prefix in prefixes
-            )
+                ) or set()
+        intersected_sets.extend(categories_slug_by_prefix.itervalues())
 
     categories_slug = intersection_set(intersected_sets)
     if categories_slug is None:
@@ -124,7 +121,7 @@ def iter_pois_id(categories_slug = None, competence_territories_id = None, prese
                 pois_id
                 for word, pois_id in pois_id_by_word.iteritems()
                 if word.startswith(prefix)
-                )
+                ) or set()
         intersected_sets.extend(pois_id_by_prefix.itervalues())
 
     found_pois_id = intersection_set(intersected_sets)
