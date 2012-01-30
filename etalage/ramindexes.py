@@ -51,6 +51,7 @@ def find_existing(indexes, index_name, index_type, value, existing):
     found_keys = find_value_functions[index_type](indexes[index_name], value)
     if found_keys is not None:
         existing.setdefault(index_type, {}).setdefault(index_name, {})[value] = found_keys
+    return found_keys
 
 
 def find_value_in_dict_of_sets(index, value):
