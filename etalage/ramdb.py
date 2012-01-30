@@ -239,8 +239,12 @@ def load_field(id, metadata, value):
         # Replace each kind-code with the corresponding territory ID.
         if value is not None:
             value = [
-                territories_id_by_kind_code[(territory_kind_code['kind'], territory_kind_code['code'])]
-                for territory_kind_code in value
+                territory_id
+                for territory_id in (
+                    territories_id_by_kind_code.get((territory_kind_code['kind'], territory_kind_code['code']))
+                    for territory_kind_code in value
+                    )
+                if territory_id is not None
                 ]
     return model.Field(
         id = id,
