@@ -142,7 +142,7 @@ from etalage import conf, urls
 %>\
     % for tab_mode, tab_name in modes_infos:
 <%
-        if tab_mode == u'annuaire' and hide_directory:
+        if tab_mode == u'annuaire' and ctx.hide_directory:
             continue
 %>\
             <li${' class="active"' if tab_mode == mode else '' | n}>
