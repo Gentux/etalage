@@ -102,7 +102,7 @@ textarea {
 %>\
         <textarea readonly rows="${gadget.strip().count(u'\n') + 1}" wrap="off">${gadget}</textarea>
         <div class="form-actions">
-            <button class="btn primary" id="select-text-button">Sélectionner le fragment HTML</button>
+            <button class="btn btn-primary" id="select-text-button">Sélectionner le fragment HTML</button>
         </div>
     % endif
 </%def>

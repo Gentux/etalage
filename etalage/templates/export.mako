@@ -32,8 +32,9 @@ from etalage import urls
 
 
 <%def name="results()" filter="trim">
-        <form action="${urls.get_url(ctx, mode)}" class="horizontal-form internal" id="export-form" method="get">
-            <legend>${_('Select export options')}</legend>
+        <form action="${urls.get_url(ctx, mode)}" class="form-horizontal internal" id="export-form" method="get">
+            <fieldset>
+                <legend>${_('Select export options')}</legend>
     % for name, value in sorted(params.iteritems()):
 <%
         if name in (
@@ -55,38 +56,37 @@ from etalage import urls
 <%
     error = errors.get('type_and_format') if errors is not None else None
 %>\
-            <fieldset class="control-group${' error' if error else ''}">
-                <label class="control-label">${_(u"Export Type")}</label>
-                <div class="controls">
-                    <div class="control-list">
-                        <label>
+                <div class="control-group${' error' if error else ''}">
+                    <label class="control-label">${_(u"Export Type")}</label>
+                    <div class="controls">
+                        <label class="radio">
                             <input type="radio" value="annuaire-csv" name="type_and_format">
-                            <span>Annuaire (format CSV) &mdash; Les informations détaillées,
-                                organisme par organisme</span>
+                            Annuaire (format CSV) &mdash; Les informations détaillées,
+                                organisme par organisme
                         </label>
-                        <label>
+                        <label class="radio">
                             <input type="radio" value="couverture-geographique-csv" name="type_and_format">
-                            <span>Couverture géographique (format CSV) &mdash; Les organismes compétents,
-                                commune par commune</span>
+                            Couverture géographique (format CSV) &mdash; Les organismes compétents,
+                                commune par commune
                         </label>
-                        <label>
+                        <label class="radio">
                             <input type="radio" value="annuaire-geojson" name="type_and_format">
-                            <span>GeoJSON &mdash; Pour récupérer les organismes en temps réel dans vos
-                                applications</span>
+                            GeoJSON &mdash; Pour récupérer les organismes en temps réel dans vos
+                                applications
                         </label>
-                        <label>
+                        <label class="radio">
                             <input type="radio" value="annuaire-kml" name="type_and_format">
-                            <span>KML &mdash; Pour visualiser les organismes dans certains sites et applications
-                                cartographiques</span>
+                            KML &mdash; Pour visualiser les organismes dans certains sites et applications
+                                cartographiques
                         </label>
-                    </div>
     % if error:
-                    <p class="help-text">${error}</p>
+                        <p class="help-block">${error}</p>
     % endif
+                    </div>
                 </div>
-            </fieldset>
-            <fieldset class="form-actions">
-                <input class="btn primary" name="submit" type="submit" value="${_(u'Select')}">
+                <div class="form-actions">
+                    <button class="btn btn-primary" name="submit" type="submit"><i class="icon-ok icon-white"></i> ${_('Select')}</button>
+                </div>
             </fieldset>
         </form>
 </%def>

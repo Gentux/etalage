@@ -40,7 +40,8 @@ from etalage import conf, urls
                 serveur web.</p>
         </div>
         <form action="${urls.get_url(ctx, 'minisite', 'organismes', poi.slug, poi._id)}">
-            <legend>${poi.name}</legend>
+            <fieldset>
+                <legend>${poi.name}</legend>
 <%
     error = errors.get('encoding') if errors is not None else None
     encoding_and_label_couples = [
@@ -50,25 +51,26 @@ from etalage import conf, urls
         (u'', u'UTF-8'),
         ]
 %>\
-            <fieldset class="control-group${' error' if error else ''}">
-                <label class="control-label" for="encoding">Encodage</label>
-                <div class="controls">
-                    <select name="encoding">
+                <div class="control-group${' error' if error else ''}">
+                    <label class="control-label" for="encoding">Encodage</label>
+                    <div class="controls">
+                        <select name="encoding">
     % for encoding, label in encoding_and_label_couples:
-                        <option${' selected' if params['encoding'] == encoding else ''} value="${\
-                                encoding}">${label}</option>
+                            <option${' selected' if params['encoding'] == encoding else ''} value="${\
+                                    encoding}">${label}</option>
     % endfor
-                    </select>
+                        </select>
     % if error:
-                    <span class="help-inline">${error}</span>
+                        <span class="help-inline">${error}</span>
     % else:
-                    <span class="help-inline">Encodage des caractères utilisé par le serveur hébergeant la page
-                        <em>Minisite</em></span>
+                        <span class="help-inline">Encodage des caractères utilisé par le serveur hébergeant la page
+                            <em>Minisite</em></span>
     % endif
+                    </div>
                 </div>
-            </fieldset>
-            <fieldset class="form-actions">
-                <input class="btn primary" type="submit" value="Générer">
+                <div class="form-actions">
+                    <button class="btn btn-primary" type="submit"><i class="icon-ok icon-white"></i> ${_('Generate')}</button>
+                </div>
             </fieldset>
         </form>
     % if url:
@@ -79,9 +81,9 @@ from etalage import conf, urls
         <hr>
         <h3>Résultat</h3>
         <div class="tabbable">
-            <ul class="tabs" data-tabs="tabs">
-                <li class="active"><a href="#show-preview">Aperçu</a></li>
-                <li><a href="#show-source-code">Code Source</a></li>
+            <ul class="nav nav-tabs">
+                <li class="active"><a data-toggle="tab" href="#show-preview">Aperçu</a></li>
+                <li><a data-toggle="tab" href="#show-source-code">Code Source</a></li>
             </ul>
             <div class="tab-content">
                 <div class="active tab-pane" id="show-preview">
@@ -114,7 +116,7 @@ from etalage import conf, urls
 
 <%def name="scripts()" filter="trim">
     <%parent:scripts/>
-    <script src="${conf['bootstrap-tabs.js']}"></script>
+    <script src="${conf['bootstrap.js']}"></script>
     <script src="${conf['prettify.js']}"></script>
     <script>
 $(function () {

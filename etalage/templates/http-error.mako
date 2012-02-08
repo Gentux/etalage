@@ -26,21 +26,27 @@
 <%inherit file="/site.mako"/>
 
 
+<%def name="breadcrumb_content()" filter="trim">
+            <%parent:breadcrumb_content/>
+            <li class="active">${title}</li>
+</%def>
+
+
 <%def name="container_content()" filter="trim">
-        <h2>${title}</h2>
-        <div class="alert-message error">
+        <div class="alert alert-block alert-error">
+            <h2 class="alert-heading">${title}</h2>
             <p>${explanation}</p>
-        </div>
     % if comment:
-        <p>${comment}</p>
+            <p>${comment}</p>
     % endif
     % if message:
-        <p>${message}</p>
+            <p>${message}</p>
     % endif
+        </div>
 </%def>
 
 
 <%def name="title_content()" filter="trim">
-${_(u'Error')} - ${parent.title_content()}
+${title} - ${parent.title_content()}
 </%def>
 

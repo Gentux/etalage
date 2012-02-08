@@ -95,7 +95,7 @@ from etalage import conf, model, ramdb, urls
         return ''
 %>\
         <div class="field">
-            <strong class="field-label">${field.label} :</strong>
+            <b class="field-label">${field.label} :</b>
             <%self:field_value field="${field}"/>
         </div>
 </%def>

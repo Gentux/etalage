@@ -49,6 +49,9 @@ class Ctx(object):
         distance = None, # Max distance in km
         gadget_id = None,
         hide_category = False,
+        hide_directory = False,
+        hide_term = False,
+        hide_territory = False,
         req = None,
         show_filter = False,
         )

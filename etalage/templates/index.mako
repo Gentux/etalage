@@ -34,7 +34,8 @@ from etalage import conf, urls
 
 
 <%def name="container_content()" filter="trim">
-        <form action="${urls.get_url(ctx, mode)}" class="horizontal-form internal" id="search-form" method="get">
+        <form action="${urls.get_url(ctx, mode)}" class="form-horizontal internal" id="search-form" method="get">
+            <fieldset>
     % for name, value in sorted(params.iteritems()):
 <%
         if name in (
@@ -42,8 +43,8 @@ from etalage import conf, urls
                 'category' if not ctx.hide_category else None,
                 'filter' if ctx.show_filter else None,
                 'page',
-                'term',
-                'territory',
+                'term' if not ctx.hide_term else None,
+                'territory' if not ctx.hide_territory else None,
                 ):
             continue
         if value is None or value == u'':
@@ -51,82 +52,85 @@ from etalage import conf, urls
 %>\
         % if isinstance(value, list):
             % for item_value in value:
-            <input name="${name}" type="hidden" value="${item_value or ''}">
+                <input name="${name}" type="hidden" value="${item_value or ''}">
             % endfor
         % else:
-            <input name="${name}" type="hidden" value="${value or ''}">
+                <input name="${name}" type="hidden" value="${value or ''}">
         % endif
     % endfor
     % if not ctx.hide_category:
 <%
         error = errors.get('category') if errors is not None else None
 %>\
-            <fieldset class="control-group${' error' if error else ''}">
-                <label class="control-label" for="category">Catégorie</label>
-                <div class="controls">
-                    <input class="input-xlarge" id="category" name="category" type="text" value="${params['category'] or ''}">
+                <div class="control-group${' error' if error else ''}">
+                    <label class="control-label" for="category">Catégorie</label>
+                    <div class="controls">
+                        <input class="input-xlarge" id="category" name="category" type="text" value="${params['category'] or ''}">
         % if error:
-                    <span class="help-inline">${error}</span>
+                        <span class="help-inline">${error}</span>
         % endif
+                    </div>
                 </div>
-            </fieldset>
     % endif
+    % if not ctx.hide_term:
 <%
-    error = errors.get('term') if errors is not None else None
+        error = errors.get('term') if errors is not None else None
 %>\
-            <fieldset class="control-group${' error' if error else ''}">
-                <label class="control-label" for="term">Intitulé</label>
-                <div class="controls">
-                    <input class="input-xlarge" id="term" name="term" type="text" value="${params['term'] or ''}">
-    % if error:
-                    <span class="help-inline">${error}</span>
-    % endif
+                <div class="control-group${' error' if error else ''}">
+                    <label class="control-label" for="term">Intitulé</label>
+                    <div class="controls">
+                        <input class="input-xlarge" id="term" name="term" type="text" value="${params['term'] or ''}">
+        % if error:
+                        <span class="help-inline">${error}</span>
+        % endif
+                    </div>
                 </div>
-            </fieldset>
+    % endif
+    % if not ctx.hide_territory:
 <%
-    error = errors.get('territory') if errors is not None else None
+        error = errors.get('territory') if errors is not None else None
 %>\
-            <fieldset class="control-group${' error' if error else ''}">
-                <label class="control-label" for="territory">Territoire</label>
-                <div class="controls">
-                    <input class="input-xlarge" id="territory" name="territory" type="text" value="${params['territory'] or ''}">
-    % if error:
-                    <span class="help-inline">${error}</span>
-    % endif
+                <div class="control-group${' error' if error else ''}">
+                    <label class="control-label" for="territory">Territoire</label>
+                    <div class="controls">
+                        <input class="input-xlarge" id="territory" name="territory" type="text" value="${params['territory'] or ''}">
+        % if error:
+                        <span class="help-inline">${error}</span>
+        % endif
+                    </div>
                 </div>
-            </fieldset>
+    % endif
     % if ctx.show_filter:
 <%
         error = errors.get('filter') if errors is not None else None
 %>\
-            <fieldset class="control-group${' error' if error else ''}">
-                <label class="control-label" for="filter">Afficher</label>
-                <div class="controls">
-                    <div class="control-list">
-                        <label>
+                <div class="control-group${' error' if error else ''}">
+                    <label class="control-label" for="filter">Afficher</label>
+                    <div class="controls">
+                        <label class="radio">
                             <input${' checked' if not params['filter'] else ''} name="filter" type="radio" value="">
-                            <span>Tous les organismes</span>
+                            Tous les organismes
                         </label>
-                        <label>
+                        <label class="radio">
                             <input${' checked' if params['filter'] == 'competence' else ''} name="filter" type="radio" value="competence">
-                            <span>Uniquement les organismes compétents pour le territoire</span>
+                            Uniquement les organismes compétents pour le territoire
                         </label>
-                        <label>
+                        <label class="radio">
                             <input${' checked' if params['filter'] == 'presence' else ''} name="filter" type="radio" value="presence">
-                            <span>Uniquement les organismes présents sur le territoire</span>
+                            Uniquement les organismes présents sur le territoire
                         </label>
-                    </div>
         % if error:
-                    <p class="help-text">${error}</p>
+                        <p class="help-block">${error}</p>
         % endif
+                    </div>
                 </div>
-            </fieldset>
     % endif
-            <fieldset class="form-actions">
-                <input class="btn primary" type="submit" value="${_('Search')}">
-            </fieldset>
+                <div class="form-actions">
+                    <button class="btn btn-primary" type="submit"><i class="icon-search icon-white"></i> ${_('Search')}</button>
+                </div>
+            <fieldset>
         </form>
-        <ul class="tabs">
+        <ul class="nav nav-tabs">
 <%
     modes_infos = (
         (u'carte', u'Carte'),
@@ -137,6 +141,10 @@ from etalage import conf, urls
         )
 %>\
     % for tab_mode, tab_name in modes_infos:
+<%
+        if tab_mode == u'annuaire' and hide_directory:
+            continue
+%>\
             <li${' class="active"' if tab_mode == mode else '' | n}>
                 <a class="internal" href="${urls.get_url(ctx, tab_mode, **params)}">${tab_name}</a>
             </li>

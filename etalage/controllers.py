@@ -762,6 +762,9 @@ def init_base(ctx, params):
         distance = params.get('distance'),
         gadget = params.get('gadget'),
         hide_category = params.get('hide_category'),
+        hide_directory = params.get('hide_directory'),
+        hide_term = params.get('hide_term'),
+        hide_territory = params.get('hide_territory'),
         show_filter = params.get('show_filter'),
         )
 
@@ -854,6 +857,27 @@ def init_base(ctx, params):
         )(base_params['hide_category'], state = ctx)
     if error is not None:
         raise wsgihelpers.bad_request(ctx, explanation = ctx._('Hide Category Error: {0}').format(error))
+
+    ctx.hide_directory, error = conv.pipe(
+        conv.guess_bool,
+        conv.default(False),
+        )(base_params['hide_directory'], state = ctx)
+    if error is not None:
+        raise wsgihelpers.bad_request(ctx, explanation = ctx._('Hide Directory Error: {0}').format(error))
+
+    ctx.hide_term, error = conv.pipe(
+        conv.guess_bool,
+        conv.default(False),
+        )(base_params['hide_term'], state = ctx)
+    if error is not None:
+        raise wsgihelpers.bad_request(ctx, explanation = ctx._('Hide Term Error: {0}').format(error))
+
+    ctx.hide_territory, error = conv.pipe(
+        conv.guess_bool,
+        conv.default(False),
+        )(base_params['hide_territory'], state = ctx)
+    if error is not None:
+        raise wsgihelpers.bad_request(ctx, explanation = ctx._('Hide Territory Error: {0}').format(error))
 
     ctx.show_filter, error = conv.pipe(
         conv.guess_bool,

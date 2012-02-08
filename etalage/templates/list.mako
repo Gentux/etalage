@@ -41,7 +41,7 @@ from etalage import urls
 
 <%def name="pagination()" filter="trim">
     % if pager.page_count > 1:
-            <div class="pagination">
+            <div class="pagination pagination-centered">
                 <ul>
 <%
         url_args = dict(
@@ -52,7 +52,7 @@ from etalage import urls
 %>\
                     <li class="prev${' disabled' if pager.page_number <= 1 else ''}">
                         <a class="internal" href="${urls.get_url(ctx, mode, page = pager.page_number - 1, **url_args
-                                )}">&larr; ${_(u"Previous")}</a>
+                                )}">&larr;</a>
                     </li>
         % for page_number in range(max(pager.page_number - 5, 1), pager.page_number):
                     <li>
@@ -72,7 +72,7 @@ from etalage import urls
         % endfor
                     <li class="next${' disabled' if pager.page_number >= pager.last_page_number else ''}">
                         <a class="internal" href="${urls.get_url(ctx, mode, page = pager.page_number + 1, **url_args
-                                )}">${_(u"Next")} &rarr;</a>
+                                )}">&rarr;</a>
                     </li>
                 </ul>
             </div>
@@ -92,7 +92,7 @@ from etalage import urls
         </div>
         % endif
         <%self:pagination/>
-        <table class="striped-table">
+        <table class="table table-bordered table-condensed table-striped">
             <thead>
                 <tr>
                     <th>${_('Name')}</th>

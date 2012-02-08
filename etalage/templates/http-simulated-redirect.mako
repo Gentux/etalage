@@ -33,9 +33,15 @@ from etalage import urls
 <%inherit file="/site.mako"/>
 
 
+<%def name="breadcrumb_content()" filter="trim">
+            <%parent:breadcrumb_content/>
+            <li class="active">${_(u'Redirection')}</li>
+</%def>
+
+
 <%def name="container_content()" filter="trim">
-        <h2>${_("Redirection in progress...")}</h2>
-        <div class="alert-message info">
+        <div class="alert alert-block alert-info">
+            <h2 class="alert-heading">${_("Redirection in progress...")}</h2>
             <p>
                 ${_(u"You'll be redirected to page")}
                 <a class="internal" href="${urls.get_url(ctx, *url_args, **url_kwargs)}">${urls.get_url(

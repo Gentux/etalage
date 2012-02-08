@@ -29,18 +29,13 @@ from etalage import conf
 
 
 <%def name="body_content()" filter="trim">
-    % if ctx.container_base_url is not None and ctx.gadget_id is not None:
-    <div class="container">
-        <%self:container_content/>
-        <%self:footer/>
-    </div>
-    % else:
+    % if ctx.container_base_url is None or ctx.gadget_id is None:
     <%self:topbar/>
-    <div class="container">
+    % endif
+    <div class="container-fluid"><div class="row-fluid">
         <%self:container_content/>
         <%self:footer/>
-    </div>
-    % endif
+    </div></div>
 </%def>
 
 
@@ -166,9 +161,9 @@ $(function () {
 
 
 <%def name="topbar()" filter="trim">
-    <div class="navbar navbar-fixed">
+    <div class="navbar navbar-fixed-top">
         <div class="navbar-inner">
-            <div class="container">
+            <div class="container-fluid">
                 <a class="brand" href="http://www.comarquage.fr/">Comarquage.fr</a>
                 <ul class="nav">
                     <li><a href="http://petitpois.comarquage.fr/">Annuaire</a></li>
