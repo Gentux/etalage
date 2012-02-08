@@ -126,7 +126,17 @@ from etalage import conf, model, ramdb, urls
             % endif
         % endfor
             </address>
-    % elif field.id == 'autocompleters':
+    % elif field.id in ('autocompleter', 'select'):
+<%
+        slug_and_name_couples = []
+        name = field.value
+        slug = strings.slugify(name)
+        category = ramdb.categories_by_slug.get(slug)
+        if category is not None:
+            name = category.name
+%>\
+            <span class="field-value">${name}</span>
+    % elif field.id in ('autocompleters', 'checkboxes'):
 <%
         slug_and_name_couples = []
         for name in field.value:
