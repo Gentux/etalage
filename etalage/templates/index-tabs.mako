@@ -38,6 +38,11 @@ from etalage import urls
         (u'gadget', u'Partage'),
         (u'export', u'Export'),
         )
+    url_args = dict(
+        (dict(categories = 'category').get(name, name), value)
+        for name, value in params.iteritems()
+        if name != 'page' and value is not None
+        )
 %>\
     % for tab_mode, tab_name in modes_infos:
 <%
@@ -45,7 +50,7 @@ from etalage import urls
             continue
 %>\
             <li${' class="active"' if tab_mode == mode else '' | n}>
-                <a class="internal" href="${urls.get_url(ctx, tab_mode, **params)}">${tab_name}</a>
+                <a class="internal" href="${urls.get_url(ctx, tab_mode, **url_args)}">${tab_name}</a>
             </li>
     % endfor
         </ul>

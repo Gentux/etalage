@@ -45,7 +45,7 @@ from etalage import urls
                 <ul>
 <%
         url_args = dict(
-            (name, value)
+            (dict(categories = 'category').get(name, name), value)
             for name, value in params.iteritems()
             if name != 'page' and value is not None
             )
