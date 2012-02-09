@@ -108,30 +108,49 @@ def autocomplete_category(req):
             jsonp = params['jsonp'],
             )
 
-    page_size = 20
-    categories_json = [
-        ramdb.categories_by_slug[category_slug].name
-        for category_slug in itertools.islice(
-            sorted(ramdb.iter_categories_slug(
-                tags_slug = data['tags_slug'],
-                term = data['term'],
-                )),
-            (data['page_number'] - 1) * page_size,
-            data['page_number'] * page_size,
+    possible_pois_id = ramdb.intersection_set(
+        ramdb.pois_id_by_category_slug[category_slug]
+        for category_slug in (data['tags_slug'] or [])
+        )
+    if possible_pois_id is None:
+        categories_infos = sorted(
+            (-len(ramdb.pois_id_by_category_slug.get(category_slug, [])), category_slug)
+            for category_slug in ramdb.iter_categories_slug(tags_slug = data['tags_slug'], term = data['term'])
+            if category_slug not in (data['tags_slug'] or [])
             )
+    else:
+        categories_infos = sorted(
+            (-count, category_slug)
+            for count, category_slug in (
+                (
+                    len(set(ramdb.pois_id_by_category_slug.get(category_slug, [])).intersection(possible_pois_id)),
+                    category_slug,
+                    )
+                for category_slug in ramdb.iter_categories_slug(tags_slug = data['tags_slug'], term = data['term'])
+                if category_slug not in (data['tags_slug'] or [])
+                )
+            if count > 0
+            )
+    pager = pagers.Pager(item_count = len(categories_infos), page_number = data['page_number'])
+    pager.items = [
+        dict(
+            count = -category_infos[0],
+            tag = ramdb.categories_by_slug[category_infos[1]].name,
+            )
+        for category_infos in categories_infos[pager.first_item_index : pager.last_item_number]
         ]
     return wsgihelpers.respond_json(ctx,
         dict(
             apiVersion = '1.0',
             context = params['context'],
             data = dict(
-                currentItemCount = len(categories_json),
-                items = categories_json,
-                itemsPerPage = page_size,
-                pageIndex = data['page_number'],
-                startIndex = (data['page_number'] - 1) * page_size + 1,
-                # totalItems = pager.item_count,
-                # totalPages = pager.page_count,
+                currentItemCount = len(pager.items),
+                items = pager.items,
+                itemsPerPage = pager.page_size,
+                pageIndex = pager.page_number,
+                startIndex = pager.first_item_index,
+                totalItems = pager.item_count,
+                totalPages = pager.page_count,
                 ),
             method = ctx.controller_name,
             params = params,

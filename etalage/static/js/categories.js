@@ -35,12 +35,19 @@ etalage.categories = (function ($) {
                     dataType: 'json',
                     data: {
                         tag: etalage.categories.tags || '',
+                        tag: $.merge(
+                            etalage.categories.tags || [],
+                            $('input[name=category][type=checkbox]:checked').map(function() {
+                                return $(this).val();
+                            }).get()
+                        ),
                         term: request.term || ''
                     },
                     success: function (data) {
-                        response($.map(data.data.items, function(label) {
+                        response($.map(data.data.items, function(item) {
                             return {
-                                label: label
+                                label: item.tag + ' (' + item.count + ')',
+                                value: item.tag
                             };
                         }));
                     },
