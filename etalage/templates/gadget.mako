@@ -88,10 +88,8 @@ textarea {
             Cet annuaire vous intéresse ? Vous pouvez l'installer sur votre site web !
         </p>
     % if errors is not None:
-        <div class="alert-message error">
-            <p>
-                Vous devez auparavant <strong>corriger les erreurs</strong> dans le formulaire de recherche ci-dessus.
-            </p>
+        <div class="alert alert-error">
+            Vous devez auparavant <strong>corriger les erreurs</strong> dans le formulaire de recherche ci-dessus.
         </div>
     % else:
         <p>

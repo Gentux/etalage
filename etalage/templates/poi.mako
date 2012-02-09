@@ -202,12 +202,12 @@ from etalage import conf, model, ramdb, urls
     % elif field.id == 'geo':
             <div class="field-value offset1">
         % if field.value[2] <= 6:
-                <div class="alert-message error">
-                    <p>Cet organisme est positionné <strong>très approximativement</strong>.</p>
+                <div class="alert alert-error">
+                    Cet organisme est positionné <strong>très approximativement</strong>.
                 </div>
         % elif field.value[2] <= 6:
-                <div class="alert-message warning">
-                    <p>Cet organisme est positionné <strong>approximativement dans la rue</strong>.</p>
+                <div class="alert alert-warning">
+                    Cet organisme est positionné <strong>approximativement dans la rue</strong>.
                 </div>
         % endif
                 <div class="single-marker-map" id="map-poi" style="height: 500px;"></div>

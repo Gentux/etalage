@@ -36,11 +36,8 @@ from etalage import ramdb, urls
 <%def name="results()" filter="trim">
     % if errors is not None:
         % if 'territory' in errors:
-        <div class="alert-message error">
-            <p>
-                Pour accéder à l'annuaire, vous devez <strong>préciser une commune</strong> dans le formulaire
-                ci-dessus.
-            </p>
+        <div class="alert alert-error">
+            Pour accéder à l'annuaire, vous devez <strong>préciser une commune</strong> dans le formulaire ci-dessus.
         </div>
         % endif
     % else:

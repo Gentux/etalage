@@ -35,9 +35,9 @@ from etalage import conf, urls
         <div class="page-header">
             <h1>Génération d'une page Minisite</h1>
         </div>
-        <div class="alert-message info">
-            <p><strong>Note :</strong> Une page <em>Minisite</em> est destinée à être intégrée dans une page d'un autre
-                serveur web.</p>
+        <div class="alert alert-info">
+            <strong>Note :</strong> Une page <em>Minisite</em> est destinée à être intégrée dans une page d'un autre
+            serveur web.
         </div>
         <form action="${urls.get_url(ctx, 'minisite', 'organismes', poi.slug, poi._id)}">
             <fieldset>
