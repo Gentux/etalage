@@ -51,6 +51,7 @@ def load_environment(global_conf, app_conf):
         'app_dir': app_dir,
         'cache_dir': os.path.join(os.path.dirname(app_dir), 'cache'),
         'categories_collection': 'categories',
+        'custom_templates_dir': None,
         'data_updates_collection': 'data_updates',
         'database': 'souk',
         'debug': False,
@@ -89,9 +90,13 @@ def load_environment(global_conf, app_conf):
     ramdb.load()
 
     # Create the Mako TemplateLookup, with the default auto-escaping.
+    templates_dirs = []
+    if conf['custom_templates_dir']:
+        templates_dirs.append(conf['custom_templates_dir'])
+    templates_dirs.append(os.path.join(app_dir, 'templates'))
     templates.lookup = mako.lookup.TemplateLookup(
         default_filters = ['h'],
-        directories = [os.path.join(app_dir, 'templates')],
+        directories = templates_dirs,
 #        error_handler = handle_mako_error,
         input_encoding = 'utf-8', 
         module_directory = os.path.join(conf['cache_dir'], 'templates'),

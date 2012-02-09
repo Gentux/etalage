@@ -31,140 +31,15 @@ from etalage import conf, urls
 
 
 <%inherit file="/site.mako"/>
+<%namespace name="searchform" file="search-form.mako"/>
+<%namespace name="indextabs" file="index-tabs.mako"/>
 
 
 <%def name="container_content()" filter="trim">
         <form action="${urls.get_url(ctx, mode)}" class="form-horizontal internal" id="search-form" method="get">
-    % for name, value in sorted(params.iteritems()):
-<%
-        if name in (
-                'bbox',
-                'category' if not ctx.hide_category else None,
-                'filter' if ctx.show_filter else None,
-                'page',
-                'term' if not ctx.hide_term else None,
-                'territory' if not ctx.hide_territory else None,
-                ):
-            continue
-        if value is None or value == u'':
-            continue
-%>\
-        % if isinstance(value, list):
-            % for item_value in value:
-            <input name="${name}" type="hidden" value="${item_value or ''}">
-            % endfor
-        % else:
-            <input name="${name}" type="hidden" value="${value or ''}">
-        % endif
-    % endfor
-            <fieldset>
-    % if not ctx.hide_category:
-<%
-        error = errors.get('categories') if errors is not None else None
-        if error and isinstance(error, dict):
-            error_index, error_message = sorted(error.iteritems())[0]
-        else:
-            error_index = None
-            error_message = error
-%>\
-                <div class="control-group${' error' if error else ''}">
-                    <label class="control-label" for="category">Catégorie</label>
-                    <div class="controls">
-    % if categories:
-        % for category_index, category in enumerate(categories):
-            % if error is None or category_index not in error:
-                        <label class="checkbox"><input checked name="category" type="checkbox" value="${category.name}">
-                            <span class="label label-success"><i class="icon-tag icon-white"></i>
-                            ${category.name}</span></label>
-            % endif
-        % endfor
-    % endif
-                        <input class="input-xlarge" id="category" name="category" type="text" value="${params['category'][error_index] \
-                                if error_index is not None else ''}">
-        % if error_message:
-                        <span class="help-inline">${error_message}</span>
-        % endif
-                    </div>
-                </div>
-    % endif
-    % if not ctx.hide_term:
-<%
-        error = errors.get('term') if errors is not None else None
-%>\
-                <div class="control-group${' error' if error else ''}">
-                    <label class="control-label" for="term">Intitulé</label>
-                    <div class="controls">
-                        <input class="input-xlarge" id="term" name="term" type="text" value="${params['term'] or ''}">
-        % if error:
-                        <span class="help-inline">${error}</span>
-        % endif
-                    </div>
-                </div>
-    % endif
-    % if not ctx.hide_territory:
-<%
-        error = errors.get('territory') if errors is not None else None
-%>\
-                <div class="control-group${' error' if error else ''}">
-                    <label class="control-label" for="territory">Territoire</label>
-                    <div class="controls">
-                        <input class="input-xlarge" id="territory" name="territory" type="text" value="${params['territory'] or ''}">
-        % if error:
-                        <span class="help-inline">${error}</span>
-        % endif
-                    </div>
-                </div>
-    % endif
-    % if ctx.show_filter:
-<%
-        error = errors.get('filter') if errors is not None else None
-%>\
-                <div class="control-group${' error' if error else ''}">
-                    <label class="control-label" for="filter">Afficher</label>
-                    <div class="controls">
-                        <label class="radio">
-                            <input${' checked' if not params['filter'] else ''} name="filter" type="radio" value="">
-                            Tous les organismes
-                        </label>
-                        <label class="radio">
-                            <input${' checked' if params['filter'] == 'competence' else ''} name="filter" type="radio" value="competence">
-                            Uniquement les organismes compétents pour le territoire
-                        </label>
-                        <label class="radio">
-                            <input${' checked' if params['filter'] == 'presence' else ''} name="filter" type="radio" value="presence">
-                            Uniquement les organismes présents sur le territoire
-                        </label>
-        % if error:
-                        <p class="help-block">${error}</p>
-        % endif
-                    </div>
-                </div>
-    % endif
-                <div class="form-actions">
-                    <button class="btn btn-primary" type="submit"><i class="icon-search icon-white"></i> ${_('Search')}</button>
-                </div>
-            <fieldset>
+            <%searchform:search_form_content/>
         </form>
-        <ul class="nav nav-tabs">
-<%
-    modes_infos = (
-        (u'carte', u'Carte'),
-        (u'liste', u'Liste'),
-        (u'annuaire', u'Annuaire'),
-        (u'gadget', u'Partage'),
-        (u'export', u'Export'),
-        )
-%>\
-    % for tab_mode, tab_name in modes_infos:
-<%
-        if tab_mode == u'annuaire' and ctx.hide_directory:
-            continue
-%>\
-            <li${' class="active"' if tab_mode == mode else '' | n}>
-                <a class="internal" href="${urls.get_url(ctx, tab_mode, **params)}">${tab_name}</a>
-            </li>
-    % endfor
-        </ul>
+        <%indextabs:index_tabs/>
 ##    % if errors is None:
         <%self:results/>
 ##    % endif
