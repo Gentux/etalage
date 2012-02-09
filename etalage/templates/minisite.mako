@@ -69,7 +69,7 @@ from etalage import conf, urls
                     </div>
                 </div>
                 <div class="form-actions">
-                    <button class="btn btn-primary" type="submit"><i class="icon-ok icon-white"></i> ${_('Generate')}</button>
+                    <button class="btn btn-primary" type="submit" value="generate"><i class="icon-ok icon-white"></i> ${_('Generate')}</button>
                 </div>
             </fieldset>
         </form>

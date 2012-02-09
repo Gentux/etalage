@@ -35,7 +35,6 @@ from etalage import conf, urls
 
 <%def name="container_content()" filter="trim">
         <form action="${urls.get_url(ctx, mode)}" class="form-horizontal internal" id="search-form" method="get">
-            <fieldset>
     % for name, value in sorted(params.iteritems()):
 <%
         if name in (
@@ -52,22 +51,38 @@ from etalage import conf, urls
 %>\
         % if isinstance(value, list):
             % for item_value in value:
-                <input name="${name}" type="hidden" value="${item_value or ''}">
+            <input name="${name}" type="hidden" value="${item_value or ''}">
             % endfor
         % else:
-                <input name="${name}" type="hidden" value="${value or ''}">
+            <input name="${name}" type="hidden" value="${value or ''}">
         % endif
     % endfor
+            <fieldset>
     % if not ctx.hide_category:
 <%
-        error = errors.get('category') if errors is not None else None
+        error = errors.get('categories') if errors is not None else None
+        if error and isinstance(error, dict):
+            error_index, error_message = sorted(error.iteritems())[0]
+        else:
+            error_index = None
+            error_message = error
 %>\
                 <div class="control-group${' error' if error else ''}">
                     <label class="control-label" for="category">Catégorie</label>
                     <div class="controls">
-                        <input class="input-xlarge" id="category" name="category" type="text" value="${params['category'] or ''}">
-        % if error:
-                        <span class="help-inline">${error}</span>
+    % if categories:
+        % for category_index, category in enumerate(categories):
+            % if error is None or category_index not in error:
+                        <label class="checkbox"><input checked name="category" type="checkbox" value="${category.name}">
+                            <span class="label label-success"><i class="icon-tag icon-white"></i>
+                            ${category.name}</span></label>
+            % endif
+        % endfor
+    % endif
+                        <input class="input-xlarge" id="category" name="category" type="text" value="${params['category'][error_index] \
+                                if error_index is not None else ''}">
+        % if error_message:
+                        <span class="help-inline">${error_message}</span>
         % endif
                     </div>
                 </div>

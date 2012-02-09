@@ -47,21 +47,24 @@ def default_pois_layer_data_bbox(data, state = default_state):
     from . import ramdb
     if data is None:
         return data, None
-    if data.get('bbox') is not None:
+    if data['bbox'] is not None:
         return data, None
     data = data.copy()
     categories_slug = set(state.base_categories_slug or [])
-    if data.get('category') is not None:
-        categories_slug.add(data['category'].slug)
-    filter = data.get('filter')
-    territory = data.get('territory')
+    if data['categories'] is not None:
+        categories_slug.update(
+            category.slug
+            for category in data['categories']
+            )
+    filter = data['filter']
+    territory = data['territory']
     pois_by_id = ramdb.pois_by_id
     if territory is None:
         competence_territories_id = None
         presence_territory = None
         pois_id_iter = ramdb.iter_pois_id(categories_slug = categories_slug,
             competence_territories_id = competence_territories_id, presence_territory = presence_territory,
-            term = data.get('term'))
+            term = data['term'])
         pois = [
             poi
             for poi in (
@@ -87,7 +90,7 @@ def default_pois_layer_data_bbox(data, state = default_state):
             presence_territory = None
             pois_id_iter = ramdb.iter_pois_id(categories_slug = categories_slug,
                 competence_territories_id = competence_territories_id, presence_territory = presence_territory,
-                term = data.get('term'))
+                term = data['term'])
             pois = [
                 poi
                 for poi in (
@@ -101,7 +104,7 @@ def default_pois_layer_data_bbox(data, state = default_state):
             presence_territory = territory
             pois_id_iter = ramdb.iter_pois_id(categories_slug = categories_slug,
                 competence_territories_id = competence_territories_id, presence_territory = presence_territory,
-                term = data.get('term'))
+                term = data['term'])
             pois = [
                 poi
                 for poi in (
@@ -117,7 +120,7 @@ def default_pois_layer_data_bbox(data, state = default_state):
             presence_territory = territory
             pois_id_iter = ramdb.iter_pois_id(categories_slug = categories_slug,
                 competence_territories_id = competence_territories_id, presence_territory = presence_territory,
-                term = data.get('term'))
+                term = data['term'])
             pois = [
                 poi
                 for poi in (
@@ -132,7 +135,7 @@ def default_pois_layer_data_bbox(data, state = default_state):
                 presence_territory = None
                 pois_id_iter = ramdb.iter_pois_id(categories_slug = categories_slug,
                     competence_territories_id = competence_territories_id, presence_territory = presence_territory,
-                    term = data.get('term'))
+                    term = data['term'])
                 pois = [
                     poi
                     for poi in (
@@ -186,10 +189,13 @@ def layer_data_to_clusters(data, state = default_state):
     center_latitude_sin = math.sin(math.radians(center_latitude))
     center_longitude = (left + right) / 2.0
     categories_slug = set(state.base_categories_slug or [])
-    if data.get('category') is not None:
-        categories_slug.add(data['category'].slug)
-    filter = data.get('filter')
-    territory = data.get('territory')
+    if data['categories'] is not None:
+        categories_slug.update(
+            category.slug
+            for category in data['categories']
+            )
+    filter = data['filter']
+    territory = data['territory']
     related_territories_id = ramdb.get_territory_related_territories_id(territory) if territory is not None else None
     if filter == 'competence':
         competence_territories_id = related_territories_id
@@ -202,9 +208,9 @@ def layer_data_to_clusters(data, state = default_state):
         presence_territory = None
     pois_id_iter = ramdb.iter_pois_id(categories_slug = categories_slug,
         competence_territories_id = competence_territories_id, presence_territory = presence_territory,
-        term = data.get('term'))
+        term = data['term'])
     pois_by_id = ramdb.pois_by_id
-    current = data.get('current')
+    current = data['current']
     pois_iter = (
         poi
         for poi in (
@@ -313,24 +319,30 @@ def params_and_pois_iter_to_csv((params, pois_iter), state = default_state):
 
 def params_to_pois_csv(params, state = default_state):
     from . import ramdb
-    data, errors = struct(
-        dict(
-            category = str_to_slug_to_category,
-            filter = str_to_filter,
-            term = str_to_slug,
-            territory = str_to_postal_distribution_to_geolocated_territory,
+    data, errors = pipe(
+        rename_item('category', 'categories'), # Must be renamed before struct, to be able to use categories on errors
+        struct(
+            dict(
+                categories = uniform_sequence(str_to_slug_to_category),
+                filter = str_to_filter,
+                term = str_to_slug,
+                territory = str_to_postal_distribution_to_geolocated_territory,
+                ),
+            default = 'ignore',
+            keep_missing_values = True,
             ),
-        default = 'ignore',
-        keep_empty = True,
         )(params, state = state)
     if errors is not None:
         return data, errors
 
     categories_slug = set(state.base_categories_slug or [])
-    if data.get('category') is not None:
-        categories_slug.add(data['category'].slug)
-    filter = data.get('filter')
-    territory = data.get('territory')
+    if data['categories'] is not None:
+        categories_slug.update(
+            category.slug
+            for category in data['categories']
+            )
+    filter = data['filter']
+    territory = data['territory']
     related_territories_id = ramdb.get_territory_related_territories_id(territory) if territory is not None else None
     if filter == 'competence':
         competence_territories_id = related_territories_id
@@ -343,7 +355,7 @@ def params_to_pois_csv(params, state = default_state):
         presence_territory = None
     pois_id = list(ramdb.iter_pois_id(categories_slug = categories_slug,
         competence_territories_id = competence_territories_id, presence_territory = presence_territory,
-        term = data.get('term')))
+        term = data['term']))
     if not pois_id:
         return None, None
     pois_iter = (
@@ -355,25 +367,29 @@ def params_to_pois_csv(params, state = default_state):
 
 def params_to_pois_directory_data(params, state = default_state):
     from . import model
-    return struct(
-        dict(
-            category = str_to_slug_to_category,
-            filter = str_to_filter,
-            term = str_to_slug,
-            territory = pipe(
-                str_to_postal_distribution_to_geolocated_territory,
-                test(lambda territory: territory.__class__.__name__ in model.communes_kinds,
-                    error = N_(u'In "directory" mode, territory must be a commune')),
-                test_exists(error = N_(u'In "directory" mode, a commune is required')),
+    return pipe(
+        rename_item('category', 'categories'), # Must be renamed before struct, to be able to use categories on errors
+        struct(
+            dict(
+                categories = uniform_sequence(str_to_slug_to_category),
+                filter = str_to_filter,
+                term = str_to_slug,
+                territory = pipe(
+                    str_to_postal_distribution_to_geolocated_territory,
+                    test(lambda territory: territory.__class__.__name__ in model.communes_kinds,
+                        error = N_(u'In "directory" mode, territory must be a commune')),
+                    test_exists(error = N_(u'In "directory" mode, a commune is required')),
+                    ),
                 ),
+            default = 'ignore',
+            keep_missing_values = True,
             ),
-        default = 'ignore',
-        keep_missing_values = True,
         )(params, state = state)
 
 
 def params_to_pois_layer_data(params, state = default_state):
     return pipe(
+        rename_item('category', 'categories'), # Must be renamed before struct, to be able to use categories on errors
         struct(
             dict(
                 bbox = pipe(
@@ -407,7 +423,7 @@ def params_to_pois_layer_data(params, state = default_state):
                             ],
                         ),
                     ),
-                category = str_to_slug_to_category,
+                categories = uniform_sequence(str_to_slug_to_category),
                 current = pipe(
                     str_to_object_id,
                     id_to_poi,
@@ -425,9 +441,10 @@ def params_to_pois_layer_data(params, state = default_state):
 
 def params_to_pois_list_data(params, state = default_state):
     return pipe(
+        rename_item('category', 'categories'), # Must be renamed before struct, to be able to use categories on errors
         struct(
             dict(
-                category = str_to_slug_to_category,
+                categories = uniform_sequence(str_to_slug_to_category),
                 filter = str_to_filter,
                 page = pipe(
                     str_to_int,

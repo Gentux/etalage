@@ -85,7 +85,7 @@ from etalage import urls
                     </div>
                 </div>
                 <div class="form-actions">
-                    <button class="btn btn-primary" name="submit" type="submit"><i class="icon-ok icon-white"></i> ${_('Select')}</button>
+                    <button class="btn btn-primary" name="submit" type="submit" value="select"><i class="icon-ok icon-white"></i> ${_('Select')}</button>
                 </div>
             </fieldset>
         </form>

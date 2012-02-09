@@ -129,7 +129,7 @@ from etalage import urls
                     </div>
                 </div>
                 <div class="form-actions">
-                    <button class="btn btn-primary" name="submit" type="submit"><i class="icon-download icon-white"></i> ${_('Download')}</button>
+                    <button class="btn btn-primary" name="submit" type="submit" value="download"><i class="icon-download icon-white"></i> ${_('Download')}</button>
                 </div>
             </fieldset>
         </form>

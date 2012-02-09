@@ -149,7 +149,7 @@ def csv(req):
     params = req.GET
     base_params = init_base(ctx, params)
     params = dict(
-        category = params.get('category'),
+        category = params.getall('category'),
         filter = params.get('filter'),
         term = params.get('term'),
         territory = params.get('territory'),
@@ -177,7 +177,7 @@ def export_directory_csv(req):
     type = u'annuaire'
     params = dict(
         accept = params.get('accept'),
-        category = params.get('category'),
+        category = params.getall('category'),
         filter = params.get('filter'),
         submit = params.get('submit'),
         term = params.get('term'),
@@ -193,10 +193,20 @@ def export_directory_csv(req):
         raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, u'api/v1/{0}/{1}'.format(type, format),
             **url_params))
 
-    errors = dict(
-        accept = ctx._(u"You must accept license to be allowed to download data."),
-        ) if params['submit'] else None
+    data, errors = conv.pipe(
+        conv.rename_item('category', 'categories'), # Must be renamed before struct, to be able to use categories on errors
+        conv.struct(
+            dict(
+                accept = conv.test(lambda value: not params['submit'],
+                    error = N_(u"You must accept license to be allowed to download data.")),
+                categories = conv.uniform_sequence(conv.str_to_slug_to_category),
+                ),
+            default = 'ignore',
+            keep_missing_values = True,
+            ),
+        )(params, state = ctx)
     return templates.render(ctx, '/export-accept-license.mako',
+        categories = data['categories'],
         export_title = ctx._(u"Directory Export in CSV Format"),
         errors = errors,
         format = format,
@@ -218,7 +228,7 @@ def export_directory_geojson(req):
     type = u'annuaire'
     params = dict(
         accept = params.get('accept'),
-        category = params.get('category'),
+        category = params.getall('category'),
         filter = params.get('filter'),
         submit = params.get('submit'),
         term = params.get('term'),
@@ -234,10 +244,20 @@ def export_directory_geojson(req):
         raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, u'api/v1/{0}/{1}'.format(type, format),
             **url_params))
 
-    errors = dict(
-        accept = ctx._(u"You must accept license to be allowed to download data."),
-        ) if params['submit'] else None
+    data, errors = conv.pipe(
+        conv.rename_item('category', 'categories'), # Must be renamed before struct, to be able to use categories on errors
+        conv.struct(
+            dict(
+                accept = conv.test(lambda value: not params['submit'],
+                    error = N_(u"You must accept license to be allowed to download data.")),
+                categories = conv.uniform_sequence(conv.str_to_slug_to_category),
+                ),
+            default = 'ignore',
+            keep_missing_values = True,
+            ),
+        )(params, state = ctx)
     return templates.render(ctx, '/export-accept-license.mako',
+        categories = data['categories'],
         export_title = ctx._(u"Directory Export in GeoJSON Format"),
         errors = errors,
         format = format,
@@ -259,7 +279,7 @@ def export_directory_kml(req):
     type = u'annuaire'
     params = dict(
         accept = params.get('accept'),
-        category = params.get('category'),
+        category = params.getall('category'),
         filter = params.get('filter'),
         submit = params.get('submit'),
         term = params.get('term'),
@@ -275,10 +295,20 @@ def export_directory_kml(req):
         raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, u'api/v1/{0}/{1}'.format(type, format),
             **url_params))
 
-    errors = dict(
-        accept = ctx._(u"You must accept license to be allowed to download data."),
-        ) if params['submit'] else None
+    data, errors = conv.pipe(
+        conv.rename_item('category', 'categories'), # Must be renamed before struct, to be able to use categories on errors
+        conv.struct(
+            dict(
+                accept = conv.test(lambda value: not params['submit'],
+                    error = N_(u"You must accept license to be allowed to download data.")),
+                categories = conv.uniform_sequence(conv.str_to_slug_to_category),
+                ),
+            default = 'ignore',
+            keep_missing_values = True,
+            ),
+        )(params, state = ctx)
     return templates.render(ctx, '/export-accept-license.mako',
+        categories = data['categories'],
         export_title = ctx._(u"Directory Export in KML Format"),
         errors = errors,
         format = format,
@@ -300,7 +330,7 @@ def export_geographical_coverage_csv(req):
     type = u'couverture-geographique'
     params = dict(
         accept = params.get('accept'),
-        category = params.get('category'),
+        category = params.getall('category'),
         filter = params.get('filter'),
         submit = params.get('submit'),
         term = params.get('term'),
@@ -317,11 +347,21 @@ def export_geographical_coverage_csv(req):
         raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, u'api/v1/{0}/{1}'.format(type, format),
             **url_params))
 
-    errors = dict(
-        accept = ctx._(u"You must accept license to be allowed to download data."),
-        ) if params['submit'] else None
     # TODO
+    data, errors = conv.pipe(
+        conv.rename_item('category', 'categories'), # Must be renamed before struct, to be able to use categories on errors
+        conv.struct(
+            dict(
+                accept = conv.test(lambda value: not params['submit'],
+                    error = N_(u"You must accept license to be allowed to download data.")),
+                categories = conv.uniform_sequence(conv.str_to_slug_to_category),
+                ),
+            default = 'ignore',
+            keep_missing_values = True,
+            ),
+        )(params, state = ctx)
     return templates.render(ctx, '/export-accept-license.mako',
+        categories = data['categories'],
         export_title = ctx._(u"Geographical Coverage Export in CSV Format"),
         errors = errors,
         format = format,
@@ -340,7 +380,7 @@ def geojson(req):
     base_params = init_base(ctx, params)
     params = dict(
         bbox = params.get('bbox'),
-        category = params.get('category'),
+        category = params.getall('category'),
         context = params.get('context'),
         current = params.get('current'),
         filter = params.get('filter'),
@@ -454,7 +494,7 @@ def index_directory(req):
     base_params = init_base(ctx, params)
     mode = u'annuaire'
     params = dict(
-        category = params.get('category'),
+        category = params.getall('category'),
         filter = params.get('filter'),
         term = params.get('term'),
         territory = params.get('territory'),
@@ -467,8 +507,11 @@ def index_directory(req):
         territory = None
     else:
         categories_slug = set(ctx.base_categories_slug or [])
-        if data['category'] is not None:
-            categories_slug.add(data['category'].slug)
+        if data['categories'] is not None:
+            categories_slug.update(
+                category.slug
+                for category in data['categories']
+                )
         territory = data['territory']
         related_territories_id = ramdb.get_territory_related_territories_id(territory)
         filter = data['filter']
@@ -530,6 +573,7 @@ def index_directory(req):
             else:
                 organism_type_pois.append(poi)
     return templates.render(ctx, '/directory.mako',
+        categories = data['categories'],
         directory = directory,
         errors = errors,
         mode = mode,
@@ -547,7 +591,7 @@ def index_export(req):
     base_params = init_base(ctx, params)
     mode = u'export'
     params = dict(
-        category = params.get('category'),
+        category = params.getall('category'),
         filter = params.get('filter'),
 # TODO
         submit = params.get('submit'),
@@ -558,20 +602,24 @@ def index_export(req):
         )
     params.update(base_params)
 
-    data, errors = conv.struct(
-        dict(
-            type_and_format = conv.pipe(
-                conv.str_to_slug,
-                conv.test_in([
-                    'annuaire-csv',
-                    'annuaire-geojson',
-                    'annuaire-kml',
-                    'couverture-geographique-csv',
-                    ]),
+    data, errors = conv.pipe(
+        conv.rename_item('category', 'categories'), # Must be renamed before struct, to be able to use categories on errors
+        conv.struct(
+            dict(
+                categories = conv.uniform_sequence(conv.str_to_slug_to_category),
+                type_and_format = conv.pipe(
+                    conv.str_to_slug,
+                    conv.test_in([
+                        'annuaire-csv',
+                        'annuaire-geojson',
+                        'annuaire-kml',
+                        'couverture-geographique-csv',
+                        ]),
+                    ),
                 ),
+            default = 'ignore',
+            keep_missing_values = True,
             ),
-        default = 'ignore',
-        keep_missing_values = True,
         )(params, state = ctx)
     if errors is None:
         if params['submit']:
@@ -597,6 +645,7 @@ def index_export(req):
                 type_and_format = ctx._(u'Missing value'),
                 )
     return templates.render(ctx, '/export.mako',
+        categories = data['categories'],
         errors = errors,
         mode = mode,
         params = params,
@@ -612,7 +661,7 @@ def index_gadget(req):
     base_params = init_base(ctx, params)
     mode = u'gadget'
     params = dict(
-        category = params.get('category'),
+        category = params.getall('category'),
         filter = params.get('filter'),
         term = params.get('term'),
         territory = params.get('territory'),
@@ -637,7 +686,7 @@ def index_list(req):
     base_params = init_base(ctx, params)
     mode = u'liste'
     params = dict(
-        category = params.get('category'),
+        category = params.getall('category'),
         filter = params.get('filter'),
         page = params.get('page'),
         term = params.get('term'),
@@ -650,8 +699,11 @@ def index_list(req):
         pager = None
     else:
         categories_slug = set(ctx.base_categories_slug or [])
-        if data['category'] is not None:
-            categories_slug.add(data['category'].slug)
+        if data['categories'] is not None:
+            categories_slug.update(
+                category.slug
+                for category in data['categories']
+                )
         filter = data['filter']
         territory = data['territory']
         related_territories_id = ramdb.get_territory_related_territories_id(territory) \
@@ -711,6 +763,7 @@ def index_list(req):
                     pager.first_item_index, pager.last_item_number)
                 ]
     return templates.render(ctx, '/list.mako',
+        categories = data['categories'],
         errors = errors,
         mode = mode,
         pager = pager,
@@ -728,7 +781,7 @@ def index_map(req):
     mode = u'carte'
     params = dict(
         bbox = params.get('bbox'),
-        category = params.get('category'),
+        category = params.getall('category'),
         filter = params.get('filter'),
         term = params.get('term'),
         territory = params.get('territory'),
@@ -747,6 +800,7 @@ def index_map(req):
         territory = None
     return templates.render(ctx, '/map.mako',
         bbox = bbox,
+        categories = data['categories'],
         errors = errors,
         mode = mode,
         params = params,
@@ -898,7 +952,7 @@ def kml(req):
     base_params = init_base(ctx, params)
     params = dict(
         bbox = params.get('bbox'),
-        category = params.get('category'),
+        category = params.getall('category'),
         context = params.get('context'),
         current = params.get('current'),
         filter = params.get('filter'),
