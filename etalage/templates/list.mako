@@ -51,8 +51,8 @@ from etalage import urls
             )
 %>\
                     <li class="prev${' disabled' if pager.page_number <= 1 else ''}">
-                        <a class="internal" href="${urls.get_url(ctx, mode, page = pager.page_number - 1, **url_args
-                                )}">&larr;</a>
+                        <a class="internal" href="${urls.get_url(ctx, mode, page = max(pager.page_number - 1, 1),
+                                **url_args)}">&larr;</a>
                     </li>
         % for page_number in range(max(pager.page_number - 5, 1), pager.page_number):
                     <li>
@@ -71,8 +71,8 @@ from etalage import urls
                     </li>
         % endfor
                     <li class="next${' disabled' if pager.page_number >= pager.last_page_number else ''}">
-                        <a class="internal" href="${urls.get_url(ctx, mode, page = pager.page_number + 1, **url_args
-                                )}">&rarr;</a>
+                        <a class="internal" href="${urls.get_url(ctx, mode,
+                                page = min(pager.page_number + 1, pager.last_page_number), **url_args)}">&rarr;</a>
                     </li>
                 </ul>
             </div>
