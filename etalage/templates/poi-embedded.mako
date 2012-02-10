@@ -47,7 +47,7 @@ from etalage import conf
         $head.append($('<link/>', {rel: 'stylesheet', href: ${conf['leaflet.ie.css'] | n, js}}));
     }
     etalage.map.markersUrl = ${conf['markers_url'].rstrip('/') | n, js};
-    etalage.map.tileUrlTemplate = ${conf['tile_url_template'] | n, js};
+    etalage.map.tileLayersOptions = ${conf['tile_layers'] | n, js};
 })(jQuery);
         </script>
         <%pois:container_content/>

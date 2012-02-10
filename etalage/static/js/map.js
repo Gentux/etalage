@@ -31,13 +31,22 @@ etalage.map = (function ($) {
     function createMap(mapDiv, bbox) {
         leafletMap = new L.Map(mapDiv, {
             scrollWheelZoom: false
-        }).addLayer(
-            new L.TileLayer(etalage.map.tileUrlTemplate, {
-                attribution: 'Données cartographiques CC-By-SA'
-                    + ' <a href="http://openstreetmap.org/" rel="external">OpenStreetMap</a>',
-                maxZoom: 18
-            })
-        );
+        });
+        var tileLayers = {};
+        $.each(etalage.map.tileLayersOptions, function (index, options) {
+            var tileLayer = new L.TileLayer(options.url);
+            tileLayer.options.attribution = options.attribution;
+            if (options.subdomains) {
+                tileLayer.options.subdomains = options.subdomains;
+            }
+            tileLayers[options.name] = tileLayer;
+        });
+        if (etalage.map.tileLayersOptions.length > 1) {
+            leafletMap.addControl(new L.Control.Layers(tileLayers, null));
+        }
+        leafletMap.addLayer($.merge(tileLayers[etalage.map.tileLayersOptions[0].name], {
+            maxZoom: 18
+        }));
         leafletMap.attributionControl.setPrefix(null); // Remove Leaflet attribution.
         leafletMap
             .on('dragend', function (e) {
@@ -337,7 +346,7 @@ etalage.map = (function ($) {
         layerByPoiId: null,
         markersUrl: null,
         singleMarkerMap: singleMarkerMap,
-        tileUrlTemplate: null
+        tileLayersOptions: null
     };
 })(jQuery);
 

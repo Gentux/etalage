@@ -81,6 +81,33 @@ def load_environment(global_conf, app_conf):
             'static_files': conv.pipe(conv.guess_bool, conv.default(True)),
             'static_files_dir': conv.default(os.path.join(app_dir, 'static')),
             'territories_collection': conv.default('territories'),
+            'tile_layers': conv.pipe(
+                conv.function(eval),
+                conv.function(strings.deep_decode),
+                conv.test_isinstance(list),
+                conv.uniform_sequence(
+                    conv.pipe(
+                        conv.test_isinstance(dict),
+                        conv.struct(dict(
+                            attribution = conv.pipe(
+                                conv.test_isinstance(basestring),
+                                conv.exists,
+                                ),
+                            name = conv.pipe(
+                                conv.test_isinstance(basestring),
+                                conv.exists,
+                                ),
+                            subdomains = conv.test_isinstance(basestring),
+                            url = conv.pipe(
+                                conv.test_isinstance(basestring),
+                                conv.make_str_to_url(full = True),
+                                conv.exists,
+                                ),
+                            )),
+                        ),
+                    ),
+                conv.exists,
+                ),
             },
         default = 'ignore',
         keep_missing_values = True,

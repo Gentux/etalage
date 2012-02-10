@@ -64,7 +64,7 @@ etalage.map.geojsonParams = ${dict(
     )| n, js};
 etalage.map.geojsonUrl = '/api/v1/annuaire/geojson';
 etalage.map.markersUrl = ${conf['markers_url'].rstrip('/') | n, js};
-etalage.map.tileUrlTemplate = ${conf['tile_url_template'] | n, js};
+etalage.map.tileLayersOptions = ${conf['tile_layers'] | n, js};
 
 
 $(function () {
