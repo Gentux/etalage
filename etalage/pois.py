@@ -112,7 +112,7 @@ class Field(representations.UserRepresentable):
                 postal_code, postal_routing = conv.check(conv.split_postal_distribution)(self.value, state = ctx)
                 for field in (
                         Field(id = 'postal-code', value = postal_code, label = u'Code postal'),
-                        Field(id = 'postal-routing', value = postal_routing, label = u'Commune'),
+                        Field(id = 'postal-routing', value = postal_routing, label = u'Localité'),
                         ):
                     for subfield_ref, subfield in field.iter_csv_fields(ctx, counts_by_label, parent_ref = parent_ref):
                         yield subfield_ref, subfield
@@ -121,7 +121,7 @@ class Field(representations.UserRepresentable):
                     item_value = item_value.strip()
                     item_field_attributes = self.__dict__.copy()
                     item_field_attributes['id'] = 'street-address-lines' # Change ID to avoid infinite recursion.
-                    item_field_attributes['label'] = u'Adresse' # Better than "Rue, Voie, Chemin"
+                    # item_field_attributes['label'] = u'Adresse' # Better than "N° et libellé de voie"?
                     item_field_attributes['value'] = item_value
                     item_field = Field(**item_field_attributes)
                     for subfield_ref, subfield in item_field.iter_csv_fields(ctx, counts_by_label,
