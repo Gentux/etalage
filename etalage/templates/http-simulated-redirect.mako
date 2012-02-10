@@ -42,11 +42,9 @@ from etalage import urls
 <%def name="container_content()" filter="trim">
         <div class="alert alert-block alert-info">
             <h2 class="alert-heading">${_("Redirection in progress...")}</h2>
-            <p>
-                ${_(u"You'll be redirected to page")}
-                <a class="internal" href="${urls.get_url(ctx, *url_args, **url_kwargs)}">${urls.get_url(
+            ${_(u"You'll be redirected to page")}
+            <a class="internal" href="${urls.get_url(ctx, *url_args, **url_kwargs)}">${urls.get_url(
                     ctx, *url_args, **url_kwargs)}</a>.
-            </p>
         </div>
 </%def>
 
