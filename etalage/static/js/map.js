@@ -308,17 +308,26 @@ etalage.map = (function ($) {
     }
 
     function singleMarkerMap(mapDiv, latitude, longitude) {
-        var icon, latLng, map, marker;
+        var icon, latLng, map, marker, tileLayer, tileLayers;
 
         map = new L.Map(mapDiv, {
             scrollWheelZoom: false
-        }).addLayer(
-            new L.TileLayer(etalage.map.tileUrlTemplate, {
-                attribution: 'Données cartographiques CC-By-SA'
-                    + ' <a href="http://openstreetmap.org/" rel="external">OpenStreetMap</a>',
-                maxZoom: 18
-            })
-        );
+        });
+        tileLayers = {};
+        $.each(etalage.map.tileLayersOptions, function (index, options) {
+            tileLayer = new L.TileLayer(options.url);
+            tileLayer.options.attribution = options.attribution;
+            if (options.subdomains) {
+                tileLayer.options.subdomains = options.subdomains;
+            }
+            tileLayers[options.name] = tileLayer;
+        });
+        if (etalage.map.tileLayersOptions.length > 1) {
+            map.addControl(new L.Control.Layers(tileLayers, null));
+        }
+        map.addLayer($.merge(tileLayers[etalage.map.tileLayersOptions[0].name], {
+            maxZoom: 18
+        }));
 
         icon = new L.Icon(etalage.map.markersUrl + '/misc/blueblank.png');
         icon.iconAnchor = new L.Point(14, 24);
