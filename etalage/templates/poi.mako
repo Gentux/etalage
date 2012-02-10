@@ -92,6 +92,7 @@ from etalage import conf, model, ramdb, urls
 <!--[if lte IE 8]>
     <link rel="stylesheet" href="${conf['leaflet.ie.css']}">
 <![endif]-->
+    <link rel="stylesheet" href="/css/map.css">
 </%def>
 
 
