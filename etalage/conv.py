@@ -169,6 +169,25 @@ def default_pois_layer_data_bbox(data, state = default_state):
     return data, None
 
 
+def id_name_dict_list_to_ignored_fields(value, state = default_state):
+    if not value:
+        return None, None
+    ignored_fields = {}
+    for id_name_dict in value:
+        id = id_name_dict['id']
+        name = id_name_dict.get('name')
+        if id in ignored_fields:
+            ignored_field = ignored_fields[id]
+            if ignored_field is not None:
+                ignored_field.add(name)
+        else:
+            if name is None:
+                ignored_fields[id] = None
+            else:
+                ignored_fields[id] = set([name])
+    return ignored_fields, None
+
+
 def id_to_poi(poi_id, state = default_state):
     import ramdb
     if poi_id is None:

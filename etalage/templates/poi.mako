@@ -40,8 +40,14 @@ from etalage import conf, model, ramdb, urls
         <h2>${poi.name}</h2>
     % for field in (poi.fields or []):
 <%
-    if field.id in ('name', 'organism-type'):
-        continue
+        if conf['ignored_fields'] is not None and field.id in conf['ignored_fields']:
+            ignored_field = conf['ignored_fields'][field.id]
+            if ignored_field is None:
+                # Always ignore a field with this ID>
+                continue
+            if strings.slugify(field.label) in ignored_field:
+                # Ignore a field with this ID and this label
+                continue
 %>\
         <%self:field field="${field}"/>
     % endfor

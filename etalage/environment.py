@@ -46,30 +46,45 @@ app_dir = os.path.dirname(os.path.abspath(__file__))
 def load_environment(global_conf, app_conf):
     """Configure the application environment."""
     conf = etalage.conf # Empty dictionary
-    conf.update({
-        'app_conf': app_conf,
-        'app_dir': app_dir,
-        'cache_dir': os.path.join(os.path.dirname(app_dir), 'cache'),
-        'categories_collection': 'categories',
-        'custom_templates_dir': None,
-        'data_updates_collection': 'data_updates',
-        'database': 'souk',
-        'debug': False,
-        'global_conf': global_conf,
-        'i18n_dir': os.path.join(app_dir, 'i18n'),
-        'log_level': 'WARNING',
-        'organism_types_collection': 'organism_types',
-        'pois_collection': 'pois',
-        'package_name': 'etalage',
-        'static_files': True, # Whether this application serves its own static files
-        'static_files_dir': os.path.join(app_dir, 'static'),
-        'territories_collection': 'territories',
-        })
     conf.update(strings.deep_decode(global_conf))
     conf.update(strings.deep_decode(app_conf))
-    conf['debug'] = conv.check(conv.pipe(conv.guess_bool, conv.default(False)))(conf['debug'])
-    conf['log_level'] = getattr(logging, conf['log_level'].upper())
-    conf['static_files'] = conv.check(conv.pipe(conv.guess_bool, conv.default(False)))(conf['static_files'])
+    conf.update(conv.check(conv.struct(
+        {
+            'app_conf': conv.set_value(app_conf),
+            'app_dir': conv.set_value(app_dir),
+            'cache_dir': conv.default(os.path.join(os.path.dirname(app_dir), 'cache')),
+            'categories_collection': conv.default('categories'),
+            'custom_templates_dir': conv.default(None),
+            'data_updates_collection': conv.default('data_updates'),
+            'database': conv.default('souk'),
+            'debug': conv.pipe(conv.guess_bool, conv.default(False)),
+            'global_conf': conv.set_value(global_conf),
+            'i18n_dir': conv.default(os.path.join(app_dir, 'i18n')),
+            'ignored_fields': conv.pipe(
+                conv.function(lambda lines: lines.split(u'\n')),
+                conv.uniform_sequence(conv.pipe(
+                    conv.function(lambda line: line.split(None, 1)),
+                    conv.uniform_sequence(conv.str_to_slug),
+                    conv.function(lambda seq: dict(zip(['id', 'name'], seq))),
+                    )),
+                conv.id_name_dict_list_to_ignored_fields,
+                ),
+            'log_level': conv.pipe(
+                conv.default('WARNING'),
+                conv.function(lambda log_level: getattr(logging, log_level.upper())),
+                ),
+            'organism_types_collection': conv.default('organism_types'),
+            'pois_collection': conv.default('pois'),
+            'package_name': conv.default('etalage'),
+            'realm': conv.default(u'Etalage'),
+            # Whether this application serves its own static files.
+            'static_files': conv.pipe(conv.guess_bool, conv.default(True)),
+            'static_files_dir': conv.default(os.path.join(app_dir, 'static')),
+            'territories_collection': conv.default('territories'),
+            },
+        default = 'ignore',
+        keep_missing_values = True,
+        ))(conf))
 
     # Configure logging.
     logging.basicConfig(level = conf['log_level'], stream = sys.stdout)
