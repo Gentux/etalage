@@ -1,4 +1,17 @@
+.leaflet-control-layers input {
+    display: inline;
+    margin-bottom: 9px;
+    margin-top: 2px;
+}
+.leaflet-control-layers label {
+    margin-bottom: 0;
+}
+.leaflet-control-layers-list {
+    margin: 0;
+}
+
 .leaflet-popup-content {
     max-height: 12em;
     overflow-y: auto;
 }
+
