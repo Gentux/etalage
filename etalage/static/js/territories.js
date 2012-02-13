@@ -34,6 +34,7 @@ etalage.territories = (function ($) {
                     url: etalage.territories.autocompleterUrl + '?jsonp=?',
                     dataType: 'jsonp',
                     data: {
+                        kind: etalage.territories.kinds,
                         term: request.term || ''
                     },
                     success: function (data) {

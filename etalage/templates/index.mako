@@ -64,6 +64,7 @@ var etalage = etalage || {};
 etalage.categories.tags = ${ctx.category_tags_slug | n, js};
 etalage.territories.autocompleterUrl = ${urlparse.urljoin(conf['territoria_url'],
     '/api/v1/autocomplete-territory') | n, js};
+etalage.territories.kinds = ${conf['territories_kinds'] | n, js};
 etalage.params = ${params | n, js};
 
 $(function () {

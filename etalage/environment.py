@@ -81,6 +81,14 @@ def load_environment(global_conf, app_conf):
             'static_files': conv.pipe(conv.guess_bool, conv.default(True)),
             'static_files_dir': conv.default(os.path.join(app_dir, 'static')),
             'territories_collection': conv.default('territories'),
+            'territories_kinds': conv.pipe(
+                conv.function(lambda kinds: kinds.split()),
+                conv.uniform_sequence(
+                    conv.test_in(model.Territory.public_kinds),
+                    constructor = set,
+                    ),
+                conv.function(lambda kinds: sorted(kinds)),
+                ),
             'tile_layers': conv.pipe(
                 conv.function(eval),
                 conv.function(strings.deep_decode),
