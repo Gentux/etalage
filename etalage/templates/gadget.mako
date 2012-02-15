@@ -55,7 +55,7 @@ textarea {
     gadget_params.update(url_args)
 %>\
 <!-- Debut du composant : ${conf['realm']} -->
-<div id="gadget-etalage"></div>
+<div id="gadget-etalage" style="height: 3000px"></div>
 <script type="text/javascript" src="${conf['gadget-integration.js']}"></script>
 <script type="text/javascript">
     comarquage.gadgets.init();
@@ -72,7 +72,7 @@ textarea {
     });
 </script>
 <noscript>
-    <iframe src="${urls.get_full_url(ctx, 'carte', gadget = gadget_id, **url_args)}" height="3500" width="100%">
+    <iframe src="${urls.get_full_url(ctx, 'carte', gadget = gadget_id, **url_args)}" height="3000" width="100%">
         Votre navigateur ne permet pas d'afficher l'annuaire &agrave; l'int&eacute;rieur de ce site. 
         Cliquez sur <a href="${urls.get_full_url(ctx, 'carte', gadget = gadget_id, **url_args)}">ce lien</a> pour y
         acc&eacute;der.
