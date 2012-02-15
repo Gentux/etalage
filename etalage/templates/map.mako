@@ -58,7 +58,7 @@ from etalage import conf, urls
 etalage.map.center = new L.LatLng(${territory.geo[0] | n, js}, ${territory.geo[1] | n, js});
     % endif
 etalage.map.geojsonParams = ${dict(
-    (name, value)
+    (dict(categories = 'category').get(name, name), value)
     for name, value in params.iteritems()
     if name not in ('bbox', 'context', 'jsonp') and value is not None
     )| n, js};
