@@ -29,7 +29,10 @@ etalage.territories = (function ($) {
     function createAutocompleter($input) {
         $input.autocomplete({
             minLength: 0,
-            source: function(request, response) {
+            open: function (event, ui) {
+                return $(".ui-autocomplete").css("z-index", $(".leaflet-control-zoom").css("z-index") + 1);
+            },
+            source: function (request, response) {
                 $.ajax({
                     url: etalage.territories.autocompleterUrl + '?jsonp=?',
                     dataType: 'jsonp',
