@@ -217,7 +217,9 @@ def export_directory_csv(req):
         conv.struct(
             dict(
                 accept = conv.test(lambda value: not params['submit'],
-                    error = N_(u"You must accept license to be allowed to download data.")),
+                    error = N_(u"You must accept license to be allowed to download data."),
+                    handle_missing_value = True,
+                    ),
                 categories = conv.uniform_sequence(conv.str_to_slug_to_category),
                 ),
             default = 'ignore',
@@ -268,7 +270,9 @@ def export_directory_geojson(req):
         conv.struct(
             dict(
                 accept = conv.test(lambda value: not params['submit'],
-                    error = N_(u"You must accept license to be allowed to download data.")),
+                    error = N_(u"You must accept license to be allowed to download data."),
+                    handle_missing_value = True,
+                    ),
                 categories = conv.uniform_sequence(conv.str_to_slug_to_category),
                 ),
             default = 'ignore',
@@ -319,7 +323,9 @@ def export_directory_kml(req):
         conv.struct(
             dict(
                 accept = conv.test(lambda value: not params['submit'],
-                    error = N_(u"You must accept license to be allowed to download data.")),
+                    error = N_(u"You must accept license to be allowed to download data."),
+                    handle_missing_value = True,
+                    ),
                 categories = conv.uniform_sequence(conv.str_to_slug_to_category),
                 ),
             default = 'ignore',
@@ -372,7 +378,9 @@ def export_geographical_coverage_csv(req):
         conv.struct(
             dict(
                 accept = conv.test(lambda value: not params['submit'],
-                    error = N_(u"You must accept license to be allowed to download data.")),
+                    error = N_(u"You must accept license to be allowed to download data."),
+                    handle_missing_value = True,
+                    ),
                 categories = conv.uniform_sequence(conv.str_to_slug_to_category),
                 ),
             default = 'ignore',
