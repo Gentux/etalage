@@ -196,7 +196,7 @@ from etalage import conf, model, ramdb, urls
                 <ul>
         % for entry in d.entries[:10]:
                     <li class="feed-entry">${entry.title | n}
-            % for content in entry.content:
+            % for content in (entry.get('content') or []):
                         <div>${content.value | n}</div>
             % endfor
                     </li>
