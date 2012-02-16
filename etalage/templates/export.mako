@@ -64,11 +64,11 @@ from etalage import urls
                             Annuaire (format CSV) &mdash; Les informations détaillées,
                                 organisme par organisme
                         </label>
-                        <label class="radio">
-                            <input type="radio" value="couverture-geographique-csv" name="type_and_format">
-                            Couverture géographique (format CSV) &mdash; Les organismes compétents,
-                                commune par commune
-                        </label>
+##                        <label class="radio">
+##                            <input type="radio" value="couverture-geographique-csv" name="type_and_format">
+##                            Couverture géographique (format CSV) &mdash; Les organismes compétents,
+##                                commune par commune
+##                        </label>
                         <label class="radio">
                             <input type="radio" value="annuaire-geojson" name="type_and_format">
                             GeoJSON &mdash; Pour récupérer les organismes en temps réel dans vos
