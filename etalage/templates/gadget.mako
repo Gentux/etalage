@@ -113,6 +113,7 @@ textarea {
 $(function () {
     $('#select-text-button').click(function () {
         $('textarea').select();
+        return false;
     });
 });
     </script>
