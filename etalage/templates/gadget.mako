@@ -87,18 +87,15 @@ textarea {
         <p>
             Cet annuaire vous intéresse ? Vous pouvez l'installer sur votre site web !
         </p>
-        <ol>
-            <li>Renseignez un territoire et lancez la recherche ci-dessus.</li>
-            <li>Copiez le fragment HTML généré ci-dessous et collez-le dans une page web.</li>
-        </ol>
     % if errors is not None:
         <div class="alert alert-error">
             Vous devez auparavant <strong>corriger les erreurs</strong> dans le formulaire de recherche ci-dessus.
         </div>
     % else:
-        <p>
-            Il vous suffit de copier le fragment HTML ci-dessous et de le coller dans une page web.
-        </p>
+        <ol>
+            <li>Renseignez un territoire et lancez la recherche ci-dessus.</li>
+            <li>Copiez le fragment HTML généré ci-dessous et collez-le dans une page web.</li>
+        </ol>
 <%
         gadget = capture(self.gadget)
 %>\
