@@ -656,7 +656,7 @@ def index_export(req):
                 # Form submitted. Redirect to another page.
                 url_args = ('export', type, format)
                 url_kwargs = dict(
-                    category = params['categories'],
+                    category = params['category'],
                     filter = params['filter'],
                     term = params['term'],
                     territory = params['territory'],
