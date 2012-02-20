@@ -38,51 +38,7 @@ from etalage import conf, model, ramdb, urls
 
 <%def name="container_content()" filter="trim">
         <h2>${poi.name}</h2>
-    % for field in (poi.fields or []):
-<%
-        if conf['ignored_fields'] is not None and field.id in conf['ignored_fields']:
-            ignored_field = conf['ignored_fields'][field.id]
-            if ignored_field is None:
-                # Always ignore a field with this ID>
-                continue
-            if strings.slugify(field.label) in ignored_field:
-                # Ignore a field with this ID and this label
-                continue
-%>\
-        <%self:field field="${field}"/>
-    % endfor
-<%
-    services = sorted(
-        (
-            service
-            for service in ramdb.pois_by_id.itervalues()
-            if service.parent_id == poi._id
-            ),
-        key = lambda service: service.name,
-        )
-%>\
-    % if services:
-        <h3>Services</h3>
-        <ul>
-        % for service in services:
-            <li>
-                <a class="field-value internal" href="${urls.get_url(ctx, 'organismes', service.slug, service._id
-                        )}">${service.name}</a>
-            </li>
-        % endfor
-        </ul>
-    %endif
-<%
-    field = model.Field(id = 'text-inline', label = u"Dernière mise à jour", value = u' par '.join(
-        unicode(fragment)
-        for fragment in (
-            poi.last_update_datetime.strftime('%Y-%m-%d %H:%M') if poi.last_update_datetime is not None else None,
-            poi.last_update_organization,
-            )
-        if fragment
-        ))
-%>\
-        <%self:field field="${field}"/>
+        <%self:fields poi="${poi}"/>
 </%def>
 
 
@@ -233,34 +189,9 @@ etalage.map.singleMarkerMap("map-poi", ${field.value[0]}, ${field.value[1]});
     % elif field.id == 'image':
             <div class="field-value offset1"><img alt="" src="${field.value}"></div>
     % elif field.id == 'link':
-<%
-        target = ramdb.pois_by_id.get(field.value)
-%>\
-        % if target is None:
-            <em class="field-value">Lien manquant</em>
-        % else:
-            <a class="field-value internal" href="${urls.get_url(ctx, 'organismes', target.slug, target._id
-                    )}">${target.name}</a>
-        % endif
+            <%self:field_value_link field="${field}"/>
     % elif field.id == 'links':
-        % if len(field.value) == 1:
-<%
-            single_field = model.Field(id = 'link', value = field.value[0])
-%>\
-<%self:field_value field="${single_field}"/>
-        % else:
-            <ul class="field-value">
-            % for target_id in field.value:
-<%
-                target = ramdb.pois_by_id.get(target_id)
-                if target is None:
-                    continue
-%>\
-                <li><a class="internal" href="${urls.get_url(ctx, 'organismes', target.slug, target._id
-                        )}">${target.name}</a></li>
-            % endfor
-            </ul>
-        % endif
+            <%self:field_value_links field="${field}"/>
     % elif field.id == 'organism-type':
 <%
     category_slug = ramdb.categories_slug_by_pivot_code.get(field.value)
@@ -324,6 +255,97 @@ etalage.map.singleMarkerMap("map-poi", ${field.value[0]}, ${field.value[1]});
 %>\
             <span class="field-value">${field.value}</span>
     % endif
+</%def>
+
+
+<%def name="field_value_link(field)" filter="trim">
+<%
+    target = ramdb.pois_by_id.get(field.value)
+%>\
+    % if target is None:
+            <em class="field-value">Lien manquant</em>
+    % else:
+            <a class="field-value internal" href="${urls.get_url(ctx, 'organismes', target.slug, target._id
+                    )}">${target.name}</a>
+    % endif
+</%def>
+
+
+<%def name="field_value_links(field)" filter="trim">
+    % if len(field.value) == 1:
+<%
+        single_field = model.Field(id = 'link', value = field.value[0])
+%>\
+<%self:field_value field="${single_field}"/>
+    % else:
+            <ul class="field-value">
+        % for target_id in field.value:
+<%
+            target = ramdb.pois_by_id.get(target_id)
+            if target is None:
+                continue
+%>\
+                <li><a class="internal" href="${urls.get_url(ctx, 'organismes', target.slug, target._id
+                        )}">${target.name}</a></li>
+        % endfor
+            </ul>
+    % endif
+</%def>
+
+
+<%def name="fields(poi)" filter="trim">
+    % for field in (poi.fields or []):
+<%
+        if conf['ignored_fields'] is not None and field.id in conf['ignored_fields']:
+            ignored_field = conf['ignored_fields'][field.id]
+            if ignored_field is None:
+                # Always ignore a field with this ID>
+                continue
+            if strings.slugify(field.label) in ignored_field:
+                # Ignore a field with this ID and this label
+                continue
+%>\
+        <%self:field field="${field}"/>
+    % endfor
+        <%self:fields_children poi="${poi}"/>
+        <%self:fields_last_update poi="${poi}"/>
+</%def>
+
+
+<%def name="fields_last_update(poi)" filter="trim">
+<%
+    field = model.Field(id = 'text-inline', label = u"Dernière mise à jour", value = u' par '.join(
+        unicode(fragment)
+        for fragment in (
+            poi.last_update_datetime.strftime('%Y-%m-%d %H:%M') if poi.last_update_datetime is not None else None,
+            poi.last_update_organization,
+            )
+        if fragment
+        ))
+%>\
+        <%self:field field="${field}"/>
+</%def>
+
+
+<%def name="fields_children(poi)" filter="trim">
+<%
+    children = sorted(
+        (
+            service
+            for service in ramdb.pois_by_id.itervalues()
+            if service.parent_id == poi._id
+            ),
+        key = lambda service: service.name,
+        )
+%>\
+    % if children:
+        % for child in children:
+<%
+            field = model.Field(id = 'link', label = ramdb.schemas_title_by_name[child.schema_name], value = child._id)
+%>\
+        <%self:field field="${field}"/>
+        % endfor
+    %endif
 </%def>
 
 
