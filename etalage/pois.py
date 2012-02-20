@@ -140,6 +140,45 @@ class Field(representations.UserRepresentable):
                 yield (parent_ref or []) + [self.label, same_label_index], self
                 counts_by_label[self.label] = same_label_index + 1
 
+    @classmethod
+    def load(cls, id, metadata, value):
+        if len(metadata) != (1 if 'kind' in metadata else 0) \
+                + (1 if 'label' in metadata else 0) \
+                + (1 if 'relation' in metadata else 0) \
+                + (1 if 'type' in metadata else 0) \
+                + (1 + len(metadata['positions']) if 'positions' in metadata else 0):
+            log.warning('Unexpected attributes in field {0}, metadata {1}, value {2}'.format(id, metadata, value))
+        if 'positions' in metadata:
+            fields_position = {}
+            fields = []
+            for field_id in metadata['positions']:
+                field_position = fields_position.get(field_id, 0)
+                fields_position[field_id] = field_position + 1
+                field_metadata = metadata[field_id][field_position]
+                field_value = value[field_id][field_position]
+                fields.append(cls.load(field_id, field_metadata, field_value))
+            value = fields or None
+        elif id == 'territories':
+            # Replace each kind-code with the corresponding territory ID.
+            if value is not None:
+                value = [
+                    territory_id
+                    for territory_id in (
+                        ramdb.territories_id_by_kind_code.get((territory_kind_code['kind'],
+                            territory_kind_code['code']))
+                        for territory_kind_code in value
+                        )
+                    if territory_id is not None
+                    ]
+        return cls(
+            id = id,
+            kind = metadata.get('kind'),
+            label = metadata['label'],
+            relation = metadata.get('relation'),
+            type = metadata.get('type'),
+            value = value,
+            )
+
     def set_attributes(self, **attributes):
         for name, value in attributes.iteritems():
             if value is getattr(self.__class__, name, UnboundLocalError):
@@ -186,6 +225,77 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
             for field in self.fields:
                 for subfield_ref, subfield in field.iter_csv_fields(ctx, counts_by_label):
                     yield subfield_ref, subfield
+
+    @classmethod
+    def load_pois(cls):
+        for poi_bson in cls.get_collection().find({'metadata.deleted': {'$exists': False}}):
+            metadata = poi_bson['metadata']
+            last_update = metadata['last-update']
+            self = cls(
+                _id = poi_bson['_id'],
+                geo = poi_bson['geo'][0] if poi_bson.get('geo') is not None else None,
+                last_update_datetime = last_update['date'],
+                last_update_organization = last_update['organization'],
+                name = metadata['title'],
+                schema_name = metadata['schema-name'],
+                )
+
+            fields_position = {}
+            fields = []
+            for field_id in metadata['positions']:
+                field_position = fields_position.get(field_id, 0)
+                fields_position[field_id] = field_position + 1
+                field_metadata = metadata[field_id][field_position]
+                field_value = poi_bson[field_id][field_position]
+                field = Field.load(field_id, field_metadata, field_value)
+                if field.id == u'adr' and self.postal_distribution_str is None:
+                    for sub_field in (field.value or []):
+                        if sub_field.id == u'postal-distribution':
+                            self.postal_distribution_str = sub_field.value
+                        elif sub_field.id == u'street-address':
+                            self.street_address = sub_field.value
+                elif field.id == u'link' and field.relation == u'parent':
+                    assert self.parent is None, str(self)
+                    self.parent_id = field.value
+                elif field.id == u'organism-type':
+                    organism_type_slug = ramdb.categories_slug_by_pivot_code.get(field.value)
+                    if organism_type_slug is None:
+                        log.warning('Ignoring organism type "{0}" without matching category.'.format(field.value))
+                    else:
+                        self.organism_type_slug = organism_type_slug
+                fields.append(field)
+            if fields:
+                self.fields = fields
+
+            ramdb.pois_by_id[self._id] = self
+
+            for category_slug in (metadata.get('categories-index') or set()):
+                ramdb.pois_id_by_category_slug.setdefault(category_slug, set()).add(self._id)
+
+            for i, territory_metadata in enumerate(metadata.get('territories') or []):
+                self.competence_territories_id = set(
+                    ramdb.territories_id_by_kind_code[(territory_kind_code['kind'], territory_kind_code['code'])]
+                    for territory_kind_code in poi_bson['territories'][i]
+                    )
+                for territory_id in self.competence_territories_id:
+                    ramdb.pois_id_by_competence_territory_id.setdefault(territory_id, set()).add(self._id)
+                break
+
+            poi_territories_id = set(
+                territory_id
+                for territory_id in (
+                    ramdb.territories_id_by_kind_code.get((territory_kind_code['kind'], territory_kind_code['code']))
+                    for territory_kind_code in metadata['territories-index']
+                    if territory_kind_code['kind'] not in (u'Country', u'InternationalOrganization',
+                        u'MetropoleOfCountry')
+                    )
+                if territory_id is not None
+                ) if metadata.get('territories-index') is not None else None
+            for territory_id in (poi_territories_id or set()):
+                ramdb.pois_id_by_presence_territory_id.setdefault(territory_id, set()).add(self._id)
+
+            for word in strings.slugify(self.name).split(u'-'):
+                ramdb.pois_id_by_word.setdefault(word, set()).add(self._id)
 
     @property
     def parent(self):

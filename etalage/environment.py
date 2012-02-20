@@ -26,12 +26,14 @@
 """Environment configuration"""
 
 
+from ConfigParser import SafeConfigParser
 import logging
 import os
 import sys
 
 from biryani import strings
 import mako.lookup
+import pkg_resources
 import pymongo
 from suq import monpyjama
 from etalage import ramdb
@@ -74,8 +76,9 @@ def load_environment(global_conf, app_conf):
                 conv.function(lambda log_level: getattr(logging, log_level.upper())),
                 ),
             'organism_types_collection': conv.default('organism_types'),
-            'pois_collection': conv.default('pois'),
             'package_name': conv.default('etalage'),
+            'pois_collection': conv.default('pois'),
+            'plugins_conf_file': conv.default(None),
             'realm': conv.default(u'Etalage'),
             # Whether this application serves its own static files.
             'static_files': conv.pipe(conv.guess_bool, conv.default(True)),
@@ -136,6 +139,17 @@ def load_environment(global_conf, app_conf):
 
     # Connect to MongoDB database.
     monpyjama.Wrapper.db = model.db = pymongo.Connection()[conf['database']]
+
+    # Initialize plugins.
+    if conf['plugins_conf_file'] is not None:
+        plugins_conf = SafeConfigParser(dict(here = os.path.dirname(conf['plugins_conf_file'])))
+        plugins_conf.read(conf['plugins_conf_file'])
+        for section in plugins_conf.sections():
+            plugin_accessor = plugins_conf.get(section, 'use')
+            plugin_constructor = pkg_resources.EntryPoint.parse('constructor = {0}'.format(plugin_accessor)).load(
+                require = False)
+            plugin_constructor(plugins_conf, section)
+
     # Initialize ramdb database from MongoDB.
     ramdb.load()
 
