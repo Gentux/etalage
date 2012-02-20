@@ -199,6 +199,7 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
     organism_type_slug = None
     parent_id = None
     postal_distribution_str = None
+    schema_name = None
     street_address = None
 
     def __init__(self, **attributes):

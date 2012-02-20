@@ -196,8 +196,10 @@ def load():
         territories_id_by_postal_distribution[(main_postal_distribution['postal_code'],
             main_postal_distribution['postal_routing'])] = territory_id
 
-    for poi_bson in model.Poi.get_collection().find({'metadata.deleted': {'$exists': False}}):
-        load_poi(poi_bson)
+    for schema in model.db.schemas.find(None, ['name', 'title']):
+        schemas_title_by_name[schema['name']] = schema['title']
+
+    model.Poi.load_pois()
 
 #    # Remove unused categories.
 #    for category_slug in categories_by_slug.keys():
@@ -247,6 +249,8 @@ def ramdb_based(controller):
             finally:
                 read_write_lock.release()
             last_timestamp = data_update['timestamp']
+
+        # TODO: Handle schemas updates & schemas_title_by_name.
 
         read_write_lock.acquire(shared = True)
         try:
