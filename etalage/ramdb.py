@@ -49,10 +49,20 @@ pois_id_by_category_slug = {}
 pois_id_by_competence_territory_id = {}
 pois_id_by_presence_territory_id = {}
 pois_id_by_word = {}
+schemas_title_by_name = {}
 territories_by_id = {}
 territories_id_by_ancestor_id = {}
 territories_id_by_kind_code = {}
 territories_id_by_postal_distribution = {}
+
+
+def get_territory_related_territories_id(territory):
+    related_territories_id = set()
+    for sub_territory_id in territories_id_by_ancestor_id[territory._id]:
+        sub_territory = territories_by_id[sub_territory_id]
+        for ancestor_id in sub_territory.ancestors_id:
+            related_territories_id.add(ancestor_id)
+    return related_territories_id
 
 
 def iter_categories_slug(organism_types_only = False, tags_slug = None, term = None):
@@ -128,15 +138,6 @@ def iter_pois_id(categories_slug = None, competence_territories_id = None, prese
     if found_pois_id is None:
         return pois_by_id.iterkeys()
     return found_pois_id
-
-
-def get_territory_related_territories_id(territory):
-    related_territories_id = set()
-    for sub_territory_id in territories_id_by_ancestor_id[territory._id]:
-        sub_territory = territories_by_id[sub_territory_id]
-        for ancestor_id in sub_territory.ancestors_id:
-            related_territories_id.add(ancestor_id)
-    return related_territories_id
 
 
 def load():

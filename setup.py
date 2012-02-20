@@ -56,7 +56,7 @@ setup(
     author_email = 'infos-pratiques-devel@listes.infos-pratiques.org',
     classifiers = [classifier for classifier in classifiers.split('\n') if classifier],
     description = doc_lines[0],
-    keywords = 'data database directory etalab geographical organism open organization poi web',
+    keywords = 'data database directory geographical organism open organization poi web',
     license = 'http://www.fsf.org/licensing/licenses/agpl-3.0.html',
     long_description = '\n'.join(doc_lines[2:]),
     url = 'http://gitorious.org/infos-pratiques/etalage',

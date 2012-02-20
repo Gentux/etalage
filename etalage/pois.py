@@ -36,7 +36,6 @@ from . import conv, ramdb
 
 __all__ = ['Cluster', 'Field', 'Poi']
 
-
 log = logging.getLogger(__name__)
 
 
