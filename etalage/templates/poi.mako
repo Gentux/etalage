@@ -331,11 +331,11 @@ etalage.map.singleMarkerMap("map-poi", ${field.value[0]}, ${field.value[1]});
 <%
     children = sorted(
         (
-            service
-            for service in ramdb.pois_by_id.itervalues()
-            if service.parent_id == poi._id
+            child
+            for child in ramdb.pois_by_id.itervalues()
+            if child.parent_id == poi._id
             ),
-        key = lambda service: service.name,
+        key = lambda child: child.name,
         )
 %>\
     % if children:

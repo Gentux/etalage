@@ -214,6 +214,45 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
                 return field
         return None
 
+    def index(self, indexed_poi_id):
+        poi_bson = self.bson
+        metadata = poi_bson['metadata']
+
+        for category_slug in (metadata.get('categories-index') or set()):
+            ramdb.pois_id_by_category_slug.setdefault(category_slug, set()).add(indexed_poi_id)
+
+        for i, territory_metadata in enumerate(metadata.get('territories') or []):
+            self.competence_territories_id = set(
+                ramdb.territories_id_by_kind_code[(territory_kind_code['kind'], territory_kind_code['code'])]
+                for territory_kind_code in poi_bson['territories'][i]
+                )
+            for territory_id in self.competence_territories_id:
+                ramdb.pois_id_by_competence_territory_id.setdefault(territory_id, set()).add(indexed_poi_id)
+            break
+
+        poi_territories_id = set(
+            territory_id
+            for territory_id in (
+                ramdb.territories_id_by_kind_code.get((territory_kind_code['kind'], territory_kind_code['code']))
+                for territory_kind_code in metadata['territories-index']
+                if territory_kind_code['kind'] not in (u'Country', u'InternationalOrganization',
+                    u'MetropoleOfCountry')
+                )
+            if territory_id is not None
+            ) if metadata.get('territories-index') is not None else None
+        for territory_id in (poi_territories_id or set()):
+            ramdb.pois_id_by_presence_territory_id.setdefault(territory_id, set()).add(indexed_poi_id)
+
+        for word in strings.slugify(self.name).split(u'-'):
+            ramdb.pois_id_by_word.setdefault(word, set()).add(indexed_poi_id)
+
+    @classmethod
+    def index_pois(cls):
+        for self in ramdb.pois_by_id.itervalues():
+            ramdb.indexed_pois_id.add(self._id)
+            self.index(self._id)
+            del self.bson
+
     def iter_csv_fields(self, ctx):
         counts_by_label = {}
 
@@ -267,35 +306,10 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
             if fields:
                 self.fields = fields
 
+            # Temporarily store bson in poi because it is needed by index_pois.
+            self.bson = poi_bson
+
             ramdb.pois_by_id[self._id] = self
-
-            for category_slug in (metadata.get('categories-index') or set()):
-                ramdb.pois_id_by_category_slug.setdefault(category_slug, set()).add(self._id)
-
-            for i, territory_metadata in enumerate(metadata.get('territories') or []):
-                self.competence_territories_id = set(
-                    ramdb.territories_id_by_kind_code[(territory_kind_code['kind'], territory_kind_code['code'])]
-                    for territory_kind_code in poi_bson['territories'][i]
-                    )
-                for territory_id in self.competence_territories_id:
-                    ramdb.pois_id_by_competence_territory_id.setdefault(territory_id, set()).add(self._id)
-                break
-
-            poi_territories_id = set(
-                territory_id
-                for territory_id in (
-                    ramdb.territories_id_by_kind_code.get((territory_kind_code['kind'], territory_kind_code['code']))
-                    for territory_kind_code in metadata['territories-index']
-                    if territory_kind_code['kind'] not in (u'Country', u'InternationalOrganization',
-                        u'MetropoleOfCountry')
-                    )
-                if territory_id is not None
-                ) if metadata.get('territories-index') is not None else None
-            for territory_id in (poi_territories_id or set()):
-                ramdb.pois_id_by_presence_territory_id.setdefault(territory_id, set()).add(self._id)
-
-            for word in strings.slugify(self.name).split(u'-'):
-                ramdb.pois_id_by_word.setdefault(word, set()).add(self._id)
 
     @property
     def parent(self):

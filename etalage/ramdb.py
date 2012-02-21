@@ -41,6 +41,7 @@ categories_by_slug = {}
 categories_slug_by_pivot_code = {}
 categories_slug_by_tag_slug = {}
 categories_slug_by_word = {}
+indexed_pois_id = set()
 last_timestamp = None
 read_write_lock = threading2.SHLock()
 log = logging.getLogger(__name__)
@@ -136,7 +137,7 @@ def iter_pois_id(categories_slug = None, competence_territories_id = None, prese
 
     found_pois_id = intersection_set(intersected_sets)
     if found_pois_id is None:
-        return pois_by_id.iterkeys()
+        return indexed_pois_id
     return found_pois_id
 
 
@@ -200,6 +201,7 @@ def load():
         schemas_title_by_name[schema['name']] = schema['title']
 
     model.Poi.load_pois()
+    model.Poi.index_pois()
 
 #    # Remove unused categories.
 #    for category_slug in categories_by_slug.keys():
@@ -244,6 +246,7 @@ def ramdb_based(controller):
                 delete_remaining(indexes, existing)
                 if poi_bson is None or poi_bson['metadata'].get('deleted', False):
                     pois_by_id.pop(id, None)
+                    indexed_pois_id.discard(id)
                 else:
                     load_poi(poi_bson)
             finally:
