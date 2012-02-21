@@ -343,7 +343,10 @@ def params_to_pois_csv(params, state = default_state):
         struct(
             dict(
                 categories = uniform_sequence(str_to_slug_to_category),
-                filter = str_to_filter,
+                filter = pipe(
+                    str_to_filter,
+                    default('presence'), # By default, export only POIs present on given territory.
+                    ),
                 term = str_to_slug,
                 territory = str_to_postal_distribution_to_geolocated_territory,
                 ),
