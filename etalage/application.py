@@ -26,12 +26,18 @@
 """Middleware initialization"""
 
 
+import re
+import urllib
+
 from beaker.middleware import SessionMiddleware
 from paste.cascade import Cascade
 from paste.urlparser import StaticURLParser
 from weberror.errormiddleware import ErrorMiddleware
 
 from . import conf, controllers, environment, urls, wsgihelpers
+
+
+percent_encoding_re = re.compile('%[\dA-Fa-f]{2}')
 
 
 @wsgihelpers.wsgify.middleware
@@ -65,6 +71,9 @@ def make_app(global_conf, **app_conf):
     # Init request-dependant environment
     app = environment_setter(app)
 
+    # Repair badly encoded query in request URL.
+    app = request_query_encoding_fixer(app)
+
     # CUSTOM MIDDLEWARE HERE (filtered by error handling middlewares)
 
     # Handle Python exceptions
@@ -77,4 +86,18 @@ def make_app(global_conf, **app_conf):
         app = Cascade([static_app, app])
 
     return app
+
+
+@wsgihelpers.wsgify.middleware
+def request_query_encoding_fixer(req, app):
+    """WSGI middleware that repairs badly encoded URL."""
+    query_string = req.query_string
+    if query_string is not None:
+        try:
+            urllib.unquote(query_string).decode('utf-8')
+        except UnicodeDecodeError:
+            req.query_string = percent_encoding_re.sub(
+                lambda match: urllib.quote(urllib.unquote(match.group(0)).decode('iso-8859-1').encode('utf-8')),
+                query_string)
+    return req.get_response(app)
 
