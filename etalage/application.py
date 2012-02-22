@@ -90,7 +90,7 @@ def make_app(global_conf, **app_conf):
 
 @wsgihelpers.wsgify.middleware
 def request_query_encoding_fixer(req, app):
-    """WSGI middleware that repairs badly encoded URL."""
+    """WSGI middleware that repairs a badly encoded query in request URL."""
     query_string = req.query_string
     if query_string is not None:
         try:
