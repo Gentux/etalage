@@ -35,6 +35,7 @@ from biryani.bsonconv import *
 from biryani.objectconv import *
 from biryani.frconv import *
 from biryani import states, strings
+import bson
 import xlwt
 from territoria2.conv import split_postal_distribution, str_to_postal_distribution
 
@@ -56,7 +57,10 @@ def csv_infos_to_csv_bytes(csv_infos_by_schema_name, state = default_state):
             for label in csv_infos['columns_label']
             ])
         for row in csv_infos['rows']:
-            writer.writerow(row)
+            writer.writerow([
+                unicode(cell).encode('utf-8') if cell is not None else None
+                for cell in row
+                ])
         csv_filename = '{0}.csv'.format(strings.slugify(ramdb.schemas_title_by_name.get(schema_name, schema_name)))
         csv_bytes_by_name[csv_filename] = csv_file.getvalue()
     return csv_bytes_by_name or None, None
@@ -78,7 +82,9 @@ def csv_infos_to_excel_bytes(csv_infos_by_schema_name, state = default_state):
             sheet_row = sheet.row(row_index)
             for column_index, cell in enumerate(row):
                 if cell is not None:
-                    sheet_row.write(column_index, cell)
+                    sheet_row.write(column_index,
+                        unicode(cell) if isinstance(cell, bson.objectid.ObjectId) else cell,
+                        )
         sheet.flush_row_data()
     excel_file = StringIO()
     book.save(excel_file)
@@ -523,7 +529,7 @@ def pois_id_to_csv_infos(pois_id, state = default_state):
                 else:
                     column_index = columns_ref.index(column_ref, columns_index.get(column_ref, -1) + 1)
                 columns_index[column_ref] = column_index
-                row[column_index] = unicode(field.value).encode('utf-8')
+                row[column_index] = field.value
                 for linked_poi_id in (field.linked_pois_id or []):
                     if linked_poi_id not in visited_pois_id:
                         visited_pois_id.add(linked_poi_id)
