@@ -139,6 +139,16 @@ class Field(representations.UserRepresentable):
                 yield (parent_ref or []) + [self.label, same_label_index], self
                 counts_by_label[self.label] = same_label_index + 1
 
+    @property
+    def linked_pois_id(self):
+        if self.id not in ('link', 'links'):
+            return None
+        if self.value is None:
+            return None
+        if isinstance(self.value, list):
+            return self.value
+        return [self.value]
+
     @classmethod
     def load(cls, id, metadata, value):
         if len(metadata) != (1 if 'kind' in metadata else 0) \

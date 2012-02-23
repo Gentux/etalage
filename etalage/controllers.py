@@ -26,6 +26,7 @@
 """Controllers for territories"""
 
 
+import cStringIO
 import datetime
 import itertools
 import logging
@@ -33,6 +34,7 @@ import math
 import sys
 import urllib2
 import urlparse
+import zipfile
 
 from biryani import strings
 import simplejson as json
@@ -175,13 +177,23 @@ def csv(req):
         )
     params.update(base_params)
 
-    csv, errors = conv.params_to_pois_csv(params, state = ctx)
+    csv_bytes_by_name, errors = conv.params_to_pois_csv(params, state = ctx)
     if errors is not None:
         raise wsgihelpers.bad_request(ctx, explanation = ctx._('Error: {0}').format(errors))
-
-    req.response.content_type = 'text/csv; charset=utf-8'
-    req.response.content_disposition = 'attachment;filename=export.csv'
-    return csv
+    if not csv_bytes_by_name:
+        raise wsgihelpers.no_content(ctx)
+    if len(csv_bytes_by_name) == 1:
+        csv_filename, csv_bytes = csv_bytes_by_name.items()[0]
+        req.response.content_type = 'text/csv; charset=utf-8'
+        req.response.content_disposition = 'attachment;filename={0}'.format(csv_filename)
+        return csv_bytes
+    zip_file = cStringIO.StringIO()
+    with zipfile.ZipFile(zip_file, 'w') as zip_archive:
+        for csv_filename, csv_bytes in csv_bytes_by_name.iteritems():
+            zip_archive.writestr(csv_filename, csv_bytes)
+    req.response.content_type = 'application/zip'
+    req.response.content_disposition = 'attachment;filename=export.zip'
+    return zip_file.getvalue()
 
 
 @wsgihelpers.wsgify
