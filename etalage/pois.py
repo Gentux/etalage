@@ -134,6 +134,16 @@ class Field(representations.UserRepresentable):
                     for subfield_ref, subfield in item_field.iter_csv_fields(ctx, counts_by_label,
                             parent_ref = parent_ref):
                         yield subfield_ref, subfield
+            elif self.id in ('territories', 'territory'):
+                # Note: self.value is now always is single territory ID.
+                territory = ramdb.territories_by_id.get(self.value)
+                if territory is not None:
+                    field_attributes = self.__dict__.copy()
+                    field_attributes['value'] = territory.main_postal_distribution_str
+                    field = Field(**field_attributes)
+                    same_label_index = counts_by_label.get(field.label, 0)
+                    yield (parent_ref or []) + [field.label, same_label_index], field
+                    counts_by_label[field.label] = same_label_index + 1
             else:
                 same_label_index = counts_by_label.get(self.label, 0)
                 yield (parent_ref or []) + [self.label, same_label_index], self
