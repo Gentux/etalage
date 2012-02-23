@@ -1,14 +1,14 @@
 # Translations template for Etalage.
-# Copyright (C) 2011, 2012 ORGANIZATION
+# Copyright (C) 2012 ORGANIZATION
 # This file is distributed under the same license as the Etalage project.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2011, 2012.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2012.
 #
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: Etalage 0.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2011-11-28 17:36+0100\n"
+"POT-Creation-Date: 2012-02-23 15:19+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,137 +17,165 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 0.9.6\n"
 
-#: etalage/controllers.py:159 etalage/controllers.py:356 etalage/controllers.py:359
-#: etalage/controllers.py:804
+#: etalage/controllers.py:185 etalage/controllers.py:222 etalage/controllers.py:521
+#: etalage/controllers.py:524 etalage/controllers.py:1094
 msgid "Error: {0}"
 msgstr ""
 
-#: etalage/controllers.py:195 etalage/controllers.py:236 etalage/controllers.py:277
-#: etalage/controllers.py:319
+#: etalage/controllers.py:263 etalage/controllers.py:316 etalage/controllers.py:369
+#: etalage/controllers.py:422 etalage/controllers.py:477
 msgid "You must accept license to be allowed to download data."
 msgstr ""
 
-#: etalage/controllers.py:198
+#: etalage/controllers.py:274
 msgid "Directory Export in CSV Format"
 msgstr ""
 
-#: etalage/controllers.py:239
+#: etalage/controllers.py:327
+msgid "Directory Export in Excel Format"
+msgstr ""
+
+#: etalage/controllers.py:380
 msgid "Directory Export in GeoJSON Format"
 msgstr ""
 
-#: etalage/controllers.py:280
+#: etalage/controllers.py:433
 msgid "Directory Export in KML Format"
 msgstr ""
 
-#: etalage/controllers.py:323
+#: etalage/controllers.py:488
 msgid "Geographical Coverage Export in CSV Format"
 msgstr ""
 
-#: etalage/controllers.py:543
+#: etalage/controllers.py:769
 msgid "Missing value"
 msgstr ""
 
-#: etalage/controllers.py:692
+#: etalage/controllers.py:953
 msgid "Base Categories Error: {0}"
 msgstr ""
 
-#: etalage/controllers.py:698
+#: etalage/controllers.py:959
 msgid "Category Tags Error: {0}"
 msgstr ""
 
-#: etalage/controllers.py:769
+#: etalage/controllers.py:1030
 msgid "Distance Error: {0}"
 msgstr ""
 
-#: etalage/controllers.py:776
+#: etalage/controllers.py:1037
 msgid "Hide Category Error: {0}"
 msgstr ""
 
-#: etalage/controllers.py:851
+#: etalage/controllers.py:1044
+msgid "Hide Directory Error: {0}"
+msgstr ""
+
+#: etalage/controllers.py:1051
+msgid "Hide Term Error: {0}"
+msgstr ""
+
+#: etalage/controllers.py:1058
+msgid "Hide Territory Error: {0}"
+msgstr ""
+
+#: etalage/controllers.py:1065
+msgid "Show Filter Error: {0}"
+msgstr ""
+
+#: etalage/controllers.py:1173
+msgid "Access to organism failed"
+msgstr ""
+
+#: etalage/controllers.py:1198 etalage/controllers.py:1229
 msgid "POI ID Error: {0}"
 msgstr ""
 
-#: etalage/controllers.py:854
-msgid "POI {0} doesn't exist."
+#: etalage/controllers.py:1237
+msgid "Encoding Error: {0}"
 msgstr ""
 
-#: etalage/conv.py:381
+#: etalage/conv.py:240
+msgid "POI {0} doesn't exist"
+msgstr ""
+
+#: etalage/conv.py:406
 msgid "In \"directory\" mode, territory must be a commune"
 msgstr ""
 
-#: etalage/conv.py:382
+#: etalage/conv.py:407
 msgid "In \"directory\" mode, a commune is required"
 msgstr ""
 
-#: etalage/conv.py:465 etalage/conv.py:468
+#: etalage/conv.py:456
+msgid "POI has no geographical coordinates"
+msgstr ""
+
+#: etalage/conv.py:542 etalage/conv.py:545
 msgid "Unknown territory"
 msgstr ""
 
-#: etalage/conv.py:476
+#: etalage/conv.py:553
 msgid "Invalid category"
 msgstr ""
 
-#: etalage/conv.py:489
+#: etalage/conv.py:566
 msgid "Territory has no geographical coordinates"
 msgstr ""
 
-#: etalage/conv.py:499
+#: etalage/conv.py:576
 msgid "Missing required tags for category"
 msgstr ""
 
-#: etalage/urls.py:113
+#: etalage/urls.py:111
 msgid "Page not found: {0}"
 msgstr ""
 
-#: etalage/wsgihelpers.py:47
+#: etalage/wsgihelpers.py:46
 msgid "Request is faulty"
 msgstr ""
 
-#: etalage/wsgihelpers.py:48
+#: etalage/wsgihelpers.py:47
 msgid "Access is restricted to authorized persons."
 msgstr ""
 
-#: etalage/wsgihelpers.py:49
+#: etalage/wsgihelpers.py:48
 msgid "Access is forbidden."
 msgstr ""
 
-#: etalage/wsgihelpers.py:50
+#: etalage/wsgihelpers.py:49
 msgid "The requested page was not found."
 msgstr ""
 
-#: etalage/wsgihelpers.py:53
+#: etalage/wsgihelpers.py:52
 msgid "You must login to access this page."
 msgstr ""
 
-#: etalage/wsgihelpers.py:56 etalage/wsgihelpers.py:59
+#: etalage/wsgihelpers.py:55 etalage/wsgihelpers.py:58
 msgid "Unable to Access"
 msgstr ""
 
-#: etalage/wsgihelpers.py:57 etalage/wsgihelpers.py:58
+#: etalage/wsgihelpers.py:56 etalage/wsgihelpers.py:57
 msgid "Access Denied"
 msgstr ""
 
-#: etalage/wsgihelpers.py:137 etalage/templates/http-simulated-redirect.mako:41
+#: etalage/wsgihelpers.py:134 etalage/templates/http-simulated-redirect.mako:45
 msgid "You'll be redirected to page"
 msgstr ""
 
-#: etalage/wsgihelpers.py:145 etalage/templates/http-simulated-redirect.mako:38
+#: etalage/wsgihelpers.py:142 etalage/templates/http-simulated-redirect.mako:44
 msgid "Redirection in progress..."
 msgstr ""
 
-#: etalage/templates/directory.mako:93
+#: etalage/templates/directory.mako:89
 msgid "Directory"
 msgstr ""
 
-#: etalage/templates/export-accept-license.mako:38
+#: etalage/templates/export-accept-license.mako:37
 msgid "Open Licence Logo"
 msgstr ""
 
-#: etalage/templates/export-accept-license.mako:98
-msgid "Accept license"
-msgstr ""
-
-#: etalage/templates/export-accept-license.mako:121
+#: etalage/templates/export-accept-license.mako:119
 msgid "Accept License"
 msgstr ""
 
@@ -155,59 +183,60 @@ msgstr ""
 msgid "Download"
 msgstr ""
 
-#: etalage/templates/export.mako:38
+#: etalage/templates/export.mako:37
 msgid "Select export options"
 msgstr ""
 
-#: etalage/templates/export.mako:61
+#: etalage/templates/export.mako:60
 msgid "Export Type"
 msgstr ""
 
-#: etalage/templates/export.mako:99
+#: etalage/templates/export.mako:93
 msgid "Select"
 msgstr ""
 
-#: etalage/templates/export.mako:107
+#: etalage/templates/export.mako:101
 msgid "Export"
 msgstr ""
 
-#: etalage/templates/http-error.mako:45
-msgid "Error"
+#: etalage/templates/gadget.mako:124
+msgid "Share"
 msgstr ""
 
-#: etalage/templates/http-simulated-redirect.mako:58
+#: etalage/templates/http-simulated-redirect.mako:38
+#: etalage/templates/http-simulated-redirect.mako:61
 msgid "Redirection"
 msgstr ""
 
-#: etalage/templates/index.mako:132
+#: etalage/templates/index.mako:212
 msgid "Search"
 msgstr ""
 
-#: etalage/templates/list.mako:50
-msgid "Previous"
-msgstr ""
-
-#: etalage/templates/list.mako:70
-msgid "Next"
-msgstr ""
-
-#: etalage/templates/list.mako:93
+#: etalage/templates/list.mako:98
 msgid "Name"
 msgstr ""
 
-#: etalage/templates/list.mako:94
+#: etalage/templates/list.mako:99
 msgid "Street Address"
 msgstr ""
 
-#: etalage/templates/list.mako:95
+#: etalage/templates/list.mako:100
 msgid "Commune"
 msgstr ""
 
-#: etalage/templates/list.mako:132
+#: etalage/templates/list.mako:121
 msgid "List"
 msgstr ""
 
-#: etalage/templates/map.mako:79
+#: etalage/templates/map.mako:78
 msgid "Map"
+msgstr ""
+
+#: etalage/templates/minisite.mako:72
+msgid "Generate"
+msgstr ""
+
+#: etalage/templates/site.mako:76
+msgid "GNU Affero General Public License"
 msgstr ""
 
