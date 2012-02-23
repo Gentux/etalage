@@ -35,11 +35,54 @@ from biryani.bsonconv import *
 from biryani.objectconv import *
 from biryani.frconv import *
 from biryani import states, strings
+import xlwt
 from territoria2.conv import split_postal_distribution, str_to_postal_distribution
 
 
 default_state = states.default_state
 N_ = lambda message: message
+
+
+def csv_infos_to_csv_bytes(csv_infos_by_schema_name, state = default_state):
+    from . import ramdb
+    if csv_infos_by_schema_name is None:
+        return None, None
+    csv_bytes_by_name = {}
+    for schema_name, csv_infos in csv_infos_by_schema_name.iteritems():
+        csv_file = StringIO()
+        writer = csv.writer(csv_file, delimiter = ',', quotechar = '"', quoting = csv.QUOTE_MINIMAL)
+        writer.writerow([
+            label.encode("utf-8")
+            for label in csv_infos['columns_label']
+            ])
+        for row in csv_infos['rows']:
+            writer.writerow(row)
+        csv_filename = '{0}.csv'.format(strings.slugify(ramdb.schemas_title_by_name.get(schema_name, schema_name)))
+        csv_bytes_by_name[csv_filename] = csv_file.getvalue()
+    return csv_bytes_by_name or None, None
+
+
+def csv_infos_to_excel_bytes(csv_infos_by_schema_name, state = default_state):
+    from . import ramdb
+    if csv_infos_by_schema_name is None:
+        return None, None
+    book = xlwt.Workbook(encoding = 'utf-8')
+    for schema_name, csv_infos in csv_infos_by_schema_name.iteritems():
+        sheet = book.add_sheet(ramdb.schemas_title_by_name.get(schema_name, schema_name)[:31])
+        sheet_row = sheet.row(0)
+        for column_index, label in enumerate(csv_infos['columns_label']):
+            sheet_row.write(column_index, label)
+        for row_index, row in enumerate(csv_infos['rows'], 1):
+            if row_index % 1000 == 0:
+                sheet.flush_row_data()
+            sheet_row = sheet.row(row_index)
+            for column_index, cell in enumerate(row):
+                if cell is not None:
+                    sheet_row.write(column_index, cell)
+        sheet.flush_row_data()
+    excel_file = StringIO()
+    book.save(excel_file)
+    return excel_file.getvalue(), None
 
 
 def default_pois_layer_data_bbox(data, state = default_state):
@@ -303,66 +346,7 @@ def layer_data_to_clusters(data, state = default_state):
     return clusters, None
 
 
-def params_and_pois_id_to_csv((params, pois_id), state = default_state):
-    from . import ramdb
-    if pois_id is None:
-        return None, None
-
-    csv_infos_by_schema_name = {}
-    visited_pois_id = set(pois_id)
-    while pois_id:
-        remaining_pois_id = []
-        for poi_id in pois_id:
-            poi = ramdb.pois_by_id.get(poi_id)
-            if poi is None:
-                continue
-            csv_infos = csv_infos_by_schema_name.get(poi.schema_name)
-            if csv_infos is None:
-                csv_infos_by_schema_name[poi.schema_name] = csv_infos = dict(
-                    columns_label = [],
-                    columns_ref = [],
-                    rows = [],
-                    )
-            columns_label = csv_infos['columns_label']
-            columns_index = {}
-            columns_ref = csv_infos['columns_ref']
-            row = [None] * len(columns_ref)
-            for field_ref, field in poi.iter_csv_fields(state):
-                # Detect column number to use for field. Create a new column if needed.
-                column_ref = tuple(field_ref[:-1])
-                same_ref_columns_count = field_ref[-1]
-                if columns_ref.count(column_ref) == same_ref_columns_count:
-                    column_index = len(columns_ref)
-                    columns_label.append(field.label) # or u' - '.join(label for label in field_ref[::2])
-                    columns_ref.append(column_ref)
-                    row.append(None)
-                else:
-                    column_index = columns_ref.index(column_ref, columns_index.get(column_ref, -1) + 1)
-                columns_index[column_ref] = column_index
-                row[column_index] = unicode(field.value).encode('utf-8')
-                for linked_poi_id in (field.linked_pois_id or []):
-                    if linked_poi_id not in visited_pois_id:
-                        visited_pois_id.add(linked_poi_id)
-                        remaining_pois_id.append(linked_poi_id)
-            csv_infos['rows'].append(row)
-        pois_id = remaining_pois_id
-
-    csv_bytes_by_name = {}
-    for schema_name, csv_infos in csv_infos_by_schema_name.iteritems():
-        csv_file = StringIO()
-        writer = csv.writer(csv_file, delimiter = ',', quotechar = '"', quoting = csv.QUOTE_MINIMAL)
-        writer.writerow([
-            label.encode("utf-8")
-            for label in csv_infos['columns_label']
-            ])
-        for row in csv_infos['rows']:
-            writer.writerow(row)
-        csv_filename = '{0}.csv'.format(strings.slugify(ramdb.schemas_title_by_name.get(schema_name, schema_name)))
-        csv_bytes_by_name[csv_filename] = csv_file.getvalue()
-    return csv_bytes_by_name or None, None
-
-
-def params_to_pois_csv(params, state = default_state):
+def params_to_pois_csv_infos(params, state = default_state):
     from . import ramdb
     data, errors = pipe(
         rename_item('category', 'categories'), # Must be renamed before struct, to be able to use categories on errors
@@ -404,7 +388,7 @@ def params_to_pois_csv(params, state = default_state):
     pois_id = list(ramdb.iter_pois_id(categories_slug = categories_slug,
         competence_territories_id = competence_territories_id, presence_territory = presence_territory,
         term = data['term']))
-    return params_and_pois_id_to_csv((params, pois_id), state = state)
+    return pois_id_to_csv_infos(pois_id, state = state)
 
 
 def params_to_pois_directory_data(params, state = default_state):
@@ -501,6 +485,52 @@ def params_to_pois_list_data(params, state = default_state):
             ),
         rename_item('page', 'page_number'),
         )(params, state = state)
+
+
+def pois_id_to_csv_infos(pois_id, state = default_state):
+    from . import ramdb
+    if pois_id is None:
+        return None, None
+
+    csv_infos_by_schema_name = {}
+    visited_pois_id = set(pois_id)
+    while pois_id:
+        remaining_pois_id = []
+        for poi_id in pois_id:
+            poi = ramdb.pois_by_id.get(poi_id)
+            if poi is None:
+                continue
+            csv_infos = csv_infos_by_schema_name.get(poi.schema_name)
+            if csv_infos is None:
+                csv_infos_by_schema_name[poi.schema_name] = csv_infos = dict(
+                    columns_label = [],
+                    columns_ref = [],
+                    rows = [],
+                    )
+            columns_label = csv_infos['columns_label']
+            columns_index = {}
+            columns_ref = csv_infos['columns_ref']
+            row = [None] * len(columns_ref)
+            for field_ref, field in poi.iter_csv_fields(state):
+                # Detect column number to use for field. Create a new column if needed.
+                column_ref = tuple(field_ref[:-1])
+                same_ref_columns_count = field_ref[-1]
+                if columns_ref.count(column_ref) == same_ref_columns_count:
+                    column_index = len(columns_ref)
+                    columns_label.append(field.label) # or u' - '.join(label for label in field_ref[::2])
+                    columns_ref.append(column_ref)
+                    row.append(None)
+                else:
+                    column_index = columns_ref.index(column_ref, columns_index.get(column_ref, -1) + 1)
+                columns_index[column_ref] = column_index
+                row[column_index] = unicode(field.value).encode('utf-8')
+                for linked_poi_id in (field.linked_pois_id or []):
+                    if linked_poi_id not in visited_pois_id:
+                        visited_pois_id.add(linked_poi_id)
+                        remaining_pois_id.append(linked_poi_id)
+            csv_infos['rows'].append(row)
+        pois_id = remaining_pois_id
+    return csv_infos_by_schema_name or None, None
 
 
 def postal_distribution_to_territory(postal_distribution, state = default_state):

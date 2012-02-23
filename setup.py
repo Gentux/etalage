@@ -79,6 +79,7 @@ setup(
         "threading2 >= 0.2.1",
         "WebError >= 0.10",
         "WebOb >= 1.1",
+        "xlwt >= 0.7.2",
         ],
     message_extractors = {'etalage': [
             ('**.py', 'python', None),

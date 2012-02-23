@@ -26,7 +26,7 @@
 """Controllers for territories"""
 
 
-import cStringIO
+from cStringIO import StringIO
 import datetime
 import itertools
 import logging
@@ -177,7 +177,10 @@ def csv(req):
         )
     params.update(base_params)
 
-    csv_bytes_by_name, errors = conv.params_to_pois_csv(params, state = ctx)
+    csv_bytes_by_name, errors = conv.pipe(
+        conv.params_to_pois_csv_infos,
+        conv.csv_infos_to_csv_bytes,
+        )(params, state = ctx)
     if errors is not None:
         raise wsgihelpers.bad_request(ctx, explanation = ctx._('Error: {0}').format(errors))
     if not csv_bytes_by_name:
@@ -187,13 +190,41 @@ def csv(req):
         req.response.content_type = 'text/csv; charset=utf-8'
         req.response.content_disposition = 'attachment;filename={0}'.format(csv_filename)
         return csv_bytes
-    zip_file = cStringIO.StringIO()
+    zip_file = StringIO()
     with zipfile.ZipFile(zip_file, 'w') as zip_archive:
         for csv_filename, csv_bytes in csv_bytes_by_name.iteritems():
             zip_archive.writestr(csv_filename, csv_bytes)
     req.response.content_type = 'application/zip'
     req.response.content_disposition = 'attachment;filename=export.zip'
     return zip_file.getvalue()
+
+
+@wsgihelpers.wsgify
+@ramdb.ramdb_based
+def excel(req):
+    ctx = contexts.Ctx(req)
+
+    params = req.GET
+    base_params = init_base(ctx, params)
+    params = dict(
+        category = params.getall('category'),
+        filter = params.get('filter'),
+        term = params.get('term'),
+        territory = params.get('territory'),
+        )
+    params.update(base_params)
+
+    excel_bytes, errors = conv.pipe(
+        conv.params_to_pois_csv_infos,
+        conv.csv_infos_to_excel_bytes,
+        )(params, state = ctx)
+    if errors is not None:
+        raise wsgihelpers.bad_request(ctx, explanation = ctx._('Error: {0}').format(errors))
+    if not excel_bytes:
+        raise wsgihelpers.no_content(ctx)
+    req.response.content_type = 'application/vnd.ms-excel'
+    req.response.content_disposition = 'attachment;filename=export.xls'
+    return excel_bytes
 
 
 @wsgihelpers.wsgify
@@ -241,6 +272,59 @@ def export_directory_csv(req):
     return templates.render(ctx, '/export-accept-license.mako',
         categories = data['categories'],
         export_title = ctx._(u"Directory Export in CSV Format"),
+        errors = errors,
+        format = format,
+        mode = mode,
+        params = params,
+        type = type,
+        )
+
+
+@wsgihelpers.wsgify
+@ramdb.ramdb_based
+def export_directory_excel(req):
+    ctx = contexts.Ctx(req)
+
+    params = req.GET
+    base_params = init_base(ctx, params)
+    format = u'excel'
+    mode = u'export'
+    type = u'annuaire'
+    params = dict(
+        accept = params.get('accept'),
+        category = params.getall('category'),
+        filter = params.get('filter'),
+        submit = params.get('submit'),
+        term = params.get('term'),
+        territory = params.get('territory'),
+        )
+    params.update(base_params)
+
+    accept, error = conv.pipe(conv.guess_bool, conv.default(False), conv.test_is(True))(params['accept'], state = ctx)
+    if error is None:
+        url_params = params.copy()
+        del url_params['accept']
+        del url_params['submit']
+        raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, u'api/v1/{0}/{1}'.format(type, format),
+            **url_params))
+
+    data, errors = conv.pipe(
+        conv.rename_item('category', 'categories'), # Must be renamed before struct, to be able to use categories on errors
+        conv.struct(
+            dict(
+                accept = conv.test(lambda value: not params['submit'],
+                    error = N_(u"You must accept license to be allowed to download data."),
+                    handle_missing_value = True,
+                    ),
+                categories = conv.uniform_sequence(conv.str_to_slug_to_category),
+                ),
+            default = 'ignore',
+            keep_missing_values = True,
+            ),
+        )(params, state = ctx)
+    return templates.render(ctx, '/export-accept-license.mako',
+        categories = data['categories'],
+        export_title = ctx._(u"Directory Export in Excel Format"),
         errors = errors,
         format = format,
         mode = mode,
@@ -650,6 +734,7 @@ def index_export(req):
                     conv.str_to_slug,
                     conv.test_in([
                         'annuaire-csv',
+                        'annuaire-excel',
                         'annuaire-geojson',
                         'annuaire-kml',
 #                        'couverture-geographique-csv',
@@ -1022,6 +1107,7 @@ def make_router():
         ('GET', '^/a-propos/?$', about),
         ('GET', '^/annuaire/?$', index_directory),
         ('GET', '^/api/v1/annuaire/csv/?$', csv),
+        ('GET', '^/api/v1/annuaire/excel/?$', excel),
         ('GET', '^/api/v1/annuaire/geojson/?$', geojson),
         ('GET', '^/api/v1/annuaire/kml/?$', kml),
         ('GET', '^/api/v1/categories/autocomplete/?$', autocomplete_category),
@@ -1029,6 +1115,7 @@ def make_router():
         ('GET', '^/carte/?$', index_map),
         ('GET', '^/export/?$', index_export),
         ('GET', '^/export/annuaire/csv/?$', export_directory_csv),
+        ('GET', '^/export/annuaire/excel/?$', export_directory_excel),
         ('GET', '^/export/annuaire/geojson/?$', export_directory_geojson),
         ('GET', '^/export/annuaire/kml/?$', export_directory_kml),
 #        ('GET', '^/export/couverture-geographique/csv/?$', export_geographical_coverage_csv),

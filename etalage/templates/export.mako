@@ -60,6 +60,11 @@ from etalage import urls
                     <label class="control-label">${_(u"Export Type")}</label>
                     <div class="controls">
                         <label class="radio">
+                            <input type="radio" value="annuaire-excel" name="type_and_format">
+                            Annuaire (format Excel) &mdash; Les informations détaillées,
+                                organisme par organisme
+                        </label>
+                        <label class="radio">
                             <input type="radio" value="annuaire-csv" name="type_and_format">
                             Annuaire (format CSV) &mdash; Les informations détaillées,
                                 organisme par organisme
