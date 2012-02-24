@@ -47,7 +47,7 @@ from etalage import conf, urls
 <%def name="footer_data_p_content()" filter="trim">
 ${parent.footer_data_p_content()}
     % if conf.get('petitpois_url'):
- &mdash; <a class="label notice" href="${urlparse.urljoin(conf['petitpois_url'], '/poi/search'
+ &mdash; <a class="label label-info" href="${urlparse.urljoin(conf['petitpois_url'], '/poi/search'
         )}" rel="external">Ajouter une fiche</a>
     % endif
 </%def>
