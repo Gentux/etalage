@@ -57,7 +57,7 @@ from etalage import conf, model, ramdb, urls
     if field.value is None:
         return ''
 %>\
-    ${getattr(self, 'field_{0}'.format(field.id.replace('-', '_')), field_default)(field, depth = depth)}
+        ${getattr(self, 'field_{0}'.format(field.id.replace('-', '_')), field_default)(field, depth = depth)}
 </%def>
 
 
@@ -103,6 +103,23 @@ from etalage import conf, model, ramdb, urls
         ))
 %>\
         <%self:field depth="${depth}" field="${field}"/>
+</%def>
+
+
+<%def name="field_link(field, depth = 0)" filter="trim">
+<%
+    if field.relation == 'parent' and depth > 0:
+        # Avoid infinite recursion.
+        return u''
+%>\
+        <%self:field_default depth="${depth}" field="${field}"/>
+</%def>
+
+
+<%def name="field_name(field, depth = 0)" filter="trim">
+    % if depth > 0:
+        <%self:field_default depth="${depth}" field="${field}"/>
+    % endif
 </%def>
 
 
