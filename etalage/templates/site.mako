@@ -46,7 +46,7 @@ from etalage import conf
 <%def name="css()" filter="trim">
     <link rel="stylesheet" href="${conf['bootstrap.css']}">
     <link rel="stylesheet" href="${conf['jquery-ui.css']}">
-##    <link rel="stylesheet" href="/css/site.css">
+    <link rel="stylesheet" href="/css/site.css">
     % if ctx.container_base_url is not None and ctx.gadget_id is not None:
     <link rel="stylesheet" href="/css/gadget.css">
     % else:
@@ -56,7 +56,7 @@ from etalage import conf
 
 
 <%def name="footer()" filter="trim">
-        <footer>
+        <footer class="footer">
             <%self:footer_content/>
         </footer>
 </%def>
