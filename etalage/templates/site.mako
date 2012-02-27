@@ -63,9 +63,12 @@ from etalage import conf
 
 
 <%def name="footer_content()" filter="trim">
+            <%self:footer_actions/>
+            <%self:footer_service/>
             <p>
                 <%self:footer_data_p_content/>
-                <br>
+            </p>
+            <p>
                 Logiciel :
                 <a href="http://gitorious.org/infos-pratiques/etalage" rel="external">Etalage</a>
                 &mdash;
@@ -79,12 +82,20 @@ from etalage import conf
 </%def>
 
 
+<%def name="footer_actions()" filter="trim">
+</%def>
+
+
 <%def name="footer_data_p_content()" filter="trim">
                 Page réalisée en <a href="http://www.comarquage.fr/" rel="external"
                         title="Comarquage.fr">co-marquage</a>
                 &mdash;
                 Données :
                 <a href="http://www.data.gouv.fr/Licence-Ouverte-Open-Licence" rel="external">Licence ouverte</a>
+</%def>
+
+
+<%def name="footer_service()" filter="trim">
 </%def>
 
 

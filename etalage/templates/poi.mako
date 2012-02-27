@@ -433,14 +433,14 @@ etalage.map.singleMarkerMap("map-poi", ${field.value[0]}, ${field.value[1]});
 </%def>
 
 
-<%def name="footer_data_p_content()" filter="trim">
-${parent.footer_data_p_content()}\
+<%def name="footer_actions()" filter="trim">
+            <p class="pull-right">
     % if conf.get('petitpois_url'):
- &mdash; <a class="label label-info" href="${urlparse.urljoin(conf['petitpois_url'], '/poi/view/{0}'.format(poi._id)
-        )}" rel="external">Modifier la fiche</a>\
+                <a class="label label-info" href="${urlparse.urljoin(conf['petitpois_url'], '/poi/view/{0}'.format(poi._id))}" rel="external">Modifier la fiche</a>
+                &mdash;
     % endif
- &mdash; <a class="internal" href="${urls.get_url(
-        ctx, 'minisite', 'organismes', poi.slug, poi._id)}" rel="nofollow">Minisite</a>
+                <a class="internal" href="${urls.get_url(ctx, 'minisite', 'organismes', poi.slug, poi._id)}" rel="nofollow">Minisite</a>
+            </p>
 </%def>
 
 
