@@ -391,9 +391,13 @@ def params_to_pois_csv_infos(params, state = default_state):
     else:
         competence_territories_id = None
         presence_territory = None
-    pois_id = list(ramdb.iter_pois_id(categories_slug = categories_slug,
-        competence_territories_id = competence_territories_id, presence_territory = presence_territory,
-        term = data['term']))
+    if data['categories'] is None and data['term'] is None and data['territory'] is None:
+        # No criteria specified => Export every POI, even non indexed ones.
+        pois_id = list(ramdb.pois_by_id.iterkeys())
+    else:
+        pois_id = list(ramdb.iter_pois_id(categories_slug = categories_slug,
+            competence_territories_id = competence_territories_id, presence_territory = presence_territory,
+            term = data['term']))
     return pois_id_to_csv_infos(pois_id, state = state)
 
 
