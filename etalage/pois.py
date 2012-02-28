@@ -107,6 +107,16 @@ class Field(representations.UserRepresentable):
                         ):
                     for subfield_ref, subfield in field.iter_csv_fields(ctx, counts_by_label, parent_ref = parent_ref):
                         yield subfield_ref, subfield
+            elif self.id == 'links':
+                field_attributes = self.__dict__.copy()
+                field_attributes['value'] = u'\n'.join(
+                    unicode(object_id)
+                    for object_id in self.value
+                    )
+                field = Field(**field_attributes)
+                same_label_index = counts_by_label.get(field.label, 0)
+                yield (parent_ref or []) + [field.label, same_label_index], field
+                counts_by_label[field.label] = same_label_index + 1
             elif self.id == 'postal-distribution':
                 postal_code, postal_routing = conv.check(conv.split_postal_distribution)(self.value, state = ctx)
                 for field in (
@@ -126,16 +136,26 @@ class Field(representations.UserRepresentable):
                     for subfield_ref, subfield in item_field.iter_csv_fields(ctx, counts_by_label,
                             parent_ref = parent_ref):
                         yield subfield_ref, subfield
-            elif isinstance(self.value, list):
-                for item_value in self.value:
-                    item_field_attributes = self.__dict__.copy()
-                    item_field_attributes['value'] = item_value
-                    item_field = Field(**item_field_attributes)
-                    for subfield_ref, subfield in item_field.iter_csv_fields(ctx, counts_by_label,
-                            parent_ref = parent_ref):
-                        yield subfield_ref, subfield
-            elif self.id in ('territories', 'territory'):
-                # Note: self.value is now always is single territory ID.
+            elif self.id == 'territories':
+                territories = [
+                    territory
+                    for territory in (
+                        ramdb.territories_by_id.get(territory_id)
+                        for territory_id in self.value
+                        )
+                    if territory is not None
+                    ]
+                if territories:
+                    field_attributes = self.__dict__.copy()
+                    field_attributes['value'] = u'\n'.join(
+                        territory.main_postal_distribution_str
+                        for territory in territories
+                        )
+                    field = Field(**field_attributes)
+                    same_label_index = counts_by_label.get(field.label, 0)
+                    yield (parent_ref or []) + [field.label, same_label_index], field
+                    counts_by_label[field.label] = same_label_index + 1
+            elif self.id == 'territory':
                 territory = ramdb.territories_by_id.get(self.value)
                 if territory is not None:
                     field_attributes = self.__dict__.copy()
@@ -144,7 +164,16 @@ class Field(representations.UserRepresentable):
                     same_label_index = counts_by_label.get(field.label, 0)
                     yield (parent_ref or []) + [field.label, same_label_index], field
                     counts_by_label[field.label] = same_label_index + 1
+            elif isinstance(self.value, list):
+                for item_value in self.value:
+                    item_field_attributes = self.__dict__.copy()
+                    item_field_attributes['value'] = item_value
+                    item_field = Field(**item_field_attributes)
+                    for subfield_ref, subfield in item_field.iter_csv_fields(ctx, counts_by_label,
+                            parent_ref = parent_ref):
+                        yield subfield_ref, subfield
             else:
+                # Note: self.value is now always a single value, not a list.
                 same_label_index = counts_by_label.get(self.label, 0)
                 yield (parent_ref or []) + [self.label, same_label_index], self
                 counts_by_label[self.label] = same_label_index + 1
