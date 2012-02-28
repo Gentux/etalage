@@ -92,6 +92,13 @@ class Field(representations.UserRepresentable):
                 if field_counts_by_label:
                     # Some subfields were not empty, so increment number of exported fields having the same label.
                     counts_by_label[self.label] = same_label_index + 1
+            elif self.id in ('autocompleters', 'checkboxes'):
+                field_attributes = self.__dict__.copy()
+                field_attributes['value'] = u'\n'.join(self.value)
+                field = Field(**field_attributes)
+                same_label_index = counts_by_label.get(field.label, 0)
+                yield (parent_ref or []) + [field.label, same_label_index], field
+                counts_by_label[field.label] = same_label_index + 1
             elif self.id == 'commune':
                 field_attributes = self.__dict__.copy()
                 field_attributes['label'] = u'Code Insee commune' # Better than "Commune"
