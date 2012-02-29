@@ -92,6 +92,13 @@ from etalage import urls
         </div>
         % endif
         <%self:pagination/>
+        <%self:results_table/>
+        <%self:pagination/>
+    % endif
+</%def>
+
+
+<%def name="results_table()" filter="trim">
         <table class="table table-bordered table-condensed table-striped">
             <thead>
                 <tr>
@@ -112,8 +119,6 @@ from etalage import urls
         % endfor
             </tbody>
         </table>
-        <%self:pagination/>
-    % endif
 </%def>
 
 
