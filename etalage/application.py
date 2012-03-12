@@ -81,9 +81,13 @@ def make_app(global_conf, **app_conf):
         app = ErrorMiddleware(app, global_conf, **conf['errorware'])
 
     if conf['static_files']:
-        # Serve static files
-        static_app = StaticURLParser(conf['static_files_dir'])
-        app = Cascade([static_app, app])
+        # Serve static files.
+        cascaded_apps = []
+        if conf['custom_static_files_dir'] is not None:
+            cascaded_apps.append(StaticURLParser(conf['custom_static_files_dir']))
+        cascaded_apps.append(StaticURLParser(conf['static_files_dir']))
+        cascaded_apps.append(app)
+        app = Cascade(cascaded_apps)
 
     return app
 

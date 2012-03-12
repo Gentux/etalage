@@ -56,6 +56,7 @@ def load_environment(global_conf, app_conf):
             'app_dir': conv.set_value(app_dir),
             'cache_dir': conv.default(os.path.join(os.path.dirname(app_dir), 'cache')),
             'categories_collection': conv.default('categories'),
+            'custom_static_files_dir': conv.default(None),
             'custom_templates_dir': conv.default(None),
             'data_updates_collection': conv.default('data_updates'),
             'database': conv.default('souk'),
