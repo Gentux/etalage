@@ -168,6 +168,9 @@ def load():
             continue
         categories_slug_by_pivot_code[organism_type_bson['code']] = organism_type_bson['slug']
 
+    territories_query = dict(
+        kind = {'$in': conf['territories_kinds']},
+        ) if conf['territories_kinds'] is not None else None
     for territory_bson in model.db[conf['territories_collection']].find(None, [
             'ancestors_id',
             'code',

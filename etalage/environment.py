@@ -89,9 +89,8 @@ def load_environment(global_conf, app_conf):
                 conv.function(lambda kinds: kinds.split()),
                 conv.uniform_sequence(
                     conv.test_in(model.Territory.public_kinds),
-                    constructor = set,
+                    constructor = lambda kinds: sorted(set(kinds)),
                     ),
-                conv.function(lambda kinds: sorted(kinds)),
                 ),
             'tile_layers': conv.pipe(
                 conv.function(eval),
