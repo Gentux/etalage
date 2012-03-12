@@ -187,8 +187,8 @@ def respond_json(ctx, data, code = None, headers = None, jsonp = None):
         if code is not None:
             response.status = code
         response.headers.update(headers)
-#    text = json.dumps(data, encoding = 'utf-8', ensure_ascii = False)
-    text = json.dumps(data, encoding = 'utf-8', ensure_ascii = False, indent = 2, sort_keys = True)
+#    text = unicode(json.dumps(data, encoding = 'utf-8', ensure_ascii = False))
+    text = unicode(json.dumps(data, encoding = 'utf-8', ensure_ascii = False, indent = 2, sort_keys = True))
     if jsonp:
         text = u'{0}({1})'.format(jsonp, text)
     response.text = text
