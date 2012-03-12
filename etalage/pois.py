@@ -34,7 +34,7 @@ from suq import monpyjama, representations
 from . import conv, ramdb
 
 
-__all__ = ['Cluster', 'Field', 'Poi']
+__all__ = ['Cluster', 'Field', 'get_first_field', 'iter_fields', 'Poi', 'pop_first_field']
 
 log = logging.getLogger(__name__)
 
@@ -65,14 +65,9 @@ class Field(representations.UserRepresentable):
         if attributes:
             self.set_attributes(**attributes)
 
-    def get_first_field(self, id):
+    def get_first_field(self, id, label = None):
         # Note: Only for composite fields.
-        if self.value is None:
-            return None
-        for field in self.value:
-            if field.id == id:
-                return field
-        return None
+        return get_first_field(self.value, id, label = label)
 
     @property
     def is_composite(self):
@@ -262,13 +257,8 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
         if attributes:
             self.set_attributes(**attributes)
 
-    def get_first_field(self, id):
-        if self.fields is None:
-            return None
-        for field in self.fields:
-            if field.id == id:
-                return field
-        return None
+    def get_first_field(self, id, label = None):
+        return get_first_field(self.fields, id, label = label)
 
     def index(self, indexed_poi_id):
         poi_bson = self.bson
@@ -384,3 +374,24 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
     @property
     def slug(self):
         return strings.slugify(self.name)
+
+
+def get_first_field(fields, id, label = None):
+    for field in iter_fields(fields, id, label = label):
+        return field
+    return None
+
+
+def iter_fields(fields, id, label = None):
+    if fields is not None:
+        for field in fields:
+            if field.id == id and (label is None or field.label == label):
+                yield field
+
+
+def pop_first_field(fields, id, label = None):
+    for field in iter_fields(fields, id, label = label):
+        fields.remove(field)
+        return field
+    return None
+

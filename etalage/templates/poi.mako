@@ -37,8 +37,11 @@ from etalage import conf, model, ramdb, urls
 
 
 <%def name="container_content()" filter="trim">
-        <h2>${poi.name}</h2>
-        <%self:fields poi="${poi}"/>
+<%
+    fields = poi.fields[:] if poi.fields is not None else None
+%>\
+        <%self:poi_header fields="${fields}" poi="${poi}"/>
+        <%self:fields fields="${fields}" poi="${poi}"/>
 </%def>
 
 
@@ -414,8 +417,8 @@ etalage.map.singleMarkerMap("map-poi", ${field.value[0]}, ${field.value[1]});
 </%def>
 
 
-<%def name="fields(poi, depth = 0)" filter="trim">
-    % for field in (poi.fields or []):
+<%def name="fields(poi, fields, depth = 0)" filter="trim">
+    % for field in (fields or []):
 <%
         if conf['ignored_fields'] is not None and field.id in conf['ignored_fields']:
             ignored_field = conf['ignored_fields'][field.id]
@@ -441,6 +444,11 @@ etalage.map.singleMarkerMap("map-poi", ${field.value[0]}, ${field.value[1]});
     % endif
                 <a class="internal" href="${urls.get_url(ctx, 'minisite', 'organismes', poi.slug, poi._id)}" rel="nofollow">Minisite</a>
             </p>
+</%def>
+
+
+<%def name="poi_header(poi, fields, depth = 0)" filter="trim">
+        <h2>${poi.name}</h2>
 </%def>
 
 
