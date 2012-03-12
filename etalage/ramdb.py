@@ -171,7 +171,7 @@ def load():
     territories_query = dict(
         kind = {'$in': conf['territories_kinds']},
         ) if conf['territories_kinds'] is not None else None
-    for territory_bson in model.db[conf['territories_collection']].find(None, [
+    for territory_bson in model.db[conf['territories_collection']].find(territories_query, [
             'ancestors_id',
             'code',
             'geo',
