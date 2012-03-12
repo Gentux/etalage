@@ -31,6 +31,7 @@ from etalage import conf
 <%def name="body_content()" filter="trim">
     % if ctx.container_base_url is None or ctx.gadget_id is None:
     <%self:topbar/>
+    <%self:site_header/>
     % endif
     <div class="container-fluid"><div class="row-fluid">
         <%self:container_content/>
@@ -163,6 +164,10 @@ $(function () {
 });
     </script>
     % endif
+</%def>
+
+
+<%def name="site_header()" filter="trim">
 </%def>
 
 
