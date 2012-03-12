@@ -420,6 +420,7 @@ def params_to_pois_directory_data(params, state = default_state):
             default = 'ignore',
             keep_missing_values = True,
             ),
+        set_default_filter,
         )(params, state = state)
 
 
@@ -472,7 +473,22 @@ def params_to_pois_layer_data(params, state = default_state):
             default = 'ignore',
             keep_missing_values = True,
             ),
+        set_default_filter,
         )(params, state = state)
+
+
+def set_default_filter(data, state = default_state):
+    if data is None:
+        return None, None
+
+    from . import model
+
+    # When no filter is given and territory is not a commune, search only for POIs present on territory instead of
+    # POIs near the territory.
+    if data.get('filter') is None and data['territory'] is not None \
+            and data['territory'].__class__.__name__ not in model.communes_kinds:
+        data['filter'] = u'presence'
+    return data, None
 
 
 def params_to_pois_list_data(params, state = default_state):
@@ -493,6 +509,7 @@ def params_to_pois_list_data(params, state = default_state):
             default = 'ignore',
             keep_missing_values = True,
             ),
+        set_default_filter,
         rename_item('page', 'page_number'),
         )(params, state = state)
 
