@@ -38,7 +38,26 @@ from etalage import conf, model, ramdb, urls
 
 <%def name="container_content()" filter="trim">
 <%
-    fields = poi.fields[:] if poi.fields is not None else None
+    fields = poi.fields[:] if poi.fields is not None else []
+    children = sorted(
+        (
+            child
+            for child in ramdb.pois_by_id.itervalues()
+            if child.parent_id == poi._id
+            ),
+        key = lambda child: child.name,
+        )
+    for child in children:
+        fields.append(model.Field(id = 'link', label = ramdb.schemas_title_by_name[child.schema_name],
+            value = child._id))
+    fields.append(model.Field(id = 'text-inline', label = u"Dernière mise à jour", value = u' par '.join(
+        unicode(fragment)
+        for fragment in (
+            poi.last_update_datetime.strftime('%Y-%m-%d %H:%M') if poi.last_update_datetime is not None else None,
+            poi.last_update_organization,
+            )
+        if fragment
+        )))
 %>\
         <%self:poi_header fields="${fields}" poi="${poi}"/>
         <%self:fields fields="${fields}" poi="${poi}"/>
@@ -64,48 +83,11 @@ from etalage import conf, model, ramdb, urls
 </%def>
 
 
-<%def name="field_children(poi, depth = 0)" filter="trim">
-<%
-    children = sorted(
-        (
-            child
-            for child in ramdb.pois_by_id.itervalues()
-            if child.parent_id == poi._id
-            ),
-        key = lambda child: child.name,
-        )
-%>\
-    % if children:
-        % for child in children:
-<%
-            field = model.Field(id = 'link', label = ramdb.schemas_title_by_name[child.schema_name], value = child._id)
-%>\
-        <%self:field depth="${depth}" field="${field}"/>
-        % endfor
-    %endif
-</%def>
-
-
 <%def name="field_default(field, depth = 0)" filter="trim">
         <div class="field">
             <b class="field-label">${field.label} :</b>
             <%self:field_value depth="${depth}" field="${field}"/>
         </div>
-</%def>
-
-
-<%def name="field_last_update(poi, depth = 0)" filter="trim">
-<%
-    field = model.Field(id = 'text-inline', label = u"Dernière mise à jour", value = u' par '.join(
-        unicode(fragment)
-        for fragment in (
-            poi.last_update_datetime.strftime('%Y-%m-%d %H:%M') if poi.last_update_datetime is not None else None,
-            poi.last_update_organization,
-            )
-        if fragment
-        ))
-%>\
-        <%self:field depth="${depth}" field="${field}"/>
 </%def>
 
 
@@ -431,8 +413,6 @@ etalage.map.singleMarkerMap("map-poi", ${field.value[0]}, ${field.value[1]});
 %>\
         <%self:field depth="${depth}" field="${field}"/>
     % endfor
-        <%self:field_children depth="${depth}" poi="${poi}"/>
-        <%self:field_last_update depth="${depth}" poi="${poi}"/>
 </%def>
 
 
