@@ -257,6 +257,35 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
         if attributes:
             self.set_attributes(**attributes)
 
+    def generate_all_fields(self):
+        """Return all fields of POI including dynamic ones (ie linked fields, etc)."""
+        fields = self.fields[:] if self.fields is not None else []
+
+        # Add children POIs as linked fields.
+        children = sorted(
+            (
+                child
+                for child in ramdb.pois_by_id.itervalues()
+                if child.parent_id == self._id
+                ),
+            key = lambda child: (child.schema_name, child.name),
+            )
+        for child in children:
+            fields.append(Field(id = 'link', label = ramdb.schemas_title_by_name[child.schema_name],
+                value = child._id))
+
+        # Add last-update field.
+        fields.append(Field(id = 'last-update', label = u"Dernière mise à jour", value = u' par '.join(
+            unicode(fragment)
+            for fragment in (
+                self.last_update_datetime.strftime('%Y-%m-%d %H:%M') if self.last_update_datetime is not None else None,
+                self.last_update_organization,
+                )
+            if fragment
+            )))
+
+        return fields
+
     def get_first_field(self, id, label = None):
         return get_first_field(self.fields, id, label = label)
 

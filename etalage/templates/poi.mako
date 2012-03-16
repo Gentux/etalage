@@ -38,26 +38,7 @@ from etalage import conf, model, ramdb, urls
 
 <%def name="container_content()" filter="trim">
 <%
-    fields = poi.fields[:] if poi.fields is not None else []
-    children = sorted(
-        (
-            child
-            for child in ramdb.pois_by_id.itervalues()
-            if child.parent_id == poi._id
-            ),
-        key = lambda child: child.name,
-        )
-    for child in children:
-        fields.append(model.Field(id = 'link', label = ramdb.schemas_title_by_name[child.schema_name],
-            value = child._id))
-    fields.append(model.Field(id = 'text-inline', label = u"Dernière mise à jour", value = u' par '.join(
-        unicode(fragment)
-        for fragment in (
-            poi.last_update_datetime.strftime('%Y-%m-%d %H:%M') if poi.last_update_datetime is not None else None,
-            poi.last_update_organization,
-            )
-        if fragment
-        )))
+    fields = poi.generate_all_fields()
 %>\
         <%self:poi_header fields="${fields}" poi="${poi}"/>
         <%self:fields fields="${fields}" poi="${poi}"/>
@@ -76,7 +57,7 @@ from etalage import conf, model, ramdb, urls
 
 <%def name="field(field, depth = 0)" filter="trim">
 <%
-    if field.value is None:
+    if field is None or field.value is None:
         return ''
 %>\
         ${getattr(self, 'field_{0}'.format(field.id.replace('-', '_')), field_default)(field, depth = depth)}
