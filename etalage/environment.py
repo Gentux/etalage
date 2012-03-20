@@ -61,7 +61,14 @@ def load_environment(global_conf, app_conf):
             'data_updates_collection': conv.default('data_updates'),
             'database': conv.default('souk'),
             'debug': conv.pipe(conv.guess_bool, conv.default(False)),
+            'default_tab': conv.pipe(
+                conv.cleanup_line,
+                conv.test_in(['carte', 'liste']),
+                conv.default('carte'),
+                ),
             'global_conf': conv.set_value(global_conf),
+            'hide_directory': conv.pipe(conv.guess_bool, conv.default(False)),
+            'hide_map': conv.pipe(conv.guess_bool, conv.default(False)),
             'i18n_dir': conv.default(os.path.join(app_dir, 'i18n')),
             'ignored_fields': conv.pipe(
                 conv.function(lambda lines: lines.split(u'\n')),

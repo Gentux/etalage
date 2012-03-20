@@ -39,7 +39,7 @@ import zipfile
 from biryani import strings
 import simplejson as json
 
-from . import contexts, conv, pagers, ramdb, templates, urls, wsgihelpers
+from . import conf, contexts, conv, pagers, ramdb, templates, urls, wsgihelpers
 
 
 log = logging.getLogger(__name__)
@@ -597,7 +597,7 @@ def index(req):
     base_params = init_base(ctx, params)
 
     # Redirect to another page.
-    url_args = ('carte',)
+    url_args = (conf['default_tab'],)
     url_kwargs = dict(params)
     if ctx.container_base_url is None or ctx.gadget_id is None:
         raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, *url_args, **url_kwargs))
@@ -612,6 +612,9 @@ def index(req):
 @ramdb.ramdb_based
 def index_directory(req):
     ctx = contexts.Ctx(req)
+
+    if conf['hide_directory']:
+        return wsgihelpers.not_found(ctx, explanation = ctx._(u'Directory page disabled by configuration'))
 
     params = req.GET
     base_params = init_base(ctx, params)
@@ -899,6 +902,9 @@ def index_list(req):
 @ramdb.ramdb_based
 def index_map(req):
     ctx = contexts.Ctx(req)
+
+    if conf['hide_map']:
+        return wsgihelpers.not_found(ctx, explanation = ctx._(u'Map page disabled by configuration'))
 
     params = req.GET
     base_params = init_base(ctx, params)

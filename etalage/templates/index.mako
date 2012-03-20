@@ -58,11 +58,11 @@ from etalage import conf, urls
         <ul class="nav nav-tabs">
 <%
     modes_infos = (
-        (u'carte', u'Carte'),
-        (u'liste', u'Liste'),
-        (u'annuaire', u'Annuaire'),
-        (u'gadget', u'Partage'),
-        (u'export', u'Export'),
+        (u'carte', u'Carte', conf['hide_map']),
+        (u'liste', u'Liste', False),
+        (u'annuaire', u'Annuaire', conf['hide_directory'] or ctx.hide_directory),
+        (u'gadget', u'Partage', False),
+        (u'export', u'Export', False),
         )
     url_args = dict(
         (dict(categories = 'category').get(name, name), value)
@@ -70,9 +70,9 @@ from etalage import conf, urls
         if name != 'page' and value is not None
         )
 %>\
-    % for tab_mode, tab_name in modes_infos:
+    % for tab_mode, tab_name, tab_hidden in modes_infos:
 <%
-        if tab_mode == u'annuaire' and ctx.hide_directory:
+        if tab_hidden:
             continue
 %>\
             <li${' class="active"' if tab_mode == mode else '' | n}>
