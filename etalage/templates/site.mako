@@ -126,11 +126,14 @@ var rpc = new easyXDM.Rpc({
 });
 
 
-## Adjust frame height for 5 seconds.
-var adjustFrameHeightCount = 5 * 5;
+var adjustFrameHeightCount = 0;
 var frameHeight = null;
 
-function adjustFrameHeight() {
+function adjustFrameHeight(seconds) {
+    if (seconds) {
+        ## Adjust frame height for a few seconds ("* 5" is because of 200 ms timeout).
+        adjustFrameHeightCount = seconds * 5;
+    }
     var frameNewHeight = $('body', document).height();
     if (frameNewHeight != frameHeight) {
         rpc.adjustHeight(frameNewHeight);
@@ -143,7 +146,7 @@ function adjustFrameHeight() {
 
 
 $(function () {
-    adjustFrameHeight();
+    adjustFrameHeight(5);
 
     $('form.internal').on('submit', function (event) {
         rpc.requestNavigateTo($(this).attr('action'), $(this).serializeArray().concat({
