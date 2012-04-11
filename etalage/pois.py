@@ -297,9 +297,15 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
             ramdb.pois_id_by_category_slug.setdefault(category_slug, set()).add(indexed_poi_id)
 
         for i, territory_metadata in enumerate(metadata.get('territories') or []):
+            # Note: Don't fail when territory doesn't exist, because Etalage can be configured to ignore some kinds
+            # of territories (cf conf['territories_kinds']).
             self.competence_territories_id = set(
-                ramdb.territories_id_by_kind_code[(territory_kind_code['kind'], territory_kind_code['code'])]
-                for territory_kind_code in poi_bson['territories'][i]
+                territory_id
+                for territory_id in (
+                    ramdb.territories_id_by_kind_code.get((territory_kind_code['kind'], territory_kind_code['code']))
+                    for territory_kind_code in poi_bson['territories'][i]
+                    )
+                if territory_id is not None
                 )
             for territory_id in self.competence_territories_id:
                 ramdb.pois_id_by_competence_territory_id.setdefault(territory_id, set()).add(indexed_poi_id)
