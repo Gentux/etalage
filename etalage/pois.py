@@ -349,48 +349,53 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
     @classmethod
     def load_pois(cls):
         for poi_bson in cls.get_collection().find({'metadata.deleted': {'$exists': False}}):
-            metadata = poi_bson['metadata']
-            last_update = metadata['last-update']
-            self = cls(
-                _id = poi_bson['_id'],
-                geo = poi_bson['geo'][0] if poi_bson.get('geo') is not None else None,
-                last_update_datetime = last_update['date'],
-                last_update_organization = last_update['organization'],
-                name = metadata['title'],
-                schema_name = metadata['schema-name'],
-                )
+            cls.load_poi(poi_bson)
 
-            fields_position = {}
-            fields = []
-            for field_id in metadata['positions']:
-                field_position = fields_position.get(field_id, 0)
-                fields_position[field_id] = field_position + 1
-                field_metadata = metadata[field_id][field_position]
-                field_value = poi_bson[field_id][field_position]
-                field = Field.load(field_id, field_metadata, field_value)
-                if field.id == u'adr' and self.postal_distribution_str is None:
-                    for sub_field in (field.value or []):
-                        if sub_field.id == u'postal-distribution':
-                            self.postal_distribution_str = sub_field.value
-                        elif sub_field.id == u'street-address':
-                            self.street_address = sub_field.value
-                elif field.id == u'link' and field.relation == u'parent':
-                    assert self.parent is None, str(self)
-                    self.parent_id = field.value
-                elif field.id == u'organism-type':
-                    organism_type_slug = ramdb.categories_slug_by_pivot_code.get(field.value)
-                    if organism_type_slug is None:
-                        log.warning('Ignoring organism type "{0}" without matching category.'.format(field.value))
-                    else:
-                        self.organism_type_slug = organism_type_slug
-                fields.append(field)
-            if fields:
-                self.fields = fields
+    @classmethod
+    def load_poi(cls, poi_bson):
+        metadata = poi_bson['metadata']
+        last_update = metadata['last-update']
+        self = cls(
+            _id = poi_bson['_id'],
+            geo = poi_bson['geo'][0] if poi_bson.get('geo') is not None else None,
+            last_update_datetime = last_update['date'],
+            last_update_organization = last_update['organization'],
+            name = metadata['title'],
+            schema_name = metadata['schema-name'],
+            )
 
-            # Temporarily store bson in poi because it is needed by index_pois.
-            self.bson = poi_bson
+        fields_position = {}
+        fields = []
+        for field_id in metadata['positions']:
+            field_position = fields_position.get(field_id, 0)
+            fields_position[field_id] = field_position + 1
+            field_metadata = metadata[field_id][field_position]
+            field_value = poi_bson[field_id][field_position]
+            field = Field.load(field_id, field_metadata, field_value)
+            if field.id == u'adr' and self.postal_distribution_str is None:
+                for sub_field in (field.value or []):
+                    if sub_field.id == u'postal-distribution':
+                        self.postal_distribution_str = sub_field.value
+                    elif sub_field.id == u'street-address':
+                        self.street_address = sub_field.value
+            elif field.id == u'link' and field.relation == u'parent':
+                assert self.parent is None, str(self)
+                self.parent_id = field.value
+            elif field.id == u'organism-type':
+                organism_type_slug = ramdb.categories_slug_by_pivot_code.get(field.value)
+                if organism_type_slug is None:
+                    log.warning('Ignoring organism type "{0}" without matching category.'.format(field.value))
+                else:
+                    self.organism_type_slug = organism_type_slug
+            fields.append(field)
+        if fields:
+            self.fields = fields
 
-            ramdb.pois_by_id[self._id] = self
+        # Temporarily store bson in poi because it is needed by index_pois.
+        self.bson = poi_bson
+
+        ramdb.pois_by_id[self._id] = self
+        return self
 
     @property
     def parent(self):

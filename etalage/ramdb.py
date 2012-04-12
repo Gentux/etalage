@@ -251,7 +251,7 @@ def ramdb_based(controller):
                     pois_by_id.pop(id, None)
                     indexed_pois_id.discard(id)
                 else:
-                    load_pois(poi_bson)
+                    model.Poi.load_poi(poi_bson)
             finally:
                 read_write_lock.release()
             last_timestamp = data_update['timestamp']
