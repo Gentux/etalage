@@ -64,6 +64,18 @@ from etalage import conf, model, ramdb, urls
 </%def>
 
 
+<%def name="field_adr(field, depth = 0)" filter="trim">
+        <div class="field">
+    % if strings.slugify(field.label) == u'adresse':
+            <b class="field-label">${u'Adresse guichet' if field.type == 'geo' else u'Adresse postale' if field.type == 'postal' else u'Adresse'} :</b>
+    % else:
+            <b class="field-label">${field.label}${u' (guichet)' if field.type == 'geo' else u'  (adresse postale)' if field.type == 'postal' else u''} :</b>
+    % endif
+            <%self:field_value depth="${depth}" field="${field}"/>
+        </div>
+</%def>
+
+
 <%def name="field_default(field, depth = 0)" filter="trim">
         <div class="field">
             <b class="field-label">${field.label} :</b>
