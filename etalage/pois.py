@@ -316,8 +316,7 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
             for territory_id in (
                 ramdb.territories_id_by_kind_code.get((territory_kind_code['kind'], territory_kind_code['code']))
                 for territory_kind_code in metadata['territories-index']
-                if territory_kind_code['kind'] not in (u'Country', u'InternationalOrganization',
-                    u'MetropoleOfCountry')
+                if territory_kind_code['kind'] not in (u'Country', u'InternationalOrganization')
                 )
             if territory_id is not None
             ) if metadata.get('territories-index') is not None else None
