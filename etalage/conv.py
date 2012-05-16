@@ -391,7 +391,7 @@ def params_to_pois_csv_infos(params, state = default_state):
     else:
         competence_territories_id = None
         presence_territory = None
-    if data['categories'] is None and data['term'] is None and data['territory'] is None:
+    if not categories_slug and data['term'] is None and data['territory'] is None:
         # No criteria specified => Export every POI, even non indexed ones.
         pois_id = list(ramdb.pois_by_id.iterkeys())
     else:
