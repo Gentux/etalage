@@ -53,7 +53,7 @@ def csv_infos_to_csv_bytes(csv_infos_by_schema_name, state = default_state):
         csv_file = StringIO()
         writer = csv.writer(csv_file, delimiter = ',', quotechar = '"', quoting = csv.QUOTE_MINIMAL)
         writer.writerow([
-            label.encode("utf-8")
+            (label or u'').encode("utf-8")
             for label in csv_infos['columns_label']
             ])
         for row in csv_infos['rows']:
@@ -75,7 +75,7 @@ def csv_infos_to_excel_bytes(csv_infos_by_schema_name, state = default_state):
         sheet = book.add_sheet(ramdb.schemas_title_by_name.get(schema_name, schema_name)[:31])
         sheet_row = sheet.row(0)
         for column_index, label in enumerate(csv_infos['columns_label']):
-            sheet_row.write(column_index, label)
+            sheet_row.write(column_index, label or u'')
         for row_index, row in enumerate(csv_infos['rows'], 1):
             if row_index % 1000 == 0:
                 sheet.flush_row_data()
