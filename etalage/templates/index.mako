@@ -34,9 +34,7 @@ from etalage import conf, urls
 
 
 <%def name="container_content()" filter="trim">
-        <form action="${urls.get_url(ctx, mode)}" class="form-horizontal internal" id="search-form" method="get">
-            <%self:search_form_content/>
-        </form>
+        <%self:search_form/>
         <%self:index_tabs/>
 ##    % if errors is None:
         <%self:results/>
@@ -100,6 +98,13 @@ $(function () {
     etalage.territories.createAutocompleter($('#territory'));
 });
     </script>
+</%def>
+
+
+<%def name="search_form()" filter="trim">
+        <form action="${urls.get_url(ctx, mode)}" class="form-horizontal internal" id="search-form" method="get">
+            <%self:search_form_content/>
+        </form>
 </%def>
 
 
