@@ -61,8 +61,8 @@ from etalage import conf, urls
         (u'carte', u'Carte', conf['hide_map']),
         (u'liste', u'Liste', False),
         (u'annuaire', u'Annuaire', conf['hide_directory'] or ctx.hide_directory),
-        (u'gadget', u'Partage', False),
-        (u'export', u'Export', False),
+        (u'gadget', u'Partage', conf['hide_gadget']),
+        (u'export', u'Export', conf['hide_export']),
         )
     url_args = dict(
         (dict(categories = 'category').get(name, name), value)

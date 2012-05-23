@@ -415,7 +415,9 @@ etalage.map.singleMarkerMap("map-poi", ${field.value[0]}, ${field.value[1]});
                 <a class="label label-info" href="${urlparse.urljoin(conf['petitpois_url'], '/poi/view/{0}'.format(poi._id))}" rel="external">Modifier la fiche</a>
                 &mdash;
     % endif
+    % if not conf['hide_minisite']:
                 <a class="internal" href="${urls.get_url(ctx, 'minisite', 'organismes', poi.slug, poi._id)}" rel="nofollow">Minisite</a>
+    % endif
             </p>
 </%def>
 

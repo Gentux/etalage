@@ -167,6 +167,9 @@ def autocomplete_category(req):
 def csv(req):
     ctx = contexts.Ctx(req)
 
+    if conf['hide_export']:
+        return wsgihelpers.not_found(ctx, explanation = ctx._(u'Export disabled by configuration'))
+
     params = req.GET
     base_params = init_base(ctx, params)
     params = dict(
@@ -204,6 +207,9 @@ def csv(req):
 def excel(req):
     ctx = contexts.Ctx(req)
 
+    if conf['hide_export']:
+        return wsgihelpers.not_found(ctx, explanation = ctx._(u'Export disabled by configuration'))
+
     params = req.GET
     base_params = init_base(ctx, params)
     params = dict(
@@ -231,6 +237,9 @@ def excel(req):
 @ramdb.ramdb_based
 def export_directory_csv(req):
     ctx = contexts.Ctx(req)
+
+    if conf['hide_export']:
+        return wsgihelpers.not_found(ctx, explanation = ctx._(u'Export disabled by configuration'))
 
     params = req.GET
     base_params = init_base(ctx, params)
@@ -285,6 +294,9 @@ def export_directory_csv(req):
 def export_directory_excel(req):
     ctx = contexts.Ctx(req)
 
+    if conf['hide_export']:
+        return wsgihelpers.not_found(ctx, explanation = ctx._(u'Export disabled by configuration'))
+
     params = req.GET
     base_params = init_base(ctx, params)
     format = u'excel'
@@ -337,6 +349,9 @@ def export_directory_excel(req):
 @ramdb.ramdb_based
 def export_directory_geojson(req):
     ctx = contexts.Ctx(req)
+
+    if conf['hide_export']:
+        return wsgihelpers.not_found(ctx, explanation = ctx._(u'Export disabled by configuration'))
 
     params = req.GET
     base_params = init_base(ctx, params)
@@ -391,6 +406,9 @@ def export_directory_geojson(req):
 def export_directory_kml(req):
     ctx = contexts.Ctx(req)
 
+    if conf['hide_export']:
+        return wsgihelpers.not_found(ctx, explanation = ctx._(u'Export disabled by configuration'))
+
     params = req.GET
     base_params = init_base(ctx, params)
     format = u'kml'
@@ -443,6 +461,9 @@ def export_directory_kml(req):
 @ramdb.ramdb_based
 def export_geographical_coverage_csv(req):
     ctx = contexts.Ctx(req)
+
+    if conf['hide_export']:
+        return wsgihelpers.not_found(ctx, explanation = ctx._(u'Export disabled by configuration'))
 
     params = req.GET
     base_params = init_base(ctx, params)
@@ -713,6 +734,9 @@ def index_directory(req):
 def index_export(req):
     ctx = contexts.Ctx(req)
 
+    if conf['hide_export']:
+        return wsgihelpers.not_found(ctx, explanation = ctx._(u'Export disabled by configuration'))
+
     params = req.GET
     base_params = init_base(ctx, params)
     mode = u'export'
@@ -783,6 +807,9 @@ def index_export(req):
 @ramdb.ramdb_based
 def index_gadget(req):
     ctx = contexts.Ctx(req)
+
+    if conf['hide_gadget']:
+        return wsgihelpers.not_found(ctx, explanation = ctx._(u'Gadget page disabled by configuration'))
 
     params = req.GET
     base_params = init_base(ctx, params)
@@ -1141,6 +1168,9 @@ def make_router():
 def minisite(req):
     ctx = contexts.Ctx(req)
 
+    if conf['hide_minisite']:
+        return wsgihelpers.not_found(ctx, explanation = ctx._(u'Minisite disabled by configuration'))
+
     params = req.params
     base_params = init_base(ctx, params)
     params = dict(
@@ -1216,6 +1246,9 @@ def poi(req):
 @ramdb.ramdb_based
 def poi_embedded(req):
     ctx = contexts.Ctx(req)
+
+    if conf['hide_minisite']:
+        return wsgihelpers.not_found(ctx, explanation = ctx._(u'Minisite disabled by configuration'))
 
     params = req.params
     base_params = init_base(ctx, params)

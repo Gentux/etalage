@@ -68,7 +68,10 @@ def load_environment(global_conf, app_conf):
                 ),
             'global_conf': conv.set_value(global_conf),
             'hide_directory': conv.pipe(conv.guess_bool, conv.default(False)),
+            'hide_export': conv.pipe(conv.guess_bool, conv.default(False)),
+            'hide_gadget': conv.pipe(conv.guess_bool, conv.default(False)),
             'hide_map': conv.pipe(conv.guess_bool, conv.default(False)),
+            'hide_minisite': conv.pipe(conv.guess_bool, conv.default(False)),
             'i18n_dir': conv.default(os.path.join(app_dir, 'i18n')),
             'ignored_fields': conv.pipe(
                 conv.function(lambda lines: lines.split(u'\n')),
