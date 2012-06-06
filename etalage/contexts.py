@@ -201,9 +201,10 @@ class Ctx(object):
             if not isinstance(languages, list):
                 languages = [languages]
             byriani_translator = gettext.translation('biryani', conf['biryani_i18n_dir'],
-                fallback = gettext.NullTranslations(), languages = languages)
-            translator = gettext.translation(conf['package_name'], conf['i18n_dir'], languages = languages,
-                fallback = byriani_translator)
+                fallback = True, languages = languages)
+            translator = gettext.translation(conf['package_name'], conf['i18n_dir'], fallback = True,
+                languages = languages)
+            translator.add_fallback(biryiani_translator)
             self._translator = translator
         return self._translator
 
