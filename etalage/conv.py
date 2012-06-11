@@ -37,7 +37,7 @@ from biryani.frconv import *
 from biryani import states, strings
 import bson
 import xlwt
-from territoria2.conv import split_postal_distribution, str_to_postal_distribution
+from territoria2.conv import split_postal_distribution, input_to_postal_distribution
 
 
 default_state = states.default_state
@@ -358,16 +358,16 @@ def params_to_pois_csv_infos(params, state = default_state):
         rename_item('category', 'categories'), # Must be renamed before struct, to be able to use categories on errors
         struct(
             dict(
-                categories = uniform_sequence(str_to_slug_to_category),
+                categories = uniform_sequence(input_to_slug_to_category),
                 filter = pipe(
                     str_to_filter,
                     default('presence'), # By default, export only POIs present on given territory.
                     ),
-                term = str_to_slug,
-                territory = str_to_postal_distribution_to_geolocated_territory,
+                term = input_to_slug,
+                territory = input_to_postal_distribution_to_geolocated_territory,
                 ),
-            default = 'ignore',
-            keep_missing_values = True,
+            default = 'drop',
+            keep_none_values = True,
             ),
         )(params, state = state)
     if errors is not None:
@@ -407,18 +407,18 @@ def params_to_pois_directory_data(params, state = default_state):
         rename_item('category', 'categories'), # Must be renamed before struct, to be able to use categories on errors
         struct(
             dict(
-                categories = uniform_sequence(str_to_slug_to_category),
+                categories = uniform_sequence(input_to_slug_to_category),
                 filter = str_to_filter,
-                term = str_to_slug,
+                term = input_to_slug,
                 territory = pipe(
-                    str_to_postal_distribution_to_geolocated_territory,
+                    input_to_postal_distribution_to_geolocated_territory,
                     test(lambda territory: territory.__class__.__name__ in model.communes_kinds,
                         error = N_(u'In "directory" mode, territory must be a commune')),
-                    test_exists(error = N_(u'In "directory" mode, a commune is required')),
+                    test_not_none(error = N_(u'In "directory" mode, a commune is required')),
                     ),
                 ),
-            default = 'ignore',
-            keep_missing_values = True,
+            default = 'drop',
+            keep_none_values = True,
             ),
         set_default_filter,
         )(params, state = state)
@@ -435,43 +435,43 @@ def params_to_pois_layer_data(params, state = default_state):
                         [
                             # West longitude
                             pipe(
-                                str_to_float,
+                                input_to_float,
                                 test_between(-180, 180),
-                                exists,
+                                not_none,
                                 ),
                             # South latitude
                             pipe(
-                                str_to_float,
+                                input_to_float,
                                 test_between(-90, 90),
-                                exists,
+                                not_none,
                                 ),
                             # East longitude
                             pipe(
-                                str_to_float,
+                                input_to_float,
                                 test_between(-180, 180),
-                                exists,
+                                not_none,
                                 ),
                             # North latitude
                             pipe(
-                                str_to_float,
+                                input_to_float,
                                 test_between(-90, 90),
-                                exists,
+                                not_none,
                                 ),
                             ],
                         ),
                     ),
-                categories = uniform_sequence(str_to_slug_to_category),
+                categories = uniform_sequence(input_to_slug_to_category),
                 current = pipe(
-                    str_to_object_id,
+                    input_to_object_id,
                     id_to_poi,
                     test(lambda poi: poi.geo is not None, error = N_('POI has no geographical coordinates')),
                     ),
                 filter = str_to_filter,
-                term = str_to_slug,
-                territory = str_to_postal_distribution_to_geolocated_territory,
+                term = input_to_slug,
+                territory = input_to_postal_distribution_to_geolocated_territory,
                 ),
-            default = 'ignore',
-            keep_missing_values = True,
+            default = 'drop',
+            keep_none_values = True,
             ),
         set_default_filter,
         )(params, state = state)
@@ -496,18 +496,18 @@ def params_to_pois_list_data(params, state = default_state):
         rename_item('category', 'categories'), # Must be renamed before struct, to be able to use categories on errors
         struct(
             dict(
-                categories = uniform_sequence(str_to_slug_to_category),
+                categories = uniform_sequence(input_to_slug_to_category),
                 filter = str_to_filter,
                 page = pipe(
-                    str_to_int,
+                    input_to_int,
                     test_greater_or_equal(1),
                     default(1),
                     ),
-                term = str_to_slug,
-                territory = str_to_postal_distribution_to_geolocated_territory,
+                term = input_to_slug,
+                territory = input_to_postal_distribution_to_geolocated_territory,
                 ),
-            default = 'ignore',
-            keep_missing_values = True,
+            default = 'drop',
+            keep_none_values = True,
             ),
         set_default_filter,
         rename_item('page', 'page_number'),
@@ -576,25 +576,25 @@ def postal_distribution_to_territory(postal_distribution, state = default_state)
 def str_to_category_slug(value, state = default_state):
     from . import ramdb
     return pipe(
-        str_to_slug,
+        input_to_slug,
         test(lambda slug: slug in ramdb.categories_by_slug, error = N_(u'Invalid category')),
         )(value, state = state)
 
 
 str_to_filter = pipe(
-    str_to_slug,
+    input_to_slug,
     test_in(['competence', 'presence']),
     )
 
 
-str_to_postal_distribution_to_geolocated_territory = pipe(
-    str_to_postal_distribution,
+input_to_postal_distribution_to_geolocated_territory = pipe(
+    input_to_postal_distribution,
     postal_distribution_to_territory,
     test(lambda territory: territory.geo is not None, error = N_(u'Territory has no geographical coordinates')),
     )
 
 
-def str_to_slug_to_category(value, state = default_state):
+def input_to_slug_to_category(value, state = default_state):
     from . import ramdb
     return pipe(
         str_to_category_slug,

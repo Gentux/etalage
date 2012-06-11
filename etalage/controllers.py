@@ -74,15 +74,15 @@ def autocomplete_category(req):
         conv.struct(
             dict(
                 page = conv.pipe(
-                    conv.str_to_int,
+                    conv.input_to_int,
                     conv.test_greater_or_equal(1),
                     conv.default(1),
                     ),
                 tag = conv.uniform_sequence(conv.str_to_category_slug),
-                term = conv.make_str_to_slug(separator = u' ', transform = strings.upper),
+                term = conv.make_input_to_slug(separator = u' ', transform = strings.upper),
                 ),
-            default = 'ignore',
-            keep_missing_values = True,
+            default = 'drop',
+            keep_none_values = True,
             ),
         conv.rename_item('page', 'page_number'),
         conv.rename_item('tag', 'tags_slug'),
@@ -270,12 +270,12 @@ def export_directory_csv(req):
             dict(
                 accept = conv.test(lambda value: not params['submit'],
                     error = N_(u"You must accept license to be allowed to download data."),
-                    handle_missing_value = True,
+                    handle_none_value = True,
                     ),
-                categories = conv.uniform_sequence(conv.str_to_slug_to_category),
+                categories = conv.uniform_sequence(conv.input_to_slug_to_category),
                 ),
-            default = 'ignore',
-            keep_missing_values = True,
+            default = 'drop',
+            keep_none_values = True,
             ),
         )(params, state = ctx)
     return templates.render(ctx, '/export-accept-license.mako',
@@ -326,12 +326,12 @@ def export_directory_excel(req):
             dict(
                 accept = conv.test(lambda value: not params['submit'],
                     error = N_(u"You must accept license to be allowed to download data."),
-                    handle_missing_value = True,
+                    handle_none_value = True,
                     ),
-                categories = conv.uniform_sequence(conv.str_to_slug_to_category),
+                categories = conv.uniform_sequence(conv.input_to_slug_to_category),
                 ),
-            default = 'ignore',
-            keep_missing_values = True,
+            default = 'drop',
+            keep_none_values = True,
             ),
         )(params, state = ctx)
     return templates.render(ctx, '/export-accept-license.mako',
@@ -382,12 +382,12 @@ def export_directory_geojson(req):
             dict(
                 accept = conv.test(lambda value: not params['submit'],
                     error = N_(u"You must accept license to be allowed to download data."),
-                    handle_missing_value = True,
+                    handle_none_value = True,
                     ),
-                categories = conv.uniform_sequence(conv.str_to_slug_to_category),
+                categories = conv.uniform_sequence(conv.input_to_slug_to_category),
                 ),
-            default = 'ignore',
-            keep_missing_values = True,
+            default = 'drop',
+            keep_none_values = True,
             ),
         )(params, state = ctx)
     return templates.render(ctx, '/export-accept-license.mako',
@@ -438,12 +438,12 @@ def export_directory_kml(req):
             dict(
                 accept = conv.test(lambda value: not params['submit'],
                     error = N_(u"You must accept license to be allowed to download data."),
-                    handle_missing_value = True,
+                    handle_none_value = True,
                     ),
-                categories = conv.uniform_sequence(conv.str_to_slug_to_category),
+                categories = conv.uniform_sequence(conv.input_to_slug_to_category),
                 ),
-            default = 'ignore',
-            keep_missing_values = True,
+            default = 'drop',
+            keep_none_values = True,
             ),
         )(params, state = ctx)
     return templates.render(ctx, '/export-accept-license.mako',
@@ -496,12 +496,12 @@ def export_geographical_coverage_csv(req):
             dict(
                 accept = conv.test(lambda value: not params['submit'],
                     error = N_(u"You must accept license to be allowed to download data."),
-                    handle_missing_value = True,
+                    handle_none_value = True,
                     ),
-                categories = conv.uniform_sequence(conv.str_to_slug_to_category),
+                categories = conv.uniform_sequence(conv.input_to_slug_to_category),
                 ),
-            default = 'ignore',
-            keep_missing_values = True,
+            default = 'drop',
+            keep_none_values = True,
             ),
         )(params, state = ctx)
     return templates.render(ctx, '/export-accept-license.mako',
@@ -756,9 +756,9 @@ def index_export(req):
         conv.rename_item('category', 'categories'), # Must be renamed before struct, to be able to use categories on errors
         conv.struct(
             dict(
-                categories = conv.uniform_sequence(conv.str_to_slug_to_category),
+                categories = conv.uniform_sequence(conv.input_to_slug_to_category),
                 type_and_format = conv.pipe(
-                    conv.str_to_slug,
+                    conv.input_to_slug,
                     conv.test_in([
                         'annuaire-csv',
                         'annuaire-excel',
@@ -768,8 +768,8 @@ def index_export(req):
                         ]),
                     ),
                 ),
-            default = 'ignore',
-            keep_missing_values = True,
+            default = 'drop',
+            keep_none_values = True,
             ),
         )(params, state = ctx)
     if errors is None:
@@ -1055,7 +1055,7 @@ def init_base(ctx, params):
 #                territory_kind = user.territory['kind'])))
 
     ctx.distance, error = conv.pipe(
-        conv.str_to_float,
+        conv.input_to_float,
         conv.test_between(0.0, 40075.16),
         conv.default(20.0),
         )(base_params['distance'], state = ctx)
@@ -1184,18 +1184,18 @@ def minisite(req):
         conv.struct(
             dict(
                 poi_id = conv.pipe(
-                    conv.str_to_object_id,
+                    conv.input_to_object_id,
                     conv.id_to_poi,
-                    conv.exists,
+                    conv.not_none,
                     ),
                 encoding = conv.pipe(
-                    conv.str_to_slug,
+                    conv.input_to_slug,
                     conv.translate({u'utf-8': None}),
                     conv.test_in([u'cp1252', u'iso-8859-1', u'iso-8859-15']),
                     ),
                 ),
-            default = 'ignore',
-            keep_missing_values = True,
+            default = 'drop',
+            keep_none_values = True,
             ),
         conv.rename_item('poi_id', 'poi'),
         )(params, state = ctx)
@@ -1226,9 +1226,9 @@ def poi(req):
     params.update(base_params)
 
     poi, error = conv.pipe(
-        conv.str_to_object_id,
+        conv.input_to_object_id,
         conv.id_to_poi,
-        conv.exists,
+        conv.not_none,
         )(params['poi_id'], state = ctx)
     if error is not None:
         raise wsgihelpers.bad_request(ctx, explanation = ctx._('POI ID Error: {0}').format(error))
@@ -1260,15 +1260,15 @@ def poi_embedded(req):
     params.update(base_params)
 
     poi, error = conv.pipe(
-        conv.str_to_object_id,
+        conv.input_to_object_id,
         conv.id_to_poi,
-        conv.exists,
+        conv.not_none,
         )(params['poi_id'], state = ctx)
     if error is not None:
         raise wsgihelpers.bad_request(ctx, explanation = ctx._('POI ID Error: {0}').format(error))
 
     encoding, error = conv.pipe(
-        conv.str_to_slug,
+        conv.input_to_slug,
         conv.translate({u'utf-8': None}),
         conv.test_in([u'cp1252', u'iso-8859-1', u'iso-8859-15']),
         )(params['encoding'], state = ctx)

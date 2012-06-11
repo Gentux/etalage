@@ -77,7 +77,7 @@ def load_environment(global_conf, app_conf):
                 conv.function(lambda lines: lines.split(u'\n')),
                 conv.uniform_sequence(conv.pipe(
                     conv.function(lambda line: line.split(None, 1)),
-                    conv.uniform_sequence(conv.str_to_slug),
+                    conv.uniform_sequence(conv.input_to_slug),
                     conv.function(lambda seq: dict(zip(['id', 'name'], seq))),
                     )),
                 conv.id_name_dict_list_to_ignored_fields,
@@ -134,26 +134,26 @@ def load_environment(global_conf, app_conf):
                         conv.struct(dict(
                             attribution = conv.pipe(
                                 conv.test_isinstance(basestring),
-                                conv.exists,
+                                conv.not_none,
                                 ),
                             name = conv.pipe(
                                 conv.test_isinstance(basestring),
-                                conv.exists,
+                                conv.not_none,
                                 ),
                             subdomains = conv.test_isinstance(basestring),
                             url = conv.pipe(
                                 conv.test_isinstance(basestring),
-                                conv.make_str_to_url(full = True),
-                                conv.exists,
+                                conv.make_input_to_url(full = True),
+                                conv.not_none,
                                 ),
                             )),
                         ),
                     ),
-                conv.exists,
+                conv.not_none,
                 ),
             },
-        default = 'ignore',
-        keep_missing_values = True,
+        default = 'drop',
+        keep_none_values = True,
         ))(conf))
 
     # Configure logging.
