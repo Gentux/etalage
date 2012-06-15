@@ -93,7 +93,7 @@ def autocomplete_category(req):
                 apiVersion = '1.0',
                 context = params['context'],
                 error = dict(
-                    code = 400, # Bad Request
+                    code = 400,  # Bad Request
                     errors = [
                         dict(
                             location = key,
@@ -139,7 +139,7 @@ def autocomplete_category(req):
             count = -category_infos[0],
             tag = ramdb.categories_by_slug[category_infos[1]].name,
             )
-        for category_infos in categories_infos[pager.first_item_index : pager.last_item_number]
+        for category_infos in categories_infos[pager.first_item_index:pager.last_item_number]
         ]
     return wsgihelpers.respond_json(ctx,
         dict(
@@ -265,7 +265,8 @@ def export_directory_csv(req):
             **url_params))
 
     data, errors = conv.pipe(
-        conv.rename_item('category', 'categories'), # Must be renamed before struct, to be able to use categories on errors
+        # Must be renamed before struct, to be able to use categories on errors
+        conv.rename_item('category', 'categories'),
         conv.struct(
             dict(
                 accept = conv.test(lambda value: not params['submit'],
@@ -321,7 +322,8 @@ def export_directory_excel(req):
             **url_params))
 
     data, errors = conv.pipe(
-        conv.rename_item('category', 'categories'), # Must be renamed before struct, to be able to use categories on errors
+        # Must be renamed before struct, to be able to use categories on errors
+        conv.rename_item('category', 'categories'),
         conv.struct(
             dict(
                 accept = conv.test(lambda value: not params['submit'],
@@ -377,7 +379,8 @@ def export_directory_geojson(req):
             **url_params))
 
     data, errors = conv.pipe(
-        conv.rename_item('category', 'categories'), # Must be renamed before struct, to be able to use categories on errors
+        # Must be renamed before struct, to be able to use categories on errors
+        conv.rename_item('category', 'categories'),
         conv.struct(
             dict(
                 accept = conv.test(lambda value: not params['submit'],
@@ -433,7 +436,8 @@ def export_directory_kml(req):
             **url_params))
 
     data, errors = conv.pipe(
-        conv.rename_item('category', 'categories'), # Must be renamed before struct, to be able to use categories on errors
+        # Must be renamed before struct, to be able to use categories on errors
+        conv.rename_item('category', 'categories'),
         conv.struct(
             dict(
                 accept = conv.test(lambda value: not params['submit'],
@@ -491,7 +495,8 @@ def export_geographical_coverage_csv(req):
 
     # TODO
     data, errors = conv.pipe(
-        conv.rename_item('category', 'categories'), # Must be renamed before struct, to be able to use categories on errors
+        # Must be renamed before struct, to be able to use categories on errors
+        conv.rename_item('category', 'categories'),
         conv.struct(
             dict(
                 accept = conv.test(lambda value: not params['submit'],
@@ -547,7 +552,7 @@ def geojson(req):
     geojson = {
         'type': 'FeatureCollection',
         'properties': {
-            'context': params.get('context'), # Parameter given in request that is returned as is.
+            'context': params.get('context'),  # Parameter given in request that is returned as is.
             'date': unicode(datetime.datetime.utcnow()),
         },
         'features': [
@@ -753,7 +758,8 @@ def index_export(req):
     params.update(base_params)
 
     data, errors = conv.pipe(
-        conv.rename_item('category', 'categories'), # Must be renamed before struct, to be able to use categories on errors
+        # Must be renamed before struct, to be able to use categories on errors
+        conv.rename_item('category', 'categories'),
         conv.struct(
             dict(
                 categories = conv.uniform_sequence(conv.input_to_slug_to_category),
@@ -884,7 +890,7 @@ def index_list(req):
             )
         pager = pagers.Pager(item_count = len(pois), page_number = data['page_number'])
         if territory is None:
-            pois = sorted(pois, key = lambda poi: poi.name) # TODO: Use slug instead of name.
+            pois = sorted(pois, key = lambda poi: poi.name)  # TODO: Use slug instead of name.
             pager.items = [
                 poi
                 for poi in itertools.islice(pois, pager.first_item_index, pager.last_item_number)
@@ -1144,7 +1150,7 @@ def make_router():
         ('GET', '^/api/v1/annuaire/geojson/?$', geojson),
         ('GET', '^/api/v1/annuaire/kml/?$', kml),
         ('GET', '^/api/v1/categories/autocomplete/?$', autocomplete_category),
-#        ('GET', '^/api/v1/couverture-geographique/csv/?$', csv), # TODO
+#        ('GET', '^/api/v1/couverture-geographique/csv/?$', csv),  # TODO
         ('GET', '^/carte/?$', index_map),
         ('GET', '^/export/?$', index_export),
         ('GET', '^/export/annuaire/csv/?$', export_directory_csv),
@@ -1282,4 +1288,3 @@ def poi_embedded(req):
     else:
         req.response.content_type = 'text/plain; charset={0}'.format(encoding)
         return text.encode(encoding, errors = 'xmlcharrefreplace')
-

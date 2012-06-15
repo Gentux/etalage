@@ -57,4 +57,3 @@ class Category(representations.UserRepresentable):
     @property
     def slug(self):
         return strings.slugify(self.name) or None
-

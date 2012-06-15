@@ -44,10 +44,12 @@ default_state = states.default_state
 N_ = lambda message: message
 
 
-def csv_infos_to_csv_bytes(csv_infos_by_schema_name, state = default_state):
+def csv_infos_to_csv_bytes(csv_infos_by_schema_name, state = None):
     from . import ramdb
     if csv_infos_by_schema_name is None:
         return None, None
+    if state is None:
+        state = default_state
     csv_bytes_by_name = {}
     for schema_name, csv_infos in csv_infos_by_schema_name.iteritems():
         csv_file = StringIO()
@@ -66,10 +68,12 @@ def csv_infos_to_csv_bytes(csv_infos_by_schema_name, state = default_state):
     return csv_bytes_by_name or None, None
 
 
-def csv_infos_to_excel_bytes(csv_infos_by_schema_name, state = default_state):
+def csv_infos_to_excel_bytes(csv_infos_by_schema_name, state = None):
     from . import ramdb
     if csv_infos_by_schema_name is None:
         return None, None
+    if state is None:
+        state = default_state
     book = xlwt.Workbook(encoding = 'utf-8')
     for schema_name, csv_infos in csv_infos_by_schema_name.iteritems():
         sheet = book.add_sheet(ramdb.schemas_title_by_name.get(schema_name, schema_name)[:31])
@@ -91,11 +95,13 @@ def csv_infos_to_excel_bytes(csv_infos_by_schema_name, state = default_state):
     return excel_file.getvalue(), None
 
 
-def default_pois_layer_data_bbox(data, state = default_state):
+def default_pois_layer_data_bbox(data, state = None):
     """Compute bounding box and add it when it is missing from data. Return modified data."""
     from . import ramdb
     if data is None:
         return data, None
+    if state is None:
+        state = default_state
     if data['bbox'] is not None:
         return data, None
     data = data.copy()
@@ -197,10 +203,10 @@ def default_pois_layer_data_bbox(data, state = default_state):
                     # When no present nor competent POI has been found, compute bounding box using given distance.
                     delta = math.degrees(state.distance / 6372.8)
                     data['bbox'] = [
-                        center_longitude - delta, # left
-                        center_latitude - delta, # bottom
-                        center_longitude + delta, # left
-                        center_latitude + delta, # top
+                        center_longitude - delta,  # left
+                        center_latitude - delta,  # bottom
+                        center_longitude + delta,  # left
+                        center_latitude + delta,  # top
                         ]
                     return data, None
     for poi in pois:
@@ -218,9 +224,11 @@ def default_pois_layer_data_bbox(data, state = default_state):
     return data, None
 
 
-def id_name_dict_list_to_ignored_fields(value, state = default_state):
+def id_name_dict_list_to_ignored_fields(value, state = None):
     if not value:
         return None, None
+    if state is None:
+        state = default_state
     ignored_fields = {}
     for id_name_dict in value:
         id = id_name_dict['id']
@@ -237,20 +245,24 @@ def id_name_dict_list_to_ignored_fields(value, state = default_state):
     return ignored_fields, None
 
 
-def id_to_poi(poi_id, state = default_state):
+def id_to_poi(poi_id, state = None):
     import ramdb
     if poi_id is None:
         return poi_id, None
+    if state is None:
+        state = default_state
     poi = ramdb.pois_by_id.get(poi_id)
     if poi is None:
         return poi_id, state._("POI {0} doesn't exist").format(poi_id)
     return poi, None
 
 
-def layer_data_to_clusters(data, state = default_state):
+def layer_data_to_clusters(data, state = None):
     from . import model, ramdb
     if data is None:
         return None, None
+    if state is None:
+        state = default_state
     left, bottom, right, top = data['bbox']
     center_latitude = (bottom + top) / 2.0
     center_latitude_cos = math.cos(math.radians(center_latitude))
@@ -334,7 +346,7 @@ def layer_data_to_clusters(data, state = default_state):
                 break
         else:
             cluster = model.Cluster()
-            cluster.competent = False # changed below
+            cluster.competent = False  # changed below
             cluster.count = 1
             cluster.bottom = cluster.top = cluster.center_latitude = poi_latitude
             cluster.left = cluster.right = cluster.center_longitude = poi_longitude
@@ -352,16 +364,18 @@ def layer_data_to_clusters(data, state = default_state):
     return clusters, None
 
 
-def params_to_pois_csv_infos(params, state = default_state):
+def params_to_pois_csv_infos(params, state = None):
     from . import ramdb
+    if state is None:
+        state = default_state
     data, errors = pipe(
-        rename_item('category', 'categories'), # Must be renamed before struct, to be able to use categories on errors
+        rename_item('category', 'categories'),  # Must be renamed before struct, to be able to use categories on errors
         struct(
             dict(
                 categories = uniform_sequence(input_to_slug_to_category),
                 filter = pipe(
                     str_to_filter,
-                    default('presence'), # By default, export only POIs present on given territory.
+                    default('presence'),  # By default, export only POIs present on given territory.
                     ),
                 term = input_to_slug,
                 territory = input_to_postal_distribution_to_geolocated_territory,
@@ -401,10 +415,12 @@ def params_to_pois_csv_infos(params, state = default_state):
     return pois_id_to_csv_infos(pois_id, state = state)
 
 
-def params_to_pois_directory_data(params, state = default_state):
+def params_to_pois_directory_data(params, state = None):
     from . import model
+    if state is None:
+        state = default_state
     return pipe(
-        rename_item('category', 'categories'), # Must be renamed before struct, to be able to use categories on errors
+        rename_item('category', 'categories'),  # Must be renamed before struct, to be able to use categories on errors
         struct(
             dict(
                 categories = uniform_sequence(input_to_slug_to_category),
@@ -424,9 +440,11 @@ def params_to_pois_directory_data(params, state = default_state):
         )(params, state = state)
 
 
-def params_to_pois_layer_data(params, state = default_state):
+def params_to_pois_layer_data(params, state = None):
+    if state is None:
+        state = default_state
     return pipe(
-        rename_item('category', 'categories'), # Must be renamed before struct, to be able to use categories on errors
+        rename_item('category', 'categories'),  # Must be renamed before struct, to be able to use categories on errors
         struct(
             dict(
                 bbox = pipe(
@@ -477,11 +495,14 @@ def params_to_pois_layer_data(params, state = default_state):
         )(params, state = state)
 
 
-def set_default_filter(data, state = default_state):
+def set_default_filter(data, state = None):
     if data is None:
         return None, None
 
     from . import model
+
+    if state is None:
+        state = default_state
 
     # When no filter is given and territory is not a commune, search only for POIs present on territory instead of
     # POIs near the territory.
@@ -491,9 +512,11 @@ def set_default_filter(data, state = default_state):
     return data, None
 
 
-def params_to_pois_list_data(params, state = default_state):
+def params_to_pois_list_data(params, state = None):
+    if state is None:
+        state = default_state
     return pipe(
-        rename_item('category', 'categories'), # Must be renamed before struct, to be able to use categories on errors
+        rename_item('category', 'categories'),  # Must be renamed before struct, to be able to use categories on errors
         struct(
             dict(
                 categories = uniform_sequence(input_to_slug_to_category),
@@ -514,11 +537,12 @@ def params_to_pois_list_data(params, state = default_state):
         )(params, state = state)
 
 
-def pois_id_to_csv_infos(pois_id, state = default_state):
+def pois_id_to_csv_infos(pois_id, state = None):
     from . import ramdb
     if pois_id is None:
         return None, None
-
+    if state is None:
+        state = default_state
     csv_infos_by_schema_name = {}
     visited_pois_id = set(pois_id)
     while pois_id:
@@ -544,7 +568,7 @@ def pois_id_to_csv_infos(pois_id, state = default_state):
                 same_ref_columns_count = field_ref[-1]
                 if columns_ref.count(column_ref) == same_ref_columns_count:
                     column_index = len(columns_ref)
-                    columns_label.append(field.label) # or u' - '.join(label for label in field_ref[::2])
+                    columns_label.append(field.label)  # or u' - '.join(label for label in field_ref[::2])
                     columns_ref.append(column_ref)
                     row.append(None)
                 else:
@@ -560,10 +584,12 @@ def pois_id_to_csv_infos(pois_id, state = default_state):
     return csv_infos_by_schema_name or None, None
 
 
-def postal_distribution_to_territory(postal_distribution, state = default_state):
+def postal_distribution_to_territory(postal_distribution, state = None):
     from . import ramdb
     if postal_distribution is None:
         return postal_distribution, None
+    if state is None:
+        state = default_state
     territory_id = ramdb.territories_id_by_postal_distribution.get(postal_distribution)
     if territory_id is None:
         return postal_distribution, state._(u'Unknown territory')
@@ -573,8 +599,10 @@ def postal_distribution_to_territory(postal_distribution, state = default_state)
     return territory, None
 
 
-def str_to_category_slug(value, state = default_state):
+def str_to_category_slug(value, state = None):
     from . import ramdb
+    if state is None:
+        state = default_state
     return pipe(
         input_to_slug,
         test(lambda slug: slug in ramdb.categories_by_slug, error = N_(u'Invalid category')),
@@ -594,12 +622,13 @@ input_to_postal_distribution_to_geolocated_territory = pipe(
     )
 
 
-def input_to_slug_to_category(value, state = default_state):
+def input_to_slug_to_category(value, state = None):
     from . import ramdb
+    if state is None:
+        state = default_state
     return pipe(
         str_to_category_slug,
         function(lambda slug: ramdb.categories_by_slug[slug]),
         test(lambda category: (category.tags_slug or set()).issuperset(state.category_tags_slug or []),
             error = N_(u'Missing required tags for category')),
         )(value, state = state)
-

@@ -30,7 +30,7 @@ import simplejson as json
 
 
 js = lambda x: json.dumps(x, encoding = 'utf-8', ensure_ascii = False)
-lookup = None # TemplateLookup inited by function load_environment.
+lookup = None  # TemplateLookup inited by function load_environment.
 
 
 def render(ctx, template_path, **kw):
@@ -51,4 +51,3 @@ def render_def(ctx, template_path, def_name, **kw):
         N_ = lambda message: message,
         req = ctx.req,
         **kw).strip()
-

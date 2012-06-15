@@ -40,21 +40,21 @@ log = logging.getLogger(__name__)
 
 
 class Cluster(representations.UserRepresentable):
-    bottom = None # South latitude of rectangle enclosing all POIs of cluster
-    center_latitude = None # Copy of center_pois[*].geo[0] for quick access
-    center_longitude = None # Copy of center_pois[*].geo[1] for quick access
-    center_pois = None # POIs at the center of cluster, sharing the same coordinates
-    # False = Not competent for current territory, None = Competent for any territory or unknown territory,
-    # True = Competent for current territory
+    bottom = None  # South latitude of rectangle enclosing all POIs of cluster
+    center_latitude = None  # Copy of center_pois[*].geo[0] for quick access
+    center_longitude = None  # Copy of center_pois[*].geo[1] for quick access
+    center_pois = None  # POIs at the center of cluster, sharing the same coordinates
+     # False = Not competent for current territory, None = Competent for any territory or unknown territory,
+     # True = Competent for current territory
     competent = False
-    count = None # Number of POIs in cluster
-    left = None # West longitude of rectangle enclosing all POIs of cluster
-    right = None # East longitude of rectangle enclosing all POIs of cluster
-    top = None # North latitude of rectangle enclosing all POIs of cluster
+    count = None  # Number of POIs in cluster
+    left = None  # West longitude of rectangle enclosing all POIs of cluster
+    right = None  # East longitude of rectangle enclosing all POIs of cluster
+    top = None  # North latitude of rectangle enclosing all POIs of cluster
 
 
 class Field(representations.UserRepresentable):
-    id = None # Petitpois id = format of value
+    id = None  # Petitpois id = format of value
     kind = None
     label = None
     relation = None
@@ -96,7 +96,7 @@ class Field(representations.UserRepresentable):
                 counts_by_label[field.label] = same_label_index + 1
             elif self.id == 'commune':
                 field_attributes = self.__dict__.copy()
-                field_attributes['label'] = u'Code Insee commune' # Better than "Commune"
+                field_attributes['label'] = u'Code Insee commune'  # Better than "Commune"
                 field = Field(**field_attributes)
                 same_label_index = counts_by_label.get(field.label, 0)
                 yield (parent_ref or []) + [field.label, same_label_index], field
@@ -131,8 +131,8 @@ class Field(representations.UserRepresentable):
                 for item_value in self.value.split('\n'):
                     item_value = item_value.strip()
                     item_field_attributes = self.__dict__.copy()
-                    item_field_attributes['id'] = 'street-address-lines' # Change ID to avoid infinite recursion.
-                    # item_field_attributes['label'] = u'Adresse' # Better than "N° et libellé de voie"?
+                    item_field_attributes['id'] = 'street-address-lines'  # Change ID to avoid infinite recursion.
+                    # item_field_attributes['label'] = u'Adresse'  # Better than "N° et libellé de voie"?
                     item_field_attributes['value'] = item_value
                     item_field = Field(**item_field_attributes)
                     for subfield_ref, subfield in item_field.iter_csv_fields(ctx, counts_by_label,
@@ -329,6 +329,8 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
     @classmethod
     def index_pois(cls):
         for self in ramdb.pois_by_id.itervalues():
+            # Note: self._id is not added to ramdb.indexed_pois_id by method self.index(self._id) to allow
+            # customizations where not all POIs are indexed (Passim for example).
             ramdb.indexed_pois_id.add(self._id)
             self.index(self._id)
             del self.bson
@@ -344,11 +346,6 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
             for field in self.fields:
                 for subfield_ref, subfield in field.iter_csv_fields(ctx, counts_by_label):
                     yield subfield_ref, subfield
-
-    @classmethod
-    def load_pois(cls):
-        for poi_bson in cls.get_collection().find({'metadata.deleted': {'$exists': False}}):
-            cls.load_poi(poi_bson)
 
     @classmethod
     def load_poi(cls, poi_bson):
@@ -396,6 +393,11 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
         ramdb.pois_by_id[self._id] = self
         return self
 
+    @classmethod
+    def load_pois(cls):
+        for poi_bson in cls.get_collection().find({'metadata.deleted': {'$exists': False}}):
+            cls.load_poi(poi_bson)
+
     @property
     def parent(self):
         if self.parent_id is None:
@@ -433,4 +435,3 @@ def pop_first_field(fields, id, label = None):
         fields.remove(field)
         return field
     return None
-

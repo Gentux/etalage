@@ -150,6 +150,12 @@ def load():
     # Remove a few seconds, for data changes that occur during startup.
     last_timestamp = start_time - datetime.timedelta(seconds = 30)
 
+    indexed_pois_id.clear()
+
+    categories_by_slug.clear()
+    categories_slug_by_pivot_code.clear()
+    categories_slug_by_tag_slug.clear()
+    categories_slug_by_word.clear()
     for category_bson in model.db[conf['categories_collection']].find(None, ['code', 'tags_code', 'title']):
         category = model.Category(
             name = category_bson['title'],
@@ -168,6 +174,10 @@ def load():
             continue
         categories_slug_by_pivot_code[organism_type_bson['code']] = organism_type_bson['slug']
 
+    territories_by_id.clear()
+    territories_id_by_ancestor_id.clear()
+    territories_id_by_kind_code.clear()
+    territories_id_by_postal_distribution.clear()
     territories_query = dict(
         kind = {'$in': conf['territories_kinds']},
         )
@@ -200,9 +210,15 @@ def load():
         territories_id_by_postal_distribution[(main_postal_distribution['postal_code'],
             main_postal_distribution['postal_routing'])] = territory_id
 
+    schemas_title_by_name.clear()
     for schema in model.db.schemas.find(None, ['name', 'title']):
         schemas_title_by_name[schema['name']] = schema['title']
 
+    pois_by_id.clear()
+    pois_id_by_category_slug.clear()
+    pois_id_by_competence_territory_id.clear()
+    pois_id_by_presence_territory_id.clear()
+    pois_id_by_word.clear()
     model.Poi.load_pois()
     model.Poi.index_pois()
 
@@ -228,33 +244,48 @@ def ramdb_based(controller):
     def invoke(req):
         from . import model
         global last_timestamp
-        for data_update in model.db[conf['data_updates_collection']].find(dict(
+        if conf['reset_on_poi_update']:
+            data_update = model.db[conf['data_updates_collection']].find_one(dict(
                 collection_name = 'pois',
                 timestamp = {'$gt': last_timestamp},
-                )).sort('timestamp'):
-            id = data_update['document_id']
-            poi_bson = model.Poi.get_collection().find_one(id)
-            read_write_lock.acquire()
-            try:
-                # Note: POI's whose parent_id == id are not updated here. They will be updated when publisher will
-                # publish their change.
-                # First find changes to do on indexes.
-                existing = {}
-                indexes = sys.modules[__name__].__dict__
-                find_existing(indexes, 'pois_id_by_category_slug', 'dict_of_sets', id, existing)
-                find_existing(indexes, 'pois_id_by_competence_territory_id', 'dict_of_sets', id, existing)
-                find_existing(indexes, 'pois_id_by_presence_territory_id', 'dict_of_sets', id, existing)
-                find_existing(indexes, 'pois_id_by_word', 'dict_of_sets', id, existing)
-                # Then update indexes.
-                delete_remaining(indexes, existing)
-                if poi_bson is None or poi_bson['metadata'].get('deleted', False):
-                    pois_by_id.pop(id, None)
-                    indexed_pois_id.discard(id)
-                else:
-                    model.Poi.load_poi(poi_bson)
-            finally:
-                read_write_lock.release()
-            last_timestamp = data_update['timestamp']
+                ))
+            if data_update is not None:
+                read_write_lock.acquire()
+                try:
+                    load()
+                finally:
+                    read_write_lock.release()
+        else:
+            for data_update in model.db[conf['data_updates_collection']].find(dict(
+                    collection_name = 'pois',
+                    timestamp = {'$gt': last_timestamp},
+                    )).sort('timestamp'):
+                id = data_update['document_id']
+                poi_bson = model.Poi.get_collection().find_one(id)
+                read_write_lock.acquire()
+                try:
+                    # Note: POI's whose parent_id == id are not updated here. They will be updated when publisher will
+                    # publish their change.
+                    # First find changes to do on indexes.
+                    existing = {}
+                    indexes = sys.modules[__name__].__dict__
+                    find_existing(indexes, 'pois_id_by_category_slug', 'dict_of_sets', id, existing)
+                    find_existing(indexes, 'pois_id_by_competence_territory_id', 'dict_of_sets', id, existing)
+                    find_existing(indexes, 'pois_id_by_presence_territory_id', 'dict_of_sets', id, existing)
+                    find_existing(indexes, 'pois_id_by_word', 'dict_of_sets', id, existing)
+                    # Then update indexes.
+                    delete_remaining(indexes, existing)
+                    if poi_bson is None or poi_bson['metadata'].get('deleted', False):
+                        pois_by_id.pop(id, None)
+                        indexed_pois_id.discard(id)
+                    else:
+                        poi = model.Poi.load_poi(poi_bson)
+                        indexed_pois_id.add(poi._id)
+                        poi.index(poi._id)
+                        del poi.bson
+                finally:
+                    read_write_lock.release()
+                last_timestamp = data_update['timestamp']
 
         # TODO: Handle schemas updates & schemas_title_by_name.
 
@@ -264,4 +295,3 @@ def ramdb_based(controller):
         finally:
             read_write_lock.release()
     return invoke
-

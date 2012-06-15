@@ -104,4 +104,3 @@ def request_query_encoding_fixer(req, app):
                 lambda match: urllib.quote(urllib.unquote(match.group(0)).decode('iso-8859-1').encode('utf-8')),
                 query_string)
     return req.get_response(app)
-

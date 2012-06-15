@@ -26,4 +26,4 @@
 """Web services for territories"""
 
 
-conf = {} # Dictionary updated by config.environment.load_environment
+conf = {}  # Dictionary updated by config.environment.load_environment

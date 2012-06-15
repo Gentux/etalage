@@ -78,7 +78,7 @@ def discard_empty_items(data):
 
 def error(ctx, code, **kw):
     response = webob.exc.status_map[code](headers = kw.pop('headers', None))
-    if code != 204: # No content
+    if code != 204:  # No content
         body = kw.pop('body', None)
         if body is None:
             template_path = kw.pop('template_path', '/http-error.mako')
@@ -153,7 +153,7 @@ def redirect(ctx, code = 302, location = None, **kw):
 
 def respond_json(ctx, data, code = None, headers = None, jsonp = None):
     """Return a JSON response.
-    
+
     This function is optimized for JSON following
     `Google JSON Style Guide <http://google-styleguide.googlecode.com/svn/trunk/jsoncstyleguide.xml>`_, but will handle
     any JSON except for HTTP errors.
@@ -174,7 +174,7 @@ def respond_json(ctx, data, code = None, headers = None, jsonp = None):
         code = code or error['code']
         assert isinstance(code, int)
         response = webob.exc.status_map[code](headers = headers)
-        if code == 204: # No content
+        if code == 204:  # No content
             return response
         if error.get('code') is None:
             error['code'] = code
@@ -197,4 +197,3 @@ def respond_json(ctx, data, code = None, headers = None, jsonp = None):
 
 def unauthorized(ctx, **kw):
     return error(ctx, 401, **kw)
-

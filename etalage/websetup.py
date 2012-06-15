@@ -41,4 +41,3 @@ def setup_app(command, conf, vars):
 
     # Setup database, if it needs to.
     model.setup_data()
-

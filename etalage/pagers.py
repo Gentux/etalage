@@ -33,18 +33,18 @@ from . import conv
 
 class Pager(representations.UserRepresentable):
     """A representation of one page of items in a larger sequence"""
-    first_item_index = None # index of first item on the current page - starts with 0
-    first_item_number = None # number of first item on the current page - starts with 1 (= first_item_index + 1)
-    first_page_number = 1 # number of the first page - starts with 1
-    item_count = None # number of items in the collection
+    first_item_index = None  # index of first item on the current page - starts with 0
+    first_item_number = None  # number of first item on the current page - starts with 1 (= first_item_index + 1)
+    first_page_number = 1  # number of the first page - starts with 1
+    item_count = None  # number of items in the collection
     items = None
-    last_item_index = None # index of last item on the current page
-    last_item_number = None # number of last item on the current page (= last_item_index + 1)
-    last_page_number = None # number of the last page
-    page_count = None # number of pages
-    page_max_size = None # maximal number of items displayed on a page
-    page_number = None # number of the current page
-    page_size = None # number of items displayed on currrent page
+    last_item_index = None  # index of last item on the current page
+    last_item_number = None  # number of last item on the current page (= last_item_index + 1)
+    last_page_number = None  # number of the last page
+    page_count = None  # number of pages
+    page_max_size = None  # maximal number of items displayed on a page
+    page_number = None  # number of the current page
+    page_size = None  # number of items displayed on currrent page
     to_json = conv.check(conv.object_to_clean_dict)
 
     def __init__(self, item_count = None, items = None, page_number = 1, page_max_size = 20):
@@ -92,4 +92,3 @@ class Pager(representations.UserRepresentable):
             self.page_count = 0
             self.page_number = 1
             self.page_size = 0
-

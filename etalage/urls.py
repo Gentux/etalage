@@ -35,7 +35,7 @@ from biryani import strings
 from . import contexts, wsgihelpers
 
 
-application_url = None # Set to req.application_url as soon as Wenoit application is called.
+application_url = None  # Set to req.application_url as soon as Wenoit application is called.
 
 
 def get_base_url(ctx, full = False):
@@ -112,4 +112,3 @@ def make_router(*routings):
             req.path_info.decode('utf-8')))
 
     return router
-

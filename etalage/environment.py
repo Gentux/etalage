@@ -47,7 +47,7 @@ app_dir = os.path.dirname(os.path.abspath(__file__))
 
 def load_environment(global_conf, app_conf):
     """Configure the application environment."""
-    conf = etalage.conf # Empty dictionary
+    conf = etalage.conf  # Empty dictionary
     conf.update(strings.deep_decode(global_conf))
     conf.update(strings.deep_decode(app_conf))
     conf.update(conv.check(conv.struct(
@@ -91,6 +91,7 @@ def load_environment(global_conf, app_conf):
             'pois_collection': conv.default('pois'),
             'plugins_conf_file': conv.default(None),
             'realm': conv.default(u'Etalage'),
+            'reset_on_poi_update': conv.pipe(conv.guess_bool, conv.default(False)),
             # Whether this application serves its own static files.
             'static_files': conv.pipe(conv.guess_bool, conv.default(True)),
             'static_files_dir': conv.default(os.path.join(app_dir, 'static')),
@@ -194,8 +195,7 @@ def load_environment(global_conf, app_conf):
         default_filters = ['h'],
         directories = templates_dirs,
 #        error_handler = handle_mako_error,
-        input_encoding = 'utf-8', 
+        input_encoding = 'utf-8',
         module_directory = os.path.join(conf['cache_dir'], 'templates'),
 #        strict_undefined = True,
         )
-

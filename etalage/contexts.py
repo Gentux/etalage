@@ -46,7 +46,7 @@ class Ctx(object):
         category_tags_slug = None,
         container_base_url = None,
         controller_name = None,
-        distance = None, # Max distance in km
+        distance = None,  # Max distance in km
         gadget_id = None,
         hide_category = False,
         hide_directory = False,
@@ -211,4 +211,3 @@ class Ctx(object):
 
 null_ctx = Ctx()
 null_ctx.lang = ['fr-FR', 'fr']
-
