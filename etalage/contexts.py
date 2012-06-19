@@ -54,6 +54,7 @@ class Ctx(object):
         hide_territory = False,
         req = None,
         show_filter = False,
+        subscriber = None,
         )
     env_keys = ('_lang', '_scopes', '_translator')
 

@@ -76,6 +76,7 @@ setup(
         "Biryani >= 0.9dev",
         "Mako >= 0.3.6",
         "Suq-Monpyjama >= 0.8",
+        "Suq-Representation >= 0.4",
         "threading2 >= 0.2.1",
         "WebError >= 0.10",
         "WebOb >= 1.1",

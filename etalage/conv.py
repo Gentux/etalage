@@ -44,6 +44,54 @@ default_state = states.default_state
 N_ = lambda message: message
 
 
+# Level-1 Converters
+
+
+def bson_to_site(bson, state = None):
+    from . import model
+    if state is None:
+        state = default_state
+    return pipe(
+        struct(
+            dict(
+                subscriptions = uniform_sequence(function(model.Subscription.from_bson)),
+                ),
+            default = noop,
+            ),
+        make_dict_to_object(model.Site),
+        )(bson, state = state)
+
+
+def bson_to_subscriber(bson, state = None):
+    from . import model
+    if state is None:
+        state = default_state
+    return pipe(
+        struct(
+            dict(
+                sites = uniform_sequence(function(model.Site.from_bson)),
+                users = uniform_sequence(function(model.User.from_bson)),
+                ),
+            default = noop,
+            ),
+        make_dict_to_object(model.Subscriber),
+        )(bson, state = state)
+
+
+def bson_to_subscription(bson, state = None):
+    from . import model
+    if state is None:
+        state = default_state
+    return make_dict_to_object(model.Subscription)(bson, state = state)
+
+
+def bson_to_user(bson, state = None):
+    from . import model
+    if state is None:
+        state = default_state
+    return make_dict_to_object(model.User)(bson, state = state)
+
+
 def csv_infos_to_csv_bytes(csv_infos_by_schema_name, state = None):
     from . import ramdb
     if csv_infos_by_schema_name is None:
@@ -495,23 +543,6 @@ def params_to_pois_layer_data(params, state = None):
         )(params, state = state)
 
 
-def set_default_filter(data, state = None):
-    if data is None:
-        return None, None
-
-    from . import model
-
-    if state is None:
-        state = default_state
-
-    # When no filter is given and territory is not a commune, search only for POIs present on territory instead of
-    # POIs near the territory.
-    if data.get('filter') is None and data['territory'] is not None \
-            and data['territory'].__class__.__name__ not in model.communes_kinds:
-        data['filter'] = u'presence'
-    return data, None
-
-
 def params_to_pois_list_data(params, state = None):
     if state is None:
         state = default_state
@@ -599,6 +630,37 @@ def postal_distribution_to_territory(postal_distribution, state = None):
     return territory, None
 
 
+def set_default_filter(data, state = None):
+    if data is None:
+        return None, None
+
+    from . import model
+
+    if state is None:
+        state = default_state
+
+    # When no filter is given and territory is not a commune, search only for POIs present on territory instead of
+    # POIs near the territory.
+    if data.get('filter') is None and data['territory'] is not None \
+            and data['territory'].__class__.__name__ not in model.communes_kinds:
+        data['filter'] = u'presence'
+    return data, None
+
+
+def site_to_bson(subscriber, state = None):
+    if state is None:
+        state = default_state
+    return pipe(
+        object_to_clean_dict,
+        struct(
+            dict(
+                subscriptions = uniform_sequence(function(lambda subscription: subscription.to_bson())),
+                ),
+            default = noop,
+            ),
+        )(session, state = state)
+
+
 def str_to_category_slug(value, state = None):
     from . import ramdb
     if state is None:
@@ -615,11 +677,25 @@ str_to_filter = pipe(
     )
 
 
-input_to_postal_distribution_to_geolocated_territory = pipe(
-    input_to_postal_distribution,
-    postal_distribution_to_territory,
-    test(lambda territory: territory.geo is not None, error = N_(u'Territory has no geographical coordinates')),
-    )
+def subscriber_to_bson(subscriber, state = None):
+    if state is None:
+        state = default_state
+    return pipe(
+        object_to_clean_dict,
+        struct(
+            dict(
+                sites = uniform_sequence(function(lambda site: site.to_bson())),
+                users = uniform_sequence(function(lambda user: user.to_bson())),
+                ),
+            default = noop,
+            ),
+        )(session, state = state)
+
+
+subscription_to_bson = object_to_clean_dict
+
+
+user_to_bson = object_to_clean_dict
 
 
 def input_to_slug_to_category(value, state = None):
@@ -632,3 +708,14 @@ def input_to_slug_to_category(value, state = None):
         test(lambda category: (category.tags_slug or set()).issuperset(state.category_tags_slug or []),
             error = N_(u'Missing required tags for category')),
         )(value, state = state)
+
+
+# Level-2 Converters
+
+
+input_to_postal_distribution_to_geolocated_territory = pipe(
+    input_to_postal_distribution,
+    postal_distribution_to_territory,
+    test(lambda territory: territory.geo is not None, error = N_(u'Territory has no geographical coordinates')),
+    )
+

@@ -54,6 +54,8 @@ def load_environment(global_conf, app_conf):
         {
             'app_conf': conv.set_value(app_conf),
             'app_dir': conv.set_value(app_dir),
+            'brand_name': conv.default(u'Comarquage.fr'),
+            'brand_url': conv.default(u'http://www.comarquage.fr/'),
             'cache_dir': conv.default(os.path.join(os.path.dirname(app_dir), 'cache')),
             'categories_collection': conv.default('categories'),
             'custom_static_files_dir': conv.default(None),
@@ -91,6 +93,7 @@ def load_environment(global_conf, app_conf):
             'pois_collection': conv.default('pois'),
             'plugins_conf_file': conv.default(None),
             'realm': conv.default(u'Etalage'),
+            'require_subscription': conv.pipe(conv.guess_bool, conv.default(False)),
             'reset_on_poi_update': conv.pipe(conv.guess_bool, conv.default(False)),
             # Whether this application serves its own static files.
             'static_files': conv.pipe(conv.guess_bool, conv.default(True)),

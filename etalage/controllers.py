@@ -37,9 +37,10 @@ import urlparse
 import zipfile
 
 from biryani import strings
+import markupsafe
 import simplejson as json
 
-from . import conf, contexts, conv, pagers, ramdb, templates, urls, wsgihelpers
+from . import conf, contexts, conv, model, pagers, ramdb, templates, urls, wsgihelpers
 
 
 log = logging.getLogger(__name__)
@@ -1011,30 +1012,41 @@ def init_base(ctx, params):
             # Ignore container site when no gadget ID is given.
             container_base_url = None
             container_hostname = None
-#    else:
-#        subscriber = Subscriber.retrieve_by_subscription_id(ctx, gadget_id)
-#        if subscriber is None:
-#            ctx.front_office = True
-#            return wsgihelpers.bad_request(ctx, body = htmlhelpers.modify_html(ctx, templates.render(ctx,
-#                '/error-invalid-gadget-id.mako', gadget_id = gadget_id)))
-#        for site in subscriber.sites or []:
-#            for subscription in site.get('subscriptions') or []:
-#                if subscription['id'] == gadget_id:
-#                    break
-#            else:
-#                continue
-#            break
-#        else:
-#            ctx.front_office = True
-#            return wsgihelpers.bad_request(ctx, body = htmlhelpers.modify_html(ctx, templates.render(ctx,
-#                '/error-invalid-gadget-id.mako', gadget_id = gadget_id)))
-#        ctx.subscriber = subscriber
-#        if gadget_id is not None and container_base_url is None and subscription.get('url') is not None:
-#            # When in gadget mode but without a container_base_url, we are accessed through the noscript iframe or by a
-#            # search engine. We need to retrieve the URL of page containing gadget to do a JavaScript redirection (in
-#            # publication.mako).
-#            container_base_url = subscription['url'] or None
-#            container_hostname = urlparse.urlsplit(container_base_url).hostname or None
+    elif conf['require_subscription']:
+        subscriber = model.Subscriber.find_one({'sites.subscriptions.id': gadget_id})
+        if subscriber is None:
+            raise wsgihelpers.bad_request(ctx,
+                comment = markupsafe.Markup(u'{0}<a href="{1}">{2}</a>{3}').format(
+                    ctx._('Connect to '),
+                    conf['brand_url'],
+                    conf['brand_name'],
+                    ctx._(', rebuild component and copy the generated JavaScript into your website.'),
+                    ),
+                explanation = ctx._('''The gadget ID "{0}" doesn't exist.'''), title = ctx._('Invalid Gadget ID'))
+        for site in subscriber.sites or []:
+            for subscription in (site.subscriptions or []):
+                if subscription.id == gadget_id:  # TODO: and subscription.type = 'etalage':
+                    break
+            else:
+                continue
+            break
+        else:
+            raise wsgihelpers.bad_request(ctx,
+                comment = markupsafe.Markup(u'{0}<a href="{1}">{2}</a>{3}').format(
+                    ctx._('Connect to '),
+                    conf['brand_url'],
+                    conf['brand_name'],
+                    ctx._(', rebuild component and copy the generated JavaScript into your website.'),
+                    ),
+                explanation = ctx._('''The gadget ID "{0}" is used by another component.'''),
+                title = ctx._('Invalid Gadget ID'))
+        ctx.subscriber = subscriber
+        if gadget_id is not None and container_base_url is None and subscription.url is not None:
+            # When in gadget mode but without a container_base_url, we are accessed through the noscript iframe or by a
+            # search engine. We need to retrieve the URL of page containing gadget to do a JavaScript redirection (in
+            # publication.mako).
+            container_base_url = subscription.url or None
+            container_hostname = urlparse.urlsplit(container_base_url).hostname or None
     ctx.container_base_url = container_base_url
     ctx.gadget_id = gadget_id
 
@@ -1044,19 +1056,19 @@ def init_base(ctx, params):
 #        base_territory_kind = urls.territories_kind[base_territory_type]
 #        ctx.base_territory = Territory.kind_to_class(base_territory_kind).get(base_territory_code)
 #        if ctx.base_territory is None:
-#            return wsgihelpers.not_found(ctx, body = htmlhelpers.modify_html(ctx, templates.render(ctx,
+#            raise wsgihelpers.not_found(ctx, body = htmlhelpers.modify_html(ctx, templates.render(ctx,
 #                '/error-unknown-territory.mako', territory_code = base_territory_code,
 #                territory_kind = base_territory_kind)))
 #        if ctx.subscriber is not None:
 #            subscriber_territory = ctx.subscriber.territory
 #            if subscriber_territory._id not in ctx.base_territory.ancestors_id:
-#                return wsgihelpers.not_found(ctx, body = htmlhelpers.modify_html(ctx, templates.render(ctx,
+#                raise wsgihelpers.not_found(ctx, body = htmlhelpers.modify_html(ctx, templates.render(ctx,
 #                    '/error-invalid-territory.mako', parent_territory = subscriber_territory,
 #                    territory = ctx.base_territory)))
 #    if ctx.base_territory is None and user is not None and user.territory is not None:
 #        ctx.base_territory = Territory.get_variant_class(user.territory['kind']).get(user.territory['code'])
 #        if ctx.base_territory is None:
-#            return wsgihelpers.not_found(ctx, body = htmlhelpers.modify_html(ctx, templates.render(ctx,
+#            raise wsgihelpers.not_found(ctx, body = htmlhelpers.modify_html(ctx, templates.render(ctx,
 #                '/error-unknown-territory.mako', territory_code = user.territory['code'],
 #                territory_kind = user.territory['kind'])))
 

@@ -183,7 +183,7 @@ $(function () {
     <div class="navbar navbar-fixed-top">
         <div class="navbar-inner">
             <div class="container-fluid">
-                <a class="brand" href="http://www.comarquage.fr/">Comarquage.fr</a>
+                <a class="brand" href="${conf['brand_url']}">${conf['brand_name']}</a>
                 <ul class="nav">
                     <li><a href="http://petitpois.comarquage.fr/">Annuaire</a></li>
                     <li><a href="http://cosmetic3.comarquage.fr/">Droits et démarches</a></li>
