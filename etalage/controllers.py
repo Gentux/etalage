@@ -1025,7 +1025,7 @@ def init_base(ctx, params):
                 explanation = ctx._('''The gadget ID "{0}" doesn't exist.'''), title = ctx._('Invalid Gadget ID'))
         for site in subscriber.sites or []:
             for subscription in (site.subscriptions or []):
-                if subscription.id == gadget_id:  # TODO: and subscription.type = 'etalage':
+                if subscription.id == gadget_id and subscription.type == u'etalage':
                     break
             else:
                 continue
