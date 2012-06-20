@@ -67,9 +67,6 @@ setup(
     entry_points = """
         [paste.app_factory]
         main = etalage.application:make_app
-
-        [paste.app_install]
-        main = etalage.websetup:Installer
         """,
     include_package_data = True,
     install_requires = [

@@ -265,8 +265,8 @@ def ramdb_based(controller):
                     poi_bson = model.Poi.get_collection().find_one(id)
                     read_write_lock.acquire()
                     try:
-                        # Note: POI's whose parent_id == id are not updated here. They will be updated when publisher will
-                        # publish their change.
+                        # Note: POI's whose parent_id == id are not updated here. They will be updated when publisher
+                        # will publish their change.
                         # First find changes to do on indexes.
                         existing = {}
                         indexes = sys.modules[__name__].__dict__
@@ -280,7 +280,7 @@ def ramdb_based(controller):
                             poi_by_id.pop(id, None)
                             indexed_pois_id.discard(id)
                         else:
-                            poi = model.Poi.load_poi(poi_bson)
+                            poi = model.Poi.load(poi_bson)
                             indexed_pois_id.add(poi._id)
                             poi.index(poi._id)
                             del poi.bson

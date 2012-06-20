@@ -718,4 +718,3 @@ input_to_postal_distribution_to_geolocated_territory = pipe(
     postal_distribution_to_territory,
     test(lambda territory: territory.geo is not None, error = N_(u'Territory has no geographical coordinates')),
     )
-

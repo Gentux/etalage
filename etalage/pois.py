@@ -348,7 +348,7 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
                     yield subfield_ref, subfield
 
     @classmethod
-    def load_poi(cls, poi_bson):
+    def load(cls, poi_bson):
         metadata = poi_bson['metadata']
         last_update = metadata['last-update']
         self = cls(
@@ -396,7 +396,7 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
     @classmethod
     def load_pois(cls):
         for poi_bson in cls.get_collection().find({'metadata.deleted': {'$exists': False}}):
-            cls.load_poi(poi_bson)
+            cls.load(poi_bson)
 
     @property
     def parent(self):
