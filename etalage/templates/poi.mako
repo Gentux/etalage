@@ -138,7 +138,7 @@ from etalage import conf, model, ramdb, urls
     slug_and_name_couples = []
     name = field.value
     slug = strings.slugify(name)
-    category = ramdb.categories_by_slug.get(slug)
+    category = ramdb.category_by_slug.get(slug)
     if category is not None:
         name = category.name
 %>\
@@ -151,7 +151,7 @@ from etalage import conf, model, ramdb, urls
     slug_and_name_couples = []
     for name in field.value:
         slug = strings.slugify(name)
-        category = ramdb.categories_by_slug.get(slug)
+        category = ramdb.category_by_slug.get(slug)
         if category is not None:
             name = category.name
         slug_and_name_couples.append((slug, name))
@@ -268,7 +268,7 @@ etalage.map.singleMarkerMap("map-poi", ${field.value[0]}, ${field.value[1]});
 
 <%def name="field_value_link(field, depth = 0)" filter="trim">
 <%
-    target = ramdb.pois_by_id.get(field.value)
+    target = ramdb.poi_by_id.get(field.value)
 %>\
     % if target is None:
             <em class="field-value">Lien manquant</em>
@@ -289,7 +289,7 @@ etalage.map.singleMarkerMap("map-poi", ${field.value[0]}, ${field.value[1]});
             <ul class="field-value">
         % for target_id in field.value:
 <%
-            target = ramdb.pois_by_id.get(target_id)
+            target = ramdb.poi_by_id.get(target_id)
             if target is None:
                 continue
 %>\
@@ -303,8 +303,8 @@ etalage.map.singleMarkerMap("map-poi", ${field.value[0]}, ${field.value[1]});
 
 <%def name="field_value_organism_type(field, depth = 0)" filter="trim">
 <%
-    category_slug = ramdb.categories_slug_by_pivot_code.get(field.value)
-    category = ramdb.categories_by_slug.get(category_slug) if category_slug is not None else None
+    category_slug = ramdb.category_slug_by_pivot_code.get(field.value)
+    category = ramdb.category_by_slug.get(category_slug) if category_slug is not None else None
     category_name = category.name if category is not None else field.value
 %>\
             <span class="field-value">${category_name}</span>
@@ -335,7 +335,7 @@ etalage.map.singleMarkerMap("map-poi", ${field.value[0]}, ${field.value[1]});
     tags_name = [
         tag.name
         for tag in (
-            ramdb.categories_by_slug.get(tag_slug)
+            ramdb.category_by_slug.get(tag_slug)
             for tag_slug in sorted(field.value)
             )
         if tag is not None
@@ -353,7 +353,7 @@ etalage.map.singleMarkerMap("map-poi", ${field.value[0]}, ${field.value[1]});
             else markupsafe.Markup(u'{0} <em>({1})</em>').format(
                 territory.main_postal_distribution_str, territory.type_short_name_fr)
         for territory in (
-            ramdb.territories_by_id[territory_id]
+            ramdb.territory_by_id[territory_id]
             for territory_id in field.value
             )
         if territory is not None

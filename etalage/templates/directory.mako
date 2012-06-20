@@ -51,7 +51,7 @@ from etalage import ramdb, urls
             % for category_slug, pois in sorted(directory.iteritems()):
                 % if pois:
 <%
-                    category = ramdb.categories_by_slug[category_slug]
+                    category = ramdb.category_by_slug[category_slug]
                     url_args = dict(
                         (name, value)
                         for name, value in params.iteritems()

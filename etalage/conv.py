@@ -161,7 +161,7 @@ def default_pois_layer_data_bbox(data, state = None):
             )
     filter = data['filter']
     territory = data['territory']
-    pois_by_id = ramdb.pois_by_id
+    poi_by_id = ramdb.poi_by_id
     if territory is None:
         competence_territories_id = None
         presence_territory = None
@@ -171,7 +171,7 @@ def default_pois_layer_data_bbox(data, state = None):
         pois = [
             poi
             for poi in (
-                pois_by_id[poi_id]
+                poi_by_id[poi_id]
                 for poi_id in pois_id_iter
                 )
             if poi.geo is not None
@@ -197,7 +197,7 @@ def default_pois_layer_data_bbox(data, state = None):
             pois = [
                 poi
                 for poi in (
-                    pois_by_id[poi_id]
+                    poi_by_id[poi_id]
                     for poi_id in pois_id_iter
                     )
                 if poi.geo is not None
@@ -211,7 +211,7 @@ def default_pois_layer_data_bbox(data, state = None):
             pois = [
                 poi
                 for poi in (
-                    pois_by_id[poi_id]
+                    poi_by_id[poi_id]
                     for poi_id in pois_id_iter
                     )
                 if poi.geo is not None
@@ -227,7 +227,7 @@ def default_pois_layer_data_bbox(data, state = None):
             pois = [
                 poi
                 for poi in (
-                    pois_by_id[poi_id]
+                    poi_by_id[poi_id]
                     for poi_id in pois_id_iter
                     )
                 if poi.geo is not None
@@ -242,7 +242,7 @@ def default_pois_layer_data_bbox(data, state = None):
                 pois = [
                     poi
                     for poi in (
-                        pois_by_id[poi_id]
+                        poi_by_id[poi_id]
                         for poi_id in pois_id_iter
                         )
                     if poi.geo is not None
@@ -299,7 +299,7 @@ def id_to_poi(poi_id, state = None):
         return poi_id, None
     if state is None:
         state = default_state
-    poi = ramdb.pois_by_id.get(poi_id)
+    poi = ramdb.poi_by_id.get(poi_id)
     if poi is None:
         return poi_id, state._("POI {0} doesn't exist").format(poi_id)
     return poi, None
@@ -337,12 +337,12 @@ def layer_data_to_clusters(data, state = None):
     pois_id_iter = ramdb.iter_pois_id(categories_slug = categories_slug,
         competence_territories_id = competence_territories_id, presence_territory = presence_territory,
         term = data['term'])
-    pois_by_id = ramdb.pois_by_id
+    poi_by_id = ramdb.poi_by_id
     current = data['current']
     pois_iter = (
         poi
         for poi in (
-            pois_by_id[poi_id]
+            poi_by_id[poi_id]
             for poi_id in pois_id_iter
             )
         if poi.geo is not None and bottom <= poi.geo[0] <= top and left <= poi.geo[1] <= right and (
@@ -455,7 +455,7 @@ def params_to_pois_csv_infos(params, state = None):
         presence_territory = None
     if not categories_slug and data['term'] is None and data['territory'] is None:
         # No criteria specified => Export every POI, even non indexed ones.
-        pois_id = list(ramdb.pois_by_id.iterkeys())
+        pois_id = list(ramdb.poi_by_id.iterkeys())
     else:
         pois_id = list(ramdb.iter_pois_id(categories_slug = categories_slug,
             competence_territories_id = competence_territories_id, presence_territory = presence_territory,
@@ -579,7 +579,7 @@ def pois_id_to_csv_infos(pois_id, state = None):
     while pois_id:
         remaining_pois_id = []
         for poi_id in pois_id:
-            poi = ramdb.pois_by_id.get(poi_id)
+            poi = ramdb.poi_by_id.get(poi_id)
             if poi is None:
                 continue
             csv_infos = csv_infos_by_schema_name.get(poi.schema_name)
@@ -624,7 +624,7 @@ def postal_distribution_to_territory(postal_distribution, state = None):
     territory_id = ramdb.territories_id_by_postal_distribution.get(postal_distribution)
     if territory_id is None:
         return postal_distribution, state._(u'Unknown territory')
-    territory = ramdb.territories_by_id.get(territory_id)
+    territory = ramdb.territory_by_id.get(territory_id)
     if territory is None:
         return postal_distribution, state._(u'Unknown territory')
     return territory, None
@@ -667,7 +667,7 @@ def str_to_category_slug(value, state = None):
         state = default_state
     return pipe(
         input_to_slug,
-        test(lambda slug: slug in ramdb.categories_by_slug, error = N_(u'Invalid category')),
+        test(lambda slug: slug in ramdb.category_by_slug, error = N_(u'Invalid category')),
         )(value, state = state)
 
 
@@ -704,7 +704,7 @@ def input_to_slug_to_category(value, state = None):
         state = default_state
     return pipe(
         str_to_category_slug,
-        function(lambda slug: ramdb.categories_by_slug[slug]),
+        function(lambda slug: ramdb.category_by_slug[slug]),
         test(lambda category: (category.tags_slug or set()).issuperset(state.category_tags_slug or []),
             error = N_(u'Missing required tags for category')),
         )(value, state = state)

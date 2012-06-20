@@ -24,10 +24,10 @@ def main(argv = None):
     site_conf = paste.deploy.appconfig('config:%s' % os.path.abspath(arguments[0]))
     environment.load_environment(site_conf.global_conf, site_conf.local_conf)
 
-    print 'pois_by_id:', len(ramdb.pois_by_id)
+    print 'poi_by_id:', len(ramdb.poi_by_id)
     print 'pois_id_by_presence_territory_id:', len(ramdb.pois_id_by_presence_territory_id)
     print 'pois_id_by_word:', len(ramdb.pois_id_by_word)
-    print 'Categories:', len(ramdb.categories_by_slug)
+    print 'Categories:', len(ramdb.category_by_slug)
     print 'pois_id_by_category_slug:', len(ramdb.pois_id_by_category_slug)
 
     print "ramdb.iter_pois_id()"
@@ -91,11 +91,11 @@ def main(argv = None):
     print time.time() - start_time
     print
 
-    print "conv.pois_to_csv(ramdb.pois_by_id.itervalues())"
-    print "==============================================="
+    print "conv.pois_to_csv(ramdb.poi_by_id.itervalues())"
+    print "=============================================="
     print
     start_time = time.time()
-    conv.pois_to_csv(ramdb.pois_by_id.itervalues())
+    conv.pois_to_csv(ramdb.poi_by_id.itervalues())
     print time.time() - start_time
     return 0
 

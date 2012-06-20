@@ -138,7 +138,7 @@ def autocomplete_category(req):
     pager.items = [
         dict(
             count = -category_infos[0],
-            tag = ramdb.categories_by_slug[category_infos[1]].name,
+            tag = ramdb.category_by_slug[category_infos[1]].name,
             )
         for category_infos in categories_infos[pager.first_item_index:pager.last_item_number]
         ]
@@ -683,7 +683,7 @@ def index_directory(req):
         pois = set(
             poi
             for poi in (
-                ramdb.pois_by_id.get(poi_id)
+                ramdb.poi_by_id.get(poi_id)
                 for poi_id in pois_id_iter
                 )
             if poi is not None
@@ -884,7 +884,7 @@ def index_list(req):
         pois = set(
             poi
             for poi in (
-                ramdb.pois_by_id.get(poi_id)
+                ramdb.poi_by_id.get(poi_id)
                 for poi_id in pois_id_iter
                 )
             if poi is not None

@@ -54,11 +54,11 @@ class Subscriber(representations.UserRepresentable, monpyjama.Wrapper):
     def territory(self):
         if self.territory_kind_code is None:
             return None
-        territory_id = ramdb.territories_id_by_kind_code.get((self.territory_kind_code['kind'],
+        territory_id = ramdb.territory_id_by_kind_code.get((self.territory_kind_code['kind'],
             self.territory_kind_code['code']))
         if territory_id is None:
             return None
-        return ramdb.territories_by_id.get(territory_id)
+        return ramdb.territory_by_id.get(territory_id)
 
 
 class Subscription(representations.UserRepresentable):
@@ -74,11 +74,11 @@ class Subscription(representations.UserRepresentable):
     def territory(self):
         if self.territory_kind_code is None:
             return None
-        territory_id = ramdb.territories_id_by_kind_code.get((self.territory_kind_code['kind'],
+        territory_id = ramdb.territory_id_by_kind_code.get((self.territory_kind_code['kind'],
             self.territory_kind_code['code']))
         if territory_id is None:
             return None
-        return ramdb.territories_by_id.get(territory_id)
+        return ramdb.territory_by_id.get(territory_id)
 
 
 class User(representations.UserRepresentable):

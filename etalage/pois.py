@@ -142,7 +142,7 @@ class Field(representations.UserRepresentable):
                 territories = [
                     territory
                     for territory in (
-                        ramdb.territories_by_id.get(territory_id)
+                        ramdb.territory_by_id.get(territory_id)
                         for territory_id in self.value
                         )
                     if territory is not None
@@ -158,7 +158,7 @@ class Field(representations.UserRepresentable):
                     yield (parent_ref or []) + [field.label, same_label_index], field
                     counts_by_label[field.label] = same_label_index + 1
             elif self.id == 'territory':
-                territory = ramdb.territories_by_id.get(self.value)
+                territory = ramdb.territory_by_id.get(self.value)
                 if territory is not None:
                     field_attributes = self.__dict__.copy()
                     field_attributes['value'] = territory.main_postal_distribution_str
@@ -214,7 +214,7 @@ class Field(representations.UserRepresentable):
                 value = [
                     territory_id
                     for territory_id in (
-                        ramdb.territories_id_by_kind_code.get((territory_kind_code['kind'],
+                        ramdb.territory_id_by_kind_code.get((territory_kind_code['kind'],
                             territory_kind_code['code']))
                         for territory_kind_code in value
                         )
@@ -265,7 +265,7 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
         children = sorted(
             (
                 child
-                for child in ramdb.pois_by_id.itervalues()
+                for child in ramdb.poi_by_id.itervalues()
                 if child.parent_id == self._id
                 ),
             key = lambda child: (child.schema_name, child.name),
@@ -302,7 +302,7 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
             self.competence_territories_id = set(
                 territory_id
                 for territory_id in (
-                    ramdb.territories_id_by_kind_code.get((territory_kind_code['kind'], territory_kind_code['code']))
+                    ramdb.territory_id_by_kind_code.get((territory_kind_code['kind'], territory_kind_code['code']))
                     for territory_kind_code in poi_bson['territories'][i]
                     )
                 if territory_id is not None
@@ -314,7 +314,7 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
         poi_territories_id = set(
             territory_id
             for territory_id in (
-                ramdb.territories_id_by_kind_code.get((territory_kind_code['kind'], territory_kind_code['code']))
+                ramdb.territory_id_by_kind_code.get((territory_kind_code['kind'], territory_kind_code['code']))
                 for territory_kind_code in metadata['territories-index']
                 if territory_kind_code['kind'] not in (u'Country', u'InternationalOrganization')
                 )
@@ -328,7 +328,7 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
 
     @classmethod
     def index_pois(cls):
-        for self in ramdb.pois_by_id.itervalues():
+        for self in ramdb.poi_by_id.itervalues():
             # Note: self._id is not added to ramdb.indexed_pois_id by method self.index(self._id) to allow
             # customizations where not all POIs are indexed (Passim for example).
             ramdb.indexed_pois_id.add(self._id)
@@ -378,7 +378,7 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
                 assert self.parent is None, str(self)
                 self.parent_id = field.value
             elif field.id == u'organism-type':
-                organism_type_slug = ramdb.categories_slug_by_pivot_code.get(field.value)
+                organism_type_slug = ramdb.category_slug_by_pivot_code.get(field.value)
                 if organism_type_slug is None:
                     log.warning('Ignoring organism type "{0}" without matching category.'.format(field.value))
                 else:
@@ -390,7 +390,7 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
         # Temporarily store bson in poi because it is needed by index_pois.
         self.bson = poi_bson
 
-        ramdb.pois_by_id[self._id] = self
+        ramdb.poi_by_id[self._id] = self
         return self
 
     @classmethod
@@ -402,7 +402,7 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
     def parent(self):
         if self.parent_id is None:
             return None
-        return ramdb.pois_by_id.get(self.parent_id)
+        return ramdb.poi_by_id.get(self.parent_id)
 
     def set_attributes(self, **attributes):
         for name, value in attributes.iteritems():
