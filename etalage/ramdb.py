@@ -224,6 +224,8 @@ def load():
 
 
 def load_pois():
+    from . import model
+
     indexed_pois_id.clear()
     poi_by_id.clear()
     pois_id_by_category_slug.clear()
