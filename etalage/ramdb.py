@@ -150,23 +150,13 @@ def load():
     # Remove a few seconds, for data changes that occur during startup.
     last_timestamp = start_time - datetime.timedelta(seconds = 30)
 
-    indexed_pois_id.clear()
-
-    category_by_slug.clear()
-    category_slug_by_pivot_code.clear()
     categories_slug_by_tag_slug.clear()
     categories_slug_by_word.clear()
+    category_by_slug.clear()
+    category_slug_by_pivot_code.clear()
     for category_bson in model.db[conf['categories_collection']].find(None, ['code', 'tags_code', 'title']):
-        category = model.Category(
-            name = category_bson['title'],
-            tags_slug = set(category_bson.get('tags_code') or []) or None,
-            )
-        category_slug = category_bson['code']
-        category_by_slug[category_slug] = category
-        for word in category_slug.split(u'-'):
-            categories_slug_by_word.setdefault(word, set()).add(category_slug)
-        for tag_slug in (category.tags_slug or set()):
-            categories_slug_by_tag_slug.setdefault(tag_slug, set()).add(category_slug)
+        category = model.Category.load(category_bson)
+        category.index()
 
     for organism_type_bson in model.db[conf['organism_types_collection']].find(None, ['code', 'slug']):
         if organism_type_bson['slug'] not in category_by_slug:
@@ -174,13 +164,13 @@ def load():
             continue
         category_slug_by_pivot_code[organism_type_bson['code']] = organism_type_bson['slug']
 
-    territory_by_id.clear()
     territories_id_by_ancestor_id.clear()
-    territory_id_by_kind_code.clear()
     territories_id_by_postal_distribution.clear()
     territories_query = dict(
         kind = {'$in': conf['territories_kinds']},
         )
+    territory_by_id.clear()
+    territory_id_by_kind_code.clear()
     for territory_bson in model.db[conf['territories_collection']].find(territories_query, [
             'ancestors_id',
             'code',
@@ -214,13 +204,7 @@ def load():
     for schema in model.db.schemas.find(None, ['name', 'title']):
         schemas_title_by_name[schema['name']] = schema['title']
 
-    poi_by_id.clear()
-    pois_id_by_category_slug.clear()
-    pois_id_by_competence_territory_id.clear()
-    pois_id_by_presence_territory_id.clear()
-    pois_id_by_word.clear()
-    model.Poi.load_pois()
-    model.Poi.index_pois()
+    load_pois()
 
 #    # Remove unused categories.
 #    for category_slug in category_by_slug.keys():
@@ -239,6 +223,17 @@ def load():
     log.info('RAM-based database loaded in {0} seconds'.format(datetime.datetime.utcnow() - start_time))
 
 
+def load_pois():
+    indexed_pois_id.clear()
+    poi_by_id.clear()
+    pois_id_by_category_slug.clear()
+    pois_id_by_competence_territory_id.clear()
+    pois_id_by_presence_territory_id.clear()
+    pois_id_by_word.clear()
+    model.Poi.load_pois()
+    model.Poi.index_pois()
+
+
 def ramdb_based(controller):
     """A decorator that allow to use ramdb data and update it regularily from MongoDB data."""
     def invoke(req):
@@ -252,7 +247,7 @@ def ramdb_based(controller):
             if data_update is not None:
                 read_write_lock.acquire()
                 try:
-                    load()
+                    load_pois()
                 finally:
                     read_write_lock.release()
         else:
@@ -260,8 +255,44 @@ def ramdb_based(controller):
                     collection_name = {'$in': ['categories', 'pois', 'organism_types']},
                     timestamp = {'$gt': last_timestamp},
                     )).sort('timestamp'):
-                id = data_update['document_id']
-                if data_update['collection_name'] == 'pois':
+                if data_update['collection_name'] == 'categories':
+                    slug = data_update['document_id']
+                    category_bson = model.db[conf['categories_collection']].find_one(dict(code = slug),
+                        ['code', 'tags_code', 'title'])
+                    read_write_lock.acquire()
+                    try:
+                        # First find changes to do on indexes.
+                        existing = {}
+                        indexes = sys.modules[__name__].__dict__
+                        find_existing(indexes, 'categories_slug_by_tag_slug', 'dict_of_sets', slug, existing)
+                        find_existing(indexes, 'categories_slug_by_word', 'dict_of_sets', slug, existing)
+                        find_existing(indexes, 'category_slug_by_pivot_code', 'dict_of_values', slug, existing)
+                        # Then update indexes.
+                        delete_remaining(indexes, existing)
+                        if category_bson is None:
+                            category_by_slug.pop(slug, None)
+                            pois_id_by_category_slug.pop(slug, None)
+                        else:
+                            category = model.Category.load(category_bson)
+                            category.index()
+                    finally:
+                        read_write_lock.release()
+                elif data_update['collection_name'] == 'organism_types':
+                    pivot_code = data_update['document_id']
+                    organism_type_bson = model.db[conf['organism_types_collection']].find_one(dict(code = pivot_code),
+                        ['code', 'slug'])
+                    read_write_lock.acquire()
+                    try:
+                        if organism_type_bson is None:
+                            category_slug_by_pivot_code.pop(pivot_code, None)
+                        elif organism_type_bson['slug'] not in category_by_slug:
+                            log.warning('Ignoring organism type "{0}" without matching category.'.format(pivot_code))
+                        else:
+                            category_slug_by_pivot_code[pivot_code] = organism_type_bson['slug']
+                    finally:
+                        read_write_lock.release()
+                elif data_update['collection_name'] == 'pois':
+                    id = data_update['document_id']
                     poi_bson = model.Poi.get_collection().find_one(id)
                     read_write_lock.acquire()
                     try:

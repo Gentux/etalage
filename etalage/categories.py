@@ -31,6 +31,8 @@ import logging
 from biryani import strings
 from suq import representations
 
+from . import ramdb
+
 
 __all__ = ['Category']
 
@@ -45,6 +47,21 @@ class Category(representations.UserRepresentable):
     def __init__(self, **attributes):
         if attributes:
             self.set_attributes(**attributes)
+
+    def index(self):
+        for word in self.slug.split(u'-'):
+            ramdb.categories_slug_by_word.setdefault(word, set()).add(self.slug)
+        for tag_slug in (self.tags_slug or set()):
+            ramdb.categories_slug_by_tag_slug.setdefault(tag_slug, set()).add(self.slug)
+
+    @classmethod
+    def load(cls, category_bson):
+        self = cls(
+            name = category_bson['title'],
+            tags_slug = set(category_bson.get('tags_code') or []) or None,
+            )
+        ramdb.category_by_slug[self.slug] = self
+        return self
 
     def set_attributes(self, **attributes):
         for name, value in attributes.iteritems():
