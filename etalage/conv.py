@@ -305,6 +305,18 @@ def id_to_poi(poi_id, state = None):
     return poi, None
 
 
+def input_to_slug_to_category(value, state = None):
+    from . import ramdb
+    if state is None:
+        state = default_state
+    return pipe(
+        str_to_category_slug,
+        function(lambda slug: ramdb.category_by_slug[slug]),
+        test(lambda category: (category.tags_slug or set()).issuperset(state.category_tags_slug or []),
+            error = N_(u'Missing required tags for category')),
+        )(value, state = state)
+
+
 def layer_data_to_clusters(data, state = None):
     from . import model, ramdb
     if data is None:
@@ -696,18 +708,6 @@ subscription_to_bson = object_to_clean_dict
 
 
 user_to_bson = object_to_clean_dict
-
-
-def input_to_slug_to_category(value, state = None):
-    from . import ramdb
-    if state is None:
-        state = default_state
-    return pipe(
-        str_to_category_slug,
-        function(lambda slug: ramdb.category_by_slug[slug]),
-        test(lambda category: (category.tags_slug or set()).issuperset(state.category_tags_slug or []),
-            error = N_(u'Missing required tags for category')),
-        )(value, state = state)
 
 
 # Level-2 Converters
