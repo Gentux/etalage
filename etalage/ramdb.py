@@ -155,7 +155,7 @@ def load():
     category_by_slug.clear()
     category_slug_by_pivot_code.clear()
     for category_bson in model.db[conf['categories_collection']].find(None, ['code', 'tags_code', 'title']):
-        if not strings.slugify(category_bson.get('name')):
+        if not strings.slugify(category_bson.get('title')):
             continue
         category = model.Category.load(category_bson)
         category.index()
