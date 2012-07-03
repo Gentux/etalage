@@ -425,7 +425,7 @@ def layer_data_to_clusters(data, state = None):
 
 
 def params_to_pois_csv_infos(params, state = None):
-    from . import ramdb
+    from . import conf, ramdb
     if state is None:
         state = default_state
     data, errors = pipe(
@@ -435,7 +435,8 @@ def params_to_pois_csv_infos(params, state = None):
                 categories = uniform_sequence(input_to_slug_to_category),
                 filter = pipe(
                     str_to_filter,
-                    default('presence'),  # By default, export only POIs present on given territory.
+                    # By default, when no default_filter is given, export only POIs present on given territory.
+                    default(conf['default_filter'] or 'presence'),
                     ),
                 term = input_to_slug,
                 territory = input_to_postal_distribution_to_geolocated_territory,
@@ -646,15 +647,17 @@ def set_default_filter(data, state = None):
     if data is None:
         return None, None
 
-    from . import model
+    from . import conf, model
 
     if state is None:
         state = default_state
 
-    # When no filter is given and territory is not a commune, search only for POIs present on territory instead of
-    # POIs near the territory.
-    if data.get('filter') is None and data['territory'] is not None \
+    if data.get('filter') is None and conf['default_filter'] is not None:
+        data['filter'] = conf['default_filter']
+    elif data.get('filter') is None and data['territory'] is not None \
             and data['territory'].__class__.__name__ not in model.communes_kinds:
+        # When no filter is given and territory is not a commune, search only for POIs present on territory instead of
+        # POIs near the territory.
         data['filter'] = u'presence'
     return data, None
 
