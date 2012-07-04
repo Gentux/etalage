@@ -30,9 +30,9 @@ The main decorator :class:`wsgify` turns a function into a WSGI application.
 
 
 import collections
+import json
 
 from markupsafe import Markup
-import simplejson as json
 import webob.dec
 import webob.exc
 

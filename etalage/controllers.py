@@ -29,6 +29,7 @@
 from cStringIO import StringIO
 import datetime
 import itertools
+import json
 import logging
 import math
 import sys
@@ -38,7 +39,6 @@ import zipfile
 
 from biryani import strings
 import markupsafe
-import simplejson as json
 
 from . import conf, contexts, conv, model, pagers, ramdb, templates, urls, wsgihelpers
 

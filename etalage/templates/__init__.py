@@ -26,7 +26,7 @@
 """Mako templates rendering"""
 
 
-import simplejson as json
+import json
 
 
 js = lambda x: json.dumps(x, encoding = 'utf-8', ensure_ascii = False)
