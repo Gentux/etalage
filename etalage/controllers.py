@@ -52,7 +52,7 @@ def about(req):
     ctx = contexts.Ctx(req)
 
     params = req.GET
-    base_params = init_base(ctx, params)
+    base_inputs = init_base(ctx, params)
     return templates.render(ctx, '/about.mako')
 
 
@@ -64,7 +64,7 @@ def autocomplete_category(req):
 
     headers = []
     params = req.GET
-    params = dict(
+    inputs = dict(
         context = params.get('context'),
         jsonp = params.get('jsonp'),
         page = params.get('page'),
@@ -87,12 +87,12 @@ def autocomplete_category(req):
             ),
         conv.rename_item('page', 'page_number'),
         conv.rename_item('tag', 'tags_slug'),
-        )(params, state = ctx)
+        )(inputs, state = ctx)
     if errors is not None:
         raise wsgihelpers.respond_json(ctx,
             dict(
                 apiVersion = '1.0',
-                context = params['context'],
+                context = inputs['context'],
                 error = dict(
                     code = 400,  # Bad Request
                     errors = [
@@ -105,10 +105,10 @@ def autocomplete_category(req):
                     # message will be automatically defined.
                     ),
                 method = ctx.controller_name,
-                params = params,
+                params = inputs,
                 ),
             headers = headers,
-            jsonp = params['jsonp'],
+            jsonp = inputs['jsonp'],
             )
 
     possible_pois_id = ramdb.intersection_set(
@@ -145,7 +145,7 @@ def autocomplete_category(req):
     return wsgihelpers.respond_json(ctx,
         dict(
             apiVersion = '1.0',
-            context = params['context'],
+            context = inputs['context'],
             data = dict(
                 currentItemCount = len(pager.items),
                 items = pager.items,
@@ -156,10 +156,10 @@ def autocomplete_category(req):
                 totalPages = pager.page_count,
                 ),
             method = ctx.controller_name,
-            params = params,
+            params = inputs,
             ),
         headers = headers,
-        jsonp = params['jsonp'],
+        jsonp = inputs['jsonp'],
         )
 
 
@@ -172,19 +172,19 @@ def csv(req):
         return wsgihelpers.not_found(ctx, explanation = ctx._(u'Export disabled by configuration'))
 
     params = req.GET
-    base_params = init_base(ctx, params)
-    params = dict(
+    base_inputs = init_base(ctx, params)
+    inputs = dict(
         category = params.getall('category'),
         filter = params.get('filter'),
         term = params.get('term'),
         territory = params.get('territory'),
         )
-    params.update(base_params)
+    inputs.update(base_inputs)
 
     csv_bytes_by_name, errors = conv.pipe(
-        conv.params_to_pois_csv_infos,
+        conv.inputs_to_pois_csv_infos,
         conv.csv_infos_to_csv_bytes,
-        )(params, state = ctx)
+        )(inputs, state = ctx)
     if errors is not None:
         raise wsgihelpers.bad_request(ctx, explanation = ctx._('Error: {0}').format(errors))
     if not csv_bytes_by_name:
@@ -212,19 +212,19 @@ def excel(req):
         return wsgihelpers.not_found(ctx, explanation = ctx._(u'Export disabled by configuration'))
 
     params = req.GET
-    base_params = init_base(ctx, params)
-    params = dict(
+    base_inputs = init_base(ctx, params)
+    inputs = dict(
         category = params.getall('category'),
         filter = params.get('filter'),
         term = params.get('term'),
         territory = params.get('territory'),
         )
-    params.update(base_params)
+    inputs.update(base_inputs)
 
     excel_bytes, errors = conv.pipe(
-        conv.params_to_pois_csv_infos,
+        conv.inputs_to_pois_csv_infos,
         conv.csv_infos_to_excel_bytes,
-        )(params, state = ctx)
+        )(inputs, state = ctx)
     if errors is not None:
         raise wsgihelpers.bad_request(ctx, explanation = ctx._('Error: {0}').format(errors))
     if not excel_bytes:
@@ -243,11 +243,11 @@ def export_directory_csv(req):
         return wsgihelpers.not_found(ctx, explanation = ctx._(u'Export disabled by configuration'))
 
     params = req.GET
-    base_params = init_base(ctx, params)
+    base_inputs = init_base(ctx, params)
     format = u'csv'
     mode = u'export'
     type = u'annuaire'
-    params = dict(
+    inputs = dict(
         accept = params.get('accept'),
         category = params.getall('category'),
         filter = params.get('filter'),
@@ -255,11 +255,11 @@ def export_directory_csv(req):
         term = params.get('term'),
         territory = params.get('territory'),
         )
-    params.update(base_params)
+    inputs.update(base_inputs)
 
-    accept, error = conv.pipe(conv.guess_bool, conv.default(False), conv.test_is(True))(params['accept'], state = ctx)
+    accept, error = conv.pipe(conv.guess_bool, conv.default(False), conv.test_is(True))(inputs['accept'], state = ctx)
     if error is None:
-        url_params = params.copy()
+        url_params = inputs.copy()
         del url_params['accept']
         del url_params['submit']
         raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, u'api/v1/{0}/{1}'.format(type, format),
@@ -270,7 +270,7 @@ def export_directory_csv(req):
         conv.rename_item('category', 'categories'),
         conv.struct(
             dict(
-                accept = conv.test(lambda value: not params['submit'],
+                accept = conv.test(lambda value: not inputs['submit'],
                     error = N_(u"You must accept license to be allowed to download data."),
                     handle_none_value = True,
                     ),
@@ -279,14 +279,14 @@ def export_directory_csv(req):
             default = 'drop',
             keep_none_values = True,
             ),
-        )(params, state = ctx)
+        )(inputs, state = ctx)
     return templates.render(ctx, '/export-accept-license.mako',
         categories = data['categories'],
         export_title = ctx._(u"Directory Export in CSV Format"),
         errors = errors,
         format = format,
+        inputs = inputs,
         mode = mode,
-        params = params,
         type = type,
         )
 
@@ -300,11 +300,11 @@ def export_directory_excel(req):
         return wsgihelpers.not_found(ctx, explanation = ctx._(u'Export disabled by configuration'))
 
     params = req.GET
-    base_params = init_base(ctx, params)
+    base_inputs = init_base(ctx, params)
     format = u'excel'
     mode = u'export'
     type = u'annuaire'
-    params = dict(
+    inputs = dict(
         accept = params.get('accept'),
         category = params.getall('category'),
         filter = params.get('filter'),
@@ -312,11 +312,11 @@ def export_directory_excel(req):
         term = params.get('term'),
         territory = params.get('territory'),
         )
-    params.update(base_params)
+    inputs.update(base_inputs)
 
-    accept, error = conv.pipe(conv.guess_bool, conv.default(False), conv.test_is(True))(params['accept'], state = ctx)
+    accept, error = conv.pipe(conv.guess_bool, conv.default(False), conv.test_is(True))(inputs['accept'], state = ctx)
     if error is None:
-        url_params = params.copy()
+        url_params = inputs.copy()
         del url_params['accept']
         del url_params['submit']
         raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, u'api/v1/{0}/{1}'.format(type, format),
@@ -327,7 +327,7 @@ def export_directory_excel(req):
         conv.rename_item('category', 'categories'),
         conv.struct(
             dict(
-                accept = conv.test(lambda value: not params['submit'],
+                accept = conv.test(lambda value: not inputs['submit'],
                     error = N_(u"You must accept license to be allowed to download data."),
                     handle_none_value = True,
                     ),
@@ -336,14 +336,14 @@ def export_directory_excel(req):
             default = 'drop',
             keep_none_values = True,
             ),
-        )(params, state = ctx)
+        )(inputs, state = ctx)
     return templates.render(ctx, '/export-accept-license.mako',
         categories = data['categories'],
         export_title = ctx._(u"Directory Export in Excel Format"),
         errors = errors,
         format = format,
+        inputs = inputs,
         mode = mode,
-        params = params,
         type = type,
         )
 
@@ -357,11 +357,11 @@ def export_directory_geojson(req):
         return wsgihelpers.not_found(ctx, explanation = ctx._(u'Export disabled by configuration'))
 
     params = req.GET
-    base_params = init_base(ctx, params)
+    base_inputs = init_base(ctx, params)
     format = u'geojson'
     mode = u'export'
     type = u'annuaire'
-    params = dict(
+    inputs = dict(
         accept = params.get('accept'),
         category = params.getall('category'),
         filter = params.get('filter'),
@@ -369,11 +369,11 @@ def export_directory_geojson(req):
         term = params.get('term'),
         territory = params.get('territory'),
         )
-    params.update(base_params)
+    inputs.update(base_inputs)
 
-    accept, error = conv.pipe(conv.guess_bool, conv.default(False), conv.test_is(True))(params['accept'], state = ctx)
+    accept, error = conv.pipe(conv.guess_bool, conv.default(False), conv.test_is(True))(inputs['accept'], state = ctx)
     if error is None:
-        url_params = params.copy()
+        url_params = inputs.copy()
         del url_params['accept']
         del url_params['submit']
         raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, u'api/v1/{0}/{1}'.format(type, format),
@@ -384,7 +384,7 @@ def export_directory_geojson(req):
         conv.rename_item('category', 'categories'),
         conv.struct(
             dict(
-                accept = conv.test(lambda value: not params['submit'],
+                accept = conv.test(lambda value: not inputs['submit'],
                     error = N_(u"You must accept license to be allowed to download data."),
                     handle_none_value = True,
                     ),
@@ -393,14 +393,14 @@ def export_directory_geojson(req):
             default = 'drop',
             keep_none_values = True,
             ),
-        )(params, state = ctx)
+        )(inputs, state = ctx)
     return templates.render(ctx, '/export-accept-license.mako',
         categories = data['categories'],
         export_title = ctx._(u"Directory Export in GeoJSON Format"),
         errors = errors,
         format = format,
+        inputs = inputs,
         mode = mode,
-        params = params,
         type = type,
         )
 
@@ -414,11 +414,11 @@ def export_directory_kml(req):
         return wsgihelpers.not_found(ctx, explanation = ctx._(u'Export disabled by configuration'))
 
     params = req.GET
-    base_params = init_base(ctx, params)
+    base_inputs = init_base(ctx, params)
     format = u'kml'
     mode = u'export'
     type = u'annuaire'
-    params = dict(
+    inputs = dict(
         accept = params.get('accept'),
         category = params.getall('category'),
         filter = params.get('filter'),
@@ -426,11 +426,11 @@ def export_directory_kml(req):
         term = params.get('term'),
         territory = params.get('territory'),
         )
-    params.update(base_params)
+    inputs.update(base_inputs)
 
-    accept, error = conv.pipe(conv.guess_bool, conv.default(False), conv.test_is(True))(params['accept'], state = ctx)
+    accept, error = conv.pipe(conv.guess_bool, conv.default(False), conv.test_is(True))(inputs['accept'], state = ctx)
     if error is None:
-        url_params = params.copy()
+        url_params = inputs.copy()
         del url_params['accept']
         del url_params['submit']
         raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, u'api/v1/{0}/{1}'.format(type, format),
@@ -441,7 +441,7 @@ def export_directory_kml(req):
         conv.rename_item('category', 'categories'),
         conv.struct(
             dict(
-                accept = conv.test(lambda value: not params['submit'],
+                accept = conv.test(lambda value: not inputs['submit'],
                     error = N_(u"You must accept license to be allowed to download data."),
                     handle_none_value = True,
                     ),
@@ -450,14 +450,14 @@ def export_directory_kml(req):
             default = 'drop',
             keep_none_values = True,
             ),
-        )(params, state = ctx)
+        )(inputs, state = ctx)
     return templates.render(ctx, '/export-accept-license.mako',
         categories = data['categories'],
         export_title = ctx._(u"Directory Export in KML Format"),
         errors = errors,
         format = format,
+        inputs = inputs,
         mode = mode,
-        params = params,
         type = type,
         )
 
@@ -471,11 +471,11 @@ def export_geographical_coverage_csv(req):
         return wsgihelpers.not_found(ctx, explanation = ctx._(u'Export disabled by configuration'))
 
     params = req.GET
-    base_params = init_base(ctx, params)
+    base_inputs = init_base(ctx, params)
     format = u'csv'
     mode = u'export'
-    type = u'couverture-geographique'
-    params = dict(
+    type = u'couverture'
+    inputs = dict(
         accept = params.get('accept'),
         category = params.getall('category'),
         filter = params.get('filter'),
@@ -483,24 +483,22 @@ def export_geographical_coverage_csv(req):
         term = params.get('term'),
         territory = params.get('territory'),
         )
-    params.update(base_params)
+    inputs.update(base_inputs)
 
-    accept, error = conv.pipe(conv.guess_bool, conv.default(False), conv.test_is(True))(params['accept'], state = ctx)
+    accept, error = conv.pipe(conv.guess_bool, conv.default(False), conv.test_is(True))(inputs['accept'], state = ctx)
     if error is None:
-        url_params = params.copy()
+        url_params = inputs.copy()
         del url_params['accept']
         del url_params['submit']
-        # TODO
         raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, u'api/v1/{0}/{1}'.format(type, format),
             **url_params))
 
-    # TODO
     data, errors = conv.pipe(
         # Must be renamed before struct, to be able to use categories on errors
         conv.rename_item('category', 'categories'),
         conv.struct(
             dict(
-                accept = conv.test(lambda value: not params['submit'],
+                accept = conv.test(lambda value: not inputs['submit'],
                     error = N_(u"You must accept license to be allowed to download data."),
                     handle_none_value = True,
                     ),
@@ -509,14 +507,14 @@ def export_geographical_coverage_csv(req):
             default = 'drop',
             keep_none_values = True,
             ),
-        )(params, state = ctx)
+        )(inputs, state = ctx)
     return templates.render(ctx, '/export-accept-license.mako',
         categories = data['categories'],
         export_title = ctx._(u"Geographical Coverage Export in CSV Format"),
         errors = errors,
         format = format,
+        inputs = inputs,
         mode = mode,
-        params = params,
         type = type,
         )
 
@@ -527,8 +525,8 @@ def geojson(req):
     ctx = contexts.Ctx(req)
 
     params = req.GET
-    base_params = init_base(ctx, params)
-    params = dict(
+    base_inputs = init_base(ctx, params)
+    inputs = dict(
         bbox = params.get('bbox'),
         category = params.getall('category'),
         context = params.get('context'),
@@ -538,12 +536,12 @@ def geojson(req):
         term = params.get('term'),
         territory = params.get('territory'),
         )
-    params.update(base_params)
+    inputs.update(base_inputs)
 
     data, errors = conv.pipe(
-        conv.params_to_pois_layer_data,
+        conv.inputs_to_pois_layer_data,
         conv.default_pois_layer_data_bbox,
-        )(params, state = ctx)
+        )(inputs, state = ctx)
     if errors is not None:
         raise wsgihelpers.bad_request(ctx, explanation = ctx._('Error: {0}').format(errors))
     clusters, errors = conv.layer_data_to_clusters(data, state = ctx)
@@ -553,7 +551,7 @@ def geojson(req):
     geojson = {
         'type': 'FeatureCollection',
         'properties': {
-            'context': params.get('context'),  # Parameter given in request that is returned as is.
+            'context': inputs['context'],  # Parameter given in request that is returned as is.
             'date': unicode(datetime.datetime.utcnow()),
         },
         'features': [
@@ -607,9 +605,9 @@ def geojson(req):
         encoding = 'utf-8',
         ensure_ascii = False,
         )
-    if params['jsonp']:
+    if inputs['jsonp']:
         req.response.content_type = 'application/javascript; charset=utf-8'
-        return u'{0}({1})'.format(params['jsonp'], response)
+        return u'{0}({1})'.format(inputs['jsonp'], response)
     else:
         req.response.content_type = 'application/json; charset=utf-8'
         return response
@@ -621,7 +619,7 @@ def index(req):
     ctx = contexts.Ctx(req)
 
     params = req.params
-    base_params = init_base(ctx, params)
+    base_inputs = init_base(ctx, params)
 
     # Redirect to another page.
     url_args = (conf['default_tab'],)
@@ -644,17 +642,17 @@ def index_directory(req):
         return wsgihelpers.not_found(ctx, explanation = ctx._(u'Directory page disabled by configuration'))
 
     params = req.GET
-    base_params = init_base(ctx, params)
+    base_inputs = init_base(ctx, params)
     mode = u'annuaire'
-    params = dict(
+    inputs = dict(
         category = params.getall('category'),
         filter = params.get('filter'),
         term = params.get('term'),
         territory = params.get('territory'),
         )
-    params.update(base_params)
+    inputs.update(base_inputs)
 
-    data, errors = conv.params_to_pois_directory_data(params, state = ctx)
+    data, errors = conv.inputs_to_pois_directory_data(inputs, state = ctx)
     if errors is not None:
         directory = None
         territory = None
@@ -729,8 +727,8 @@ def index_directory(req):
         categories = data['categories'],
         directory = directory,
         errors = errors,
+        inputs = inputs,
         mode = mode,
-        params = params,
         territory = territory,
         )
 
@@ -744,9 +742,9 @@ def index_export(req):
         return wsgihelpers.not_found(ctx, explanation = ctx._(u'Export disabled by configuration'))
 
     params = req.GET
-    base_params = init_base(ctx, params)
+    base_inputs = init_base(ctx, params)
     mode = u'export'
-    params = dict(
+    inputs = dict(
         category = params.getall('category'),
         filter = params.get('filter'),
 # TODO
@@ -756,7 +754,7 @@ def index_export(req):
 # TODO
         type_and_format = params.get('type_and_format'),
         )
-    params.update(base_params)
+    inputs.update(base_inputs)
 
     data, errors = conv.pipe(
         # Must be renamed before struct, to be able to use categories on errors
@@ -771,26 +769,27 @@ def index_export(req):
                         'annuaire-excel',
                         'annuaire-geojson',
                         'annuaire-kml',
-#                        'couverture-geographique-csv',
+                        'couverture-csv',
+                        'couverture-excel',
                         ]),
                     ),
                 ),
             default = 'drop',
             keep_none_values = True,
             ),
-        )(params, state = ctx)
+        )(inputs, state = ctx)
     if errors is None:
-        if params['submit']:
+        if inputs['submit']:
             if data['type_and_format'] is not None:
                 type, format = data['type_and_format'].rsplit(u'-', 1)
 
                 # Form submitted. Redirect to another page.
                 url_args = ('export', type, format)
                 url_kwargs = dict(
-                    category = params['category'],
-                    filter = params['filter'],
-                    term = params['term'],
-                    territory = params['territory'],
+                    category = inputs['category'],
+                    filter = inputs['filter'],
+                    term = inputs['term'],
+                    territory = inputs['territory'],
                     )
                 if ctx.container_base_url is None or ctx.gadget_id is None:
                     raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, *url_args, **url_kwargs))
@@ -805,8 +804,8 @@ def index_export(req):
     return templates.render(ctx, '/export.mako',
         categories = data['categories'],
         errors = errors,
+        inputs = inputs,
         mode = mode,
-        params = params,
         )
 
 
@@ -819,22 +818,22 @@ def index_gadget(req):
         return wsgihelpers.not_found(ctx, explanation = ctx._(u'Gadget page disabled by configuration'))
 
     params = req.GET
-    base_params = init_base(ctx, params)
+    base_inputs = init_base(ctx, params)
     mode = u'gadget'
-    params = dict(
+    inputs = dict(
         category = params.getall('category'),
         filter = params.get('filter'),
         term = params.get('term'),
         territory = params.get('territory'),
         )
-    params.update(base_params)
+    inputs.update(base_inputs)
 
-    data, errors = conv.params_to_pois_list_data(params, state = ctx)
+    data, errors = conv.inputs_to_pois_list_data(inputs, state = ctx)
 
     return templates.render(ctx, '/gadget.mako',
         errors = errors,
+        inputs = inputs,
         mode = mode,
-        params = params,
         **data)
 
 
@@ -844,18 +843,18 @@ def index_list(req):
     ctx = contexts.Ctx(req)
 
     params = req.GET
-    base_params = init_base(ctx, params)
+    base_inputs = init_base(ctx, params)
     mode = u'liste'
-    params = dict(
+    inputs = dict(
         category = params.getall('category'),
         filter = params.get('filter'),
         page = params.get('page'),
         term = params.get('term'),
         territory = params.get('territory'),
         )
-    params.update(base_params)
+    inputs.update(base_inputs)
 
-    data, errors = conv.params_to_pois_list_data(params, state = ctx)
+    data, errors = conv.inputs_to_pois_list_data(inputs, state = ctx)
     if errors is not None:
         pager = None
     else:
@@ -926,9 +925,9 @@ def index_list(req):
     return templates.render(ctx, '/list.mako',
         categories = data['categories'],
         errors = errors,
+        inputs = inputs,
         mode = mode,
         pager = pager,
-        params = params,
         )
 
 
@@ -941,21 +940,21 @@ def index_map(req):
         return wsgihelpers.not_found(ctx, explanation = ctx._(u'Map page disabled by configuration'))
 
     params = req.GET
-    base_params = init_base(ctx, params)
+    base_inputs = init_base(ctx, params)
     mode = u'carte'
-    params = dict(
+    inputs = dict(
         bbox = params.get('bbox'),
         category = params.getall('category'),
         filter = params.get('filter'),
         term = params.get('term'),
         territory = params.get('territory'),
         )
-    params.update(base_params)
+    inputs.update(base_inputs)
 
     data, errors = conv.pipe(
-        conv.params_to_pois_layer_data,
+        conv.inputs_to_pois_layer_data,
         conv.default_pois_layer_data_bbox,
-        )(params, state = ctx)
+        )(inputs, state = ctx)
     if errors is None:
         bbox = data['bbox']
         territory = data['territory']
@@ -966,14 +965,14 @@ def index_map(req):
         bbox = bbox,
         categories = data['categories'],
         errors = errors,
+        inputs = inputs,
         mode = mode,
-        params = params,
         territory = territory,
         )
 
 
 def init_base(ctx, params):
-    base_params = dict(
+    base_inputs = dict(
         base_category = params.getall('base_category'),
         category_tag = params.getall('category_tag'),
         container_base_url = params.get('container_base_url'),
@@ -988,23 +987,23 @@ def init_base(ctx, params):
 
     ctx.base_categories_slug, error = conv.uniform_sequence(
         conv.str_to_category_slug,
-        )(base_params['base_category'], state = ctx)
+        )(base_inputs['base_category'], state = ctx)
     if error is not None:
         raise wsgihelpers.bad_request(ctx, explanation = ctx._('Base Categories Error: {0}').format(error))
 
     ctx.category_tags_slug, error = conv.uniform_sequence(
         conv.str_to_category_slug,
-        )(base_params['category_tag'], state = ctx)
+        )(base_inputs['category_tag'], state = ctx)
     if error is not None:
         raise wsgihelpers.bad_request(ctx, explanation = ctx._('Category Tags Error: {0}').format(error))
 
-    container_base_url = base_params['container_base_url'] or None
+    container_base_url = base_inputs['container_base_url'] or None
     if container_base_url is None:
         container_hostname = None
     else:
         container_hostname = urlparse.urlsplit(container_base_url).hostname or None
     try:
-        gadget_id = int(base_params['gadget'])
+        gadget_id = int(base_inputs['gadget'])
     except (TypeError, ValueError):
         gadget_id = None
     if gadget_id is None:
@@ -1076,46 +1075,46 @@ def init_base(ctx, params):
         conv.input_to_float,
         conv.test_between(0.0, 40075.16),
         conv.default(20.0),
-        )(base_params['distance'], state = ctx)
+        )(base_inputs['distance'], state = ctx)
     if error is not None:
         raise wsgihelpers.bad_request(ctx, explanation = ctx._('Distance Error: {0}').format(error))
 
     ctx.hide_category, error = conv.pipe(
         conv.guess_bool,
         conv.default(False),
-        )(base_params['hide_category'], state = ctx)
+        )(base_inputs['hide_category'], state = ctx)
     if error is not None:
         raise wsgihelpers.bad_request(ctx, explanation = ctx._('Hide Category Error: {0}').format(error))
 
     ctx.hide_directory, error = conv.pipe(
         conv.guess_bool,
         conv.default(False),
-        )(base_params['hide_directory'], state = ctx)
+        )(base_inputs['hide_directory'], state = ctx)
     if error is not None:
         raise wsgihelpers.bad_request(ctx, explanation = ctx._('Hide Directory Error: {0}').format(error))
 
     ctx.hide_term, error = conv.pipe(
         conv.guess_bool,
         conv.default(False),
-        )(base_params['hide_term'], state = ctx)
+        )(base_inputs['hide_term'], state = ctx)
     if error is not None:
         raise wsgihelpers.bad_request(ctx, explanation = ctx._('Hide Term Error: {0}').format(error))
 
     ctx.hide_territory, error = conv.pipe(
         conv.guess_bool,
         conv.default(False),
-        )(base_params['hide_territory'], state = ctx)
+        )(base_inputs['hide_territory'], state = ctx)
     if error is not None:
         raise wsgihelpers.bad_request(ctx, explanation = ctx._('Hide Territory Error: {0}').format(error))
 
     ctx.show_filter, error = conv.pipe(
         conv.guess_bool,
         conv.default(False),
-        )(base_params['show_filter'], state = ctx)
+        )(base_inputs['show_filter'], state = ctx)
     if error is not None:
         raise wsgihelpers.bad_request(ctx, explanation = ctx._('Show Filter Error: {0}').format(error))
 
-    return base_params
+    return base_inputs
 
 
 @wsgihelpers.wsgify
@@ -1124,8 +1123,8 @@ def kml(req):
     ctx = contexts.Ctx(req)
 
     params = req.GET
-    base_params = init_base(ctx, params)
-    params = dict(
+    base_inputs = init_base(ctx, params)
+    inputs = dict(
         bbox = params.get('bbox'),
         category = params.getall('category'),
         context = params.get('context'),
@@ -1134,20 +1133,20 @@ def kml(req):
         term = params.get('term'),
         territory = params.get('territory'),
         )
-    params.update(base_params)
+    inputs.update(base_inputs)
 
     clusters, errors = conv.pipe(
-        conv.params_to_pois_layer_data,
+        conv.inputs_to_pois_layer_data,
         conv.default_pois_layer_data_bbox,
         conv.layer_data_to_clusters,
-        )(params, state = ctx)
+        )(inputs, state = ctx)
     if errors is not None:
         raise wsgihelpers.bad_request(ctx, explanation = ctx._('Error: {0}').format(errors))
 
     req.response.content_type = 'application/vnd.google-earth.kml+xml; charset=utf-8'
     return templates.render(ctx, '/kml.mako',
         clusters = clusters,
-        params = params,
+        inputs = inputs,
         )
 
 
@@ -1190,13 +1189,13 @@ def minisite(req):
         return wsgihelpers.not_found(ctx, explanation = ctx._(u'Minisite disabled by configuration'))
 
     params = req.params
-    base_params = init_base(ctx, params)
-    params = dict(
+    base_inputs = init_base(ctx, params)
+    inputs = dict(
         encoding = params.get('encoding') or u'',
         poi_id = req.urlvars.get('poi_id'),
         slug = req.urlvars.get('slug'),
         )
-    params.update(base_params)
+    inputs.update(base_inputs)
 
     data, errors = conv.pipe(
         conv.struct(
@@ -1216,7 +1215,7 @@ def minisite(req):
             keep_none_values = True,
             ),
         conv.rename_item('poi_id', 'poi'),
-        )(params, state = ctx)
+        )(inputs, state = ctx)
 
     if not errors:
         data['url'] = url = urls.get_full_url(ctx, 'fragment', 'organismes', data['poi'].slug, data['poi']._id,
@@ -1227,7 +1226,7 @@ def minisite(req):
             errors = dict(fragment = ctx._('Access to organism failed'))
         else:
             data['fragment'] = fragment
-    return templates.render(ctx, '/minisite.mako', errors = errors, params = params, **data)
+    return templates.render(ctx, '/minisite.mako', errors = errors, inputs = inputs, **data)
 
 
 @wsgihelpers.wsgify
@@ -1236,23 +1235,23 @@ def poi(req):
     ctx = contexts.Ctx(req)
 
     params = req.params
-    base_params = init_base(ctx, params)
-    params = dict(
+    base_inputs = init_base(ctx, params)
+    inputs = dict(
         poi_id = req.urlvars.get('poi_id'),
         slug = req.urlvars.get('slug'),
         )
-    params.update(base_params)
+    inputs.update(base_inputs)
 
     poi, error = conv.pipe(
         conv.input_to_object_id,
         conv.id_to_poi,
         conv.not_none,
-        )(params['poi_id'], state = ctx)
+        )(inputs['poi_id'], state = ctx)
     if error is not None:
         raise wsgihelpers.bad_request(ctx, explanation = ctx._('POI ID Error: {0}').format(error))
 
     slug = poi.slug
-    if params['slug'] != slug:
+    if inputs['slug'] != slug:
         if ctx.container_base_url is None or ctx.gadget_id is None:
             raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, 'organismes', slug, poi._id))
         # In gadget mode, there is no need to redirect.
@@ -1269,19 +1268,19 @@ def poi_embedded(req):
         return wsgihelpers.not_found(ctx, explanation = ctx._(u'Minisite disabled by configuration'))
 
     params = req.params
-    base_params = init_base(ctx, params)
-    params = dict(
+    base_inputs = init_base(ctx, params)
+    inputs = dict(
         encoding = params.get('encoding') or u'',
         poi_id = req.urlvars.get('poi_id'),
         slug = req.urlvars.get('slug'),
         )
-    params.update(base_params)
+    inputs.update(base_inputs)
 
     poi, error = conv.pipe(
         conv.input_to_object_id,
         conv.id_to_poi,
         conv.not_none,
-        )(params['poi_id'], state = ctx)
+        )(inputs['poi_id'], state = ctx)
     if error is not None:
         raise wsgihelpers.bad_request(ctx, explanation = ctx._('POI ID Error: {0}').format(error))
 
@@ -1289,7 +1288,7 @@ def poi_embedded(req):
         conv.input_to_slug,
         conv.translate({u'utf-8': None}),
         conv.test_in([u'cp1252', u'iso-8859-1', u'iso-8859-15']),
-        )(params['encoding'], state = ctx)
+        )(inputs['encoding'], state = ctx)
     if error is not None:
         raise wsgihelpers.bad_request(ctx, explanation = ctx._('Encoding Error: {0}').format(error))
 

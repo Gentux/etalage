@@ -59,7 +59,7 @@ etalage.map.center = new L.LatLng(${territory.geo[0] | n, js}, ${territory.geo[1
     % endif
 etalage.map.geojsonParams = ${dict(
     (dict(categories = 'category').get(name, name), value)
-    for name, value in params.iteritems()
+    for name, value in inputs.iteritems()
     if name not in ('bbox', 'context', 'jsonp') and value is not None
     )| n, js};
 etalage.map.geojsonUrl = '/api/v1/annuaire/geojson';

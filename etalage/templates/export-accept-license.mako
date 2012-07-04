@@ -94,7 +94,7 @@ from etalage import urls
         </div>
         <form action="${urls.get_url(ctx, mode, type, format)}" class="form-horizontal" id="export-form" method="get">
             <fieldset>
-    % for name, value in sorted(params.iteritems()):
+    % for name, value in sorted(inputs.iteritems()):
 <%
         if name in (
                 'accept',

@@ -46,7 +46,7 @@ textarea {
     gadget_id = 832 # TODO
     url_args = dict(
         (name, value)
-        for name, value in params.iteritems()
+        for name, value in inputs.iteritems()
         if name not in ('container_base_url', 'gadget') and value not in (None, [], '')
         )
     gadget_params = dict(

@@ -64,7 +64,7 @@ from etalage import conf, urls
         )
     url_args = dict(
         (dict(categories = 'category').get(name, name), value)
-        for name, value in params.iteritems()
+        for name, value in inputs.iteritems()
         if name != 'page' and value is not None
         )
 %>\
@@ -91,7 +91,7 @@ etalage.categories.tags = ${ctx.category_tags_slug | n, js};
 etalage.territories.autocompleterUrl = ${urlparse.urljoin(conf['territoria_url'],
     '/api/v1/autocomplete-territory') | n, js};
 etalage.territories.kinds = ${conf['territories_kinds'] | n, js};
-etalage.params = ${params | n, js};
+etalage.params = ${inputs | n, js};
 
 $(function () {
     etalage.categories.createAutocompleter($('#category'));
@@ -109,7 +109,7 @@ $(function () {
 
 
 <%def name="search_form_content()" filter="trim">
-    % for name, value in sorted(params.iteritems()):
+    % for name, value in sorted(inputs.iteritems()):
 <%
         if name in (
                 'bbox',
@@ -153,7 +153,7 @@ $(function () {
             % endif
         % endfor
     % endif
-                        <input class="input-xlarge" id="category" name="category" type="text" value="${params['category'][error_index] \
+                        <input class="input-xlarge" id="category" name="category" type="text" value="${inputs['category'][error_index] \
                                 if error_index is not None else ''}">
         % if error_message:
                         <span class="help-inline">${error_message}</span>
@@ -168,7 +168,7 @@ $(function () {
                 <div class="control-group${' error' if error else ''}">
                     <label class="control-label" for="term">Intitulé</label>
                     <div class="controls">
-                        <input class="input-xlarge" id="term" name="term" type="text" value="${params['term'] or ''}">
+                        <input class="input-xlarge" id="term" name="term" type="text" value="${inputs['term'] or ''}">
         % if error:
                         <span class="help-inline">${error}</span>
         % endif
@@ -182,7 +182,7 @@ $(function () {
                 <div class="control-group${' error' if error else ''}">
                     <label class="control-label" for="territory">Territoire</label>
                     <div class="controls">
-                        <input class="input-xlarge" id="territory" name="territory" type="text" value="${params['territory'] or ''}">
+                        <input class="input-xlarge" id="territory" name="territory" type="text" value="${inputs['territory'] or ''}">
         % if error:
                         <span class="help-inline">${error}</span>
         % endif
@@ -197,15 +197,15 @@ $(function () {
                     <label class="control-label" for="filter">Afficher</label>
                     <div class="controls">
                         <label class="radio">
-                            <input${' checked' if not params['filter'] else ''} name="filter" type="radio" value="">
+                            <input${' checked' if not inputs['filter'] else ''} name="filter" type="radio" value="">
                             Tous les organismes
                         </label>
                         <label class="radio">
-                            <input${' checked' if params['filter'] == 'competence' else ''} name="filter" type="radio" value="competence">
+                            <input${' checked' if inputs['filter'] == 'competence' else ''} name="filter" type="radio" value="competence">
                             Uniquement les organismes compétents pour le territoire
                         </label>
                         <label class="radio">
-                            <input${' checked' if params['filter'] == 'presence' else ''} name="filter" type="radio" value="presence">
+                            <input${' checked' if inputs['filter'] == 'presence' else ''} name="filter" type="radio" value="presence">
                             Uniquement les organismes présents sur le territoire
                         </label>
         % if error:

@@ -317,6 +317,163 @@ def input_to_slug_to_category(value, state = None):
         )(value, state = state)
 
 
+def inputs_to_pois_csv_infos(inputs, state = None):
+    from . import conf, ramdb
+    if state is None:
+        state = default_state
+    data, errors = pipe(
+        rename_item('category', 'categories'),  # Must be renamed before struct, to be able to use categories on errors
+        struct(
+            dict(
+                categories = uniform_sequence(input_to_slug_to_category),
+                filter = pipe(
+                    str_to_filter,
+                    # By default, when no default_filter is given, export only POIs present on given territory.
+                    default(conf['default_filter'] or 'presence'),
+                    ),
+                term = input_to_slug,
+                territory = input_to_postal_distribution_to_geolocated_territory,
+                ),
+            default = 'drop',
+            keep_none_values = True,
+            ),
+        )(inputs, state = state)
+    if errors is not None:
+        return data, errors
+
+    categories_slug = set(state.base_categories_slug or [])
+    if data['categories'] is not None:
+        categories_slug.update(
+            category.slug
+            for category in data['categories']
+            )
+    filter = data['filter']
+    territory = data['territory']
+    related_territories_id = ramdb.get_territory_related_territories_id(territory) if territory is not None else None
+    if filter == 'competence':
+        competence_territories_id = related_territories_id
+        presence_territory = None
+    elif filter == 'presence':
+        competence_territories_id = None
+        presence_territory = territory
+    else:
+        competence_territories_id = None
+        presence_territory = None
+    if not categories_slug and data['term'] is None and data['territory'] is None:
+        # No criteria specified => Export every POI, even non indexed ones.
+        pois_id = list(ramdb.poi_by_id.iterkeys())
+    else:
+        pois_id = list(ramdb.iter_pois_id(categories_slug = categories_slug,
+            competence_territories_id = competence_territories_id, presence_territory = presence_territory,
+            term = data['term']))
+    return pois_id_to_csv_infos(pois_id, state = state)
+
+
+def inputs_to_pois_directory_data(inputs, state = None):
+    from . import model
+    if state is None:
+        state = default_state
+    return pipe(
+        rename_item('category', 'categories'),  # Must be renamed before struct, to be able to use categories on errors
+        struct(
+            dict(
+                categories = uniform_sequence(input_to_slug_to_category),
+                filter = str_to_filter,
+                term = input_to_slug,
+                territory = pipe(
+                    input_to_postal_distribution_to_geolocated_territory,
+                    test(lambda territory: territory.__class__.__name__ in model.communes_kinds,
+                        error = N_(u'In "directory" mode, territory must be a commune')),
+                    test_not_none(error = N_(u'In "directory" mode, a commune is required')),
+                    ),
+                ),
+            default = 'drop',
+            keep_none_values = True,
+            ),
+        set_default_filter,
+        )(inputs, state = state)
+
+
+def inputs_to_pois_layer_data(inputs, state = None):
+    if state is None:
+        state = default_state
+    return pipe(
+        rename_item('category', 'categories'),  # Must be renamed before struct, to be able to use categories on errors
+        struct(
+            dict(
+                bbox = pipe(
+                    function(lambda bbox: bbox.split(u',')),
+                    struct(
+                        [
+                            # West longitude
+                            pipe(
+                                input_to_float,
+                                test_between(-180, 180),
+                                not_none,
+                                ),
+                            # South latitude
+                            pipe(
+                                input_to_float,
+                                test_between(-90, 90),
+                                not_none,
+                                ),
+                            # East longitude
+                            pipe(
+                                input_to_float,
+                                test_between(-180, 180),
+                                not_none,
+                                ),
+                            # North latitude
+                            pipe(
+                                input_to_float,
+                                test_between(-90, 90),
+                                not_none,
+                                ),
+                            ],
+                        ),
+                    ),
+                categories = uniform_sequence(input_to_slug_to_category),
+                current = pipe(
+                    input_to_object_id,
+                    id_to_poi,
+                    test(lambda poi: poi.geo is not None, error = N_('POI has no geographical coordinates')),
+                    ),
+                filter = str_to_filter,
+                term = input_to_slug,
+                territory = input_to_postal_distribution_to_geolocated_territory,
+                ),
+            default = 'drop',
+            keep_none_values = True,
+            ),
+        set_default_filter,
+        )(inputs, state = state)
+
+
+def inputs_to_pois_list_data(inputs, state = None):
+    if state is None:
+        state = default_state
+    return pipe(
+        rename_item('category', 'categories'),  # Must be renamed before struct, to be able to use categories on errors
+        struct(
+            dict(
+                categories = uniform_sequence(input_to_slug_to_category),
+                filter = str_to_filter,
+                page = pipe(
+                    input_to_int,
+                    test_greater_or_equal(1),
+                    default(1),
+                    ),
+                term = input_to_slug,
+                territory = input_to_postal_distribution_to_geolocated_territory,
+                ),
+            default = 'drop',
+            keep_none_values = True,
+            ),
+        set_default_filter,
+        rename_item('page', 'page_number'),
+        )(inputs, state = state)
+
+
 def layer_data_to_clusters(data, state = None):
     from . import model, ramdb
     if data is None:
@@ -422,163 +579,6 @@ def layer_data_to_clusters(data, state = None):
                 and not related_territories_id.isdisjoint(poi.competence_territories_id):
             cluster.competent = True
     return clusters, None
-
-
-def params_to_pois_csv_infos(params, state = None):
-    from . import conf, ramdb
-    if state is None:
-        state = default_state
-    data, errors = pipe(
-        rename_item('category', 'categories'),  # Must be renamed before struct, to be able to use categories on errors
-        struct(
-            dict(
-                categories = uniform_sequence(input_to_slug_to_category),
-                filter = pipe(
-                    str_to_filter,
-                    # By default, when no default_filter is given, export only POIs present on given territory.
-                    default(conf['default_filter'] or 'presence'),
-                    ),
-                term = input_to_slug,
-                territory = input_to_postal_distribution_to_geolocated_territory,
-                ),
-            default = 'drop',
-            keep_none_values = True,
-            ),
-        )(params, state = state)
-    if errors is not None:
-        return data, errors
-
-    categories_slug = set(state.base_categories_slug or [])
-    if data['categories'] is not None:
-        categories_slug.update(
-            category.slug
-            for category in data['categories']
-            )
-    filter = data['filter']
-    territory = data['territory']
-    related_territories_id = ramdb.get_territory_related_territories_id(territory) if territory is not None else None
-    if filter == 'competence':
-        competence_territories_id = related_territories_id
-        presence_territory = None
-    elif filter == 'presence':
-        competence_territories_id = None
-        presence_territory = territory
-    else:
-        competence_territories_id = None
-        presence_territory = None
-    if not categories_slug and data['term'] is None and data['territory'] is None:
-        # No criteria specified => Export every POI, even non indexed ones.
-        pois_id = list(ramdb.poi_by_id.iterkeys())
-    else:
-        pois_id = list(ramdb.iter_pois_id(categories_slug = categories_slug,
-            competence_territories_id = competence_territories_id, presence_territory = presence_territory,
-            term = data['term']))
-    return pois_id_to_csv_infos(pois_id, state = state)
-
-
-def params_to_pois_directory_data(params, state = None):
-    from . import model
-    if state is None:
-        state = default_state
-    return pipe(
-        rename_item('category', 'categories'),  # Must be renamed before struct, to be able to use categories on errors
-        struct(
-            dict(
-                categories = uniform_sequence(input_to_slug_to_category),
-                filter = str_to_filter,
-                term = input_to_slug,
-                territory = pipe(
-                    input_to_postal_distribution_to_geolocated_territory,
-                    test(lambda territory: territory.__class__.__name__ in model.communes_kinds,
-                        error = N_(u'In "directory" mode, territory must be a commune')),
-                    test_not_none(error = N_(u'In "directory" mode, a commune is required')),
-                    ),
-                ),
-            default = 'drop',
-            keep_none_values = True,
-            ),
-        set_default_filter,
-        )(params, state = state)
-
-
-def params_to_pois_layer_data(params, state = None):
-    if state is None:
-        state = default_state
-    return pipe(
-        rename_item('category', 'categories'),  # Must be renamed before struct, to be able to use categories on errors
-        struct(
-            dict(
-                bbox = pipe(
-                    function(lambda bbox: bbox.split(u',')),
-                    struct(
-                        [
-                            # West longitude
-                            pipe(
-                                input_to_float,
-                                test_between(-180, 180),
-                                not_none,
-                                ),
-                            # South latitude
-                            pipe(
-                                input_to_float,
-                                test_between(-90, 90),
-                                not_none,
-                                ),
-                            # East longitude
-                            pipe(
-                                input_to_float,
-                                test_between(-180, 180),
-                                not_none,
-                                ),
-                            # North latitude
-                            pipe(
-                                input_to_float,
-                                test_between(-90, 90),
-                                not_none,
-                                ),
-                            ],
-                        ),
-                    ),
-                categories = uniform_sequence(input_to_slug_to_category),
-                current = pipe(
-                    input_to_object_id,
-                    id_to_poi,
-                    test(lambda poi: poi.geo is not None, error = N_('POI has no geographical coordinates')),
-                    ),
-                filter = str_to_filter,
-                term = input_to_slug,
-                territory = input_to_postal_distribution_to_geolocated_territory,
-                ),
-            default = 'drop',
-            keep_none_values = True,
-            ),
-        set_default_filter,
-        )(params, state = state)
-
-
-def params_to_pois_list_data(params, state = None):
-    if state is None:
-        state = default_state
-    return pipe(
-        rename_item('category', 'categories'),  # Must be renamed before struct, to be able to use categories on errors
-        struct(
-            dict(
-                categories = uniform_sequence(input_to_slug_to_category),
-                filter = str_to_filter,
-                page = pipe(
-                    input_to_int,
-                    test_greater_or_equal(1),
-                    default(1),
-                    ),
-                term = input_to_slug,
-                territory = input_to_postal_distribution_to_geolocated_territory,
-                ),
-            default = 'drop',
-            keep_none_values = True,
-            ),
-        set_default_filter,
-        rename_item('page', 'page_number'),
-        )(params, state = state)
 
 
 def pois_id_to_csv_infos(pois_id, state = None):

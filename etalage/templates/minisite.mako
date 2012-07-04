@@ -56,7 +56,7 @@ from etalage import conf, urls
                     <div class="controls">
                         <select name="encoding">
     % for encoding, label in encoding_and_label_couples:
-                            <option${' selected' if params['encoding'] == encoding else ''} value="${\
+                            <option${' selected' if inputs['encoding'] == encoding else ''} value="${\
                                     encoding}">${label}</option>
     % endfor
                         </select>

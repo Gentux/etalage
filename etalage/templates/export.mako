@@ -35,7 +35,7 @@ from etalage import urls
         <form action="${urls.get_url(ctx, mode)}" class="form-horizontal internal" id="export-form" method="get">
             <fieldset>
                 <legend>${_('Select export options')}</legend>
-    % for name, value in sorted(params.iteritems()):
+    % for name, value in sorted(inputs.iteritems()):
 <%
         if name in (
                 'submit',
@@ -62,22 +62,26 @@ from etalage import urls
                         <label class="radio">
                             <input type="radio" value="annuaire-excel" name="type_and_format">
                             Annuaire (format Excel) &mdash; Les informations détaillées,
-                                organisme par organisme
+                            organisme par organisme
                         </label>
                         <label class="radio">
                             <input type="radio" value="annuaire-csv" name="type_and_format">
                             Annuaire (format CSV) &mdash; Les informations détaillées,
-                                organisme par organisme
+                            organisme par organisme
                         </label>
-##                        <label class="radio">
-##                            <input type="radio" value="couverture-geographique-csv" name="type_and_format">
-##                            Couverture géographique (format CSV) &mdash; Les organismes compétents,
-##                                commune par commune
-##                        </label>
+                        <label class="radio">
+                            <input type="radio" value="couverture-excel" name="type_and_format">
+                            Couverture géographique (format Excel) &mdash; Les informations détailléees des
+                            organismes compétents, commune par commune
+                        </label>
+                        <label class="radio">
+                            <input type="radio" value="couverture-csv" name="type_and_format">
+                            Couverture géographique (format CSV) &mdash; Les informations détailléees des
+                            organismes compétents, commune par commune
+                        </label>
                         <label class="radio">
                             <input type="radio" value="annuaire-geojson" name="type_and_format">
-                            GeoJSON &mdash; Pour récupérer les organismes en temps réel dans vos
-                                applications
+                            GeoJSON &mdash; Pour récupérer les organismes en temps réel dans vos applications
                         </label>
                         <label class="radio">
                             <input type="radio" value="annuaire-kml" name="type_and_format">
