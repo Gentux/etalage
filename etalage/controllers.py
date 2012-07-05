@@ -447,19 +447,16 @@ def export_geographical_coverage_csv(req):
         return wsgihelpers.not_found(ctx, explanation = ctx._(u'Export disabled by configuration'))
 
     params = req.GET
-    base_inputs = init_base(ctx, params)
+    inputs = init_base(ctx, params)
+    inputs.update(model.Pois.generate_search_inputs(ctx))
+    inputs.update(dict(
+        accept = params.get('accept'),
+        submit = params.get('submit'),
+        ))
+
     format = u'csv'
     mode = u'export'
     type = u'couverture'
-    inputs = dict(
-        accept = params.get('accept'),
-        category = params.getall('category'),
-        filter = params.get('filter'),
-        submit = params.get('submit'),
-        term = params.get('term'),
-        territory = params.get('territory'),
-        )
-    inputs.update(base_inputs)
 
     accept, error = conv.pipe(conv.guess_bool, conv.default(False), conv.test_is(True))(inputs['accept'], state = ctx)
     if error is None:
@@ -493,6 +490,119 @@ def export_geographical_coverage_csv(req):
         mode = mode,
         type = type,
         )
+
+
+@wsgihelpers.wsgify
+@ramdb.ramdb_based
+def export_geographical_coverage_excel(req):
+    ctx = contexts.Ctx(req)
+
+    if conf['hide_export']:
+        return wsgihelpers.not_found(ctx, explanation = ctx._(u'Export disabled by configuration'))
+
+    params = req.GET
+    inputs = init_base(ctx, params)
+    inputs.update(model.Pois.generate_search_inputs(ctx))
+    inputs.update(dict(
+        accept = params.get('accept'),
+        submit = params.get('submit'),
+        ))
+
+    format = u'excel'
+    mode = u'export'
+    type = u'couverture'
+
+    accept, error = conv.pipe(conv.guess_bool, conv.default(False), conv.test_is(True))(inputs['accept'], state = ctx)
+    if error is None:
+        url_params = inputs.copy()
+        del url_params['accept']
+        del url_params['submit']
+        raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, u'api/v1/{0}/{1}'.format(type, format),
+            **url_params))
+
+    data, errors = conv.pipe(
+        # Must be renamed before struct, to be able to use categories on errors
+        conv.rename_item('category', 'categories'),
+        conv.struct(
+            dict(
+                accept = conv.test(lambda value: not inputs['submit'],
+                    error = N_(u"You must accept license to be allowed to download data."),
+                    handle_none_value = True,
+                    ),
+                categories = conv.uniform_sequence(conv.input_to_slug_to_category),
+                ),
+            default = 'drop',
+            keep_none_values = True,
+            ),
+        )(inputs, state = ctx)
+    return templates.render(ctx, '/export-accept-license.mako',
+        categories = data['categories'],
+        export_title = ctx._(u"Geographical Coverage Export in Excel Format"),
+        errors = errors,
+        format = format,
+        inputs = inputs,
+        mode = mode,
+        type = type,
+        )
+
+
+@wsgihelpers.wsgify
+@ramdb.ramdb_based
+def geographical_coverage_csv(req):
+    ctx = contexts.Ctx(req)
+
+    if conf['hide_export']:
+        return wsgihelpers.not_found(ctx, explanation = ctx._(u'Export disabled by configuration'))
+
+    params = req.GET
+    inputs = init_base(ctx, params)
+    inputs.update(model.Pois.generate_search_inputs(ctx))
+
+    csv_bytes_by_name, errors = conv.pipe(
+        conv.inputs_to_geographical_coverage_csv_infos,
+        conv.csv_infos_to_csv_bytes,
+        )(inputs, state = ctx)
+    if errors is not None:
+        raise wsgihelpers.bad_request(ctx, explanation = ctx._('Error: {0}').format(errors))
+    if not csv_bytes_by_name:
+        raise wsgihelpers.no_content(ctx)
+    if len(csv_bytes_by_name) == 1:
+        csv_filename, csv_bytes = csv_bytes_by_name.items()[0]
+        req.response.content_type = 'text/csv; charset=utf-8'
+        req.response.content_disposition = 'attachment;filename={0}'.format(csv_filename)
+        return csv_bytes
+    zip_file = StringIO()
+    with zipfile.ZipFile(zip_file, 'w') as zip_archive:
+        for csv_filename, csv_bytes in csv_bytes_by_name.iteritems():
+            zip_archive.writestr(csv_filename, csv_bytes)
+    req.response.content_type = 'application/zip'
+    req.response.content_disposition = 'attachment;filename=export.zip'
+    return zip_file.getvalue()
+
+
+@wsgihelpers.wsgify
+@ramdb.ramdb_based
+def geographical_coverage_excel(req):
+    ctx = contexts.Ctx(req)
+
+    if conf['hide_export']:
+        return wsgihelpers.not_found(ctx, explanation = ctx._(u'Export disabled by configuration'))
+
+    params = req.GET
+    inputs = init_base(ctx, params)
+    inputs.update(model.Pois.generate_search_inputs(ctx))
+
+    excel_bytes, errors = conv.pipe(
+        conv.inputs_to_geographical_coverage_csv_infos,
+        conv.csv_infos_to_excel_bytes,
+        )(inputs, state = ctx)
+    if errors is not None:
+        raise wsgihelpers.bad_request(ctx, explanation = ctx._('Error: {0}').format(errors))
+    if not excel_bytes:
+        raise wsgihelpers.no_content(ctx)
+    req.response.content_type = 'application/vnd.ms-excel'
+    req.response.content_disposition = 'attachment;filename=export.xls'
+    return excel_bytes
 
 
 @wsgihelpers.wsgify
@@ -1103,14 +1213,16 @@ def make_router():
         ('GET', '^/api/v1/annuaire/geojson/?$', geojson),
         ('GET', '^/api/v1/annuaire/kml/?$', kml),
         ('GET', '^/api/v1/categories/autocomplete/?$', autocomplete_category),
-#        ('GET', '^/api/v1/couverture-geographique/csv/?$', csv),  # TODO
+        ('GET', '^/api/v1/couverture/csv/?$', geographical_coverage_csv),
+        ('GET', '^/api/v1/couverture/excel/?$', geographical_coverage_excel),
         ('GET', '^/carte/?$', index_map),
         ('GET', '^/export/?$', index_export),
         ('GET', '^/export/annuaire/csv/?$', export_directory_csv),
         ('GET', '^/export/annuaire/excel/?$', export_directory_excel),
         ('GET', '^/export/annuaire/geojson/?$', export_directory_geojson),
         ('GET', '^/export/annuaire/kml/?$', export_directory_kml),
-#        ('GET', '^/export/couverture-geographique/csv/?$', export_geographical_coverage_csv),
+        ('GET', '^/export/couverture/csv/?$', export_geographical_coverage_csv),
+        ('GET', '^/export/couverture/excel/?$', export_geographical_coverage_excel),
         ('GET', '^/fragment/organismes/(?P<poi_id>[a-z0-9]{24})/?$', poi_embedded),
         ('GET', '^/fragment/organismes/(?P<slug>[^/]+)/(?P<poi_id>[a-z0-9]{24})/?$', poi_embedded),
         ('GET', '^/gadget/?$', index_gadget),

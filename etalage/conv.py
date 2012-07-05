@@ -317,6 +317,61 @@ def input_to_slug_to_category(value, state = None):
         )(value, state = state)
 
 
+def inputs_to_geographical_coverage_csv_infos(inputs, state = None):
+    from . import conf, ramdb
+    if state is None:
+        state = default_state
+    data, errors = pipe(
+        rename_item('category', 'categories'),  # Must be renamed before struct, to be able to use categories on errors
+        struct(
+            dict(
+                categories = uniform_sequence(input_to_slug_to_category),
+                term = input_to_slug,
+                territory = input_to_postal_distribution_to_geolocated_territory,
+                ),
+            default = 'drop',
+            keep_none_values = True,
+            ),
+        )(inputs, state = state)
+    if errors is not None:
+        return data, errors
+
+    categories_slug = set(state.base_categories_slug or [])
+    if data['categories'] is not None:
+        categories_slug.update(
+            category.slug
+            for category in data['categories']
+            )
+    territory = data['territory']
+    competence_territories_id = ramdb.get_territory_related_territories_id(territory) if territory is not None else None
+    if competence_territories_id is None:
+        competence_territories_id = set(ramdb.territory_by_id.iterkeys())
+    if not categories_slug and data['term'] is None:
+        # No criteria specified => Export every POI, even non indexed ones.
+        pois_id = set(ramdb.poi_by_id.iterkeys())
+    else:
+        pois_id = set(ramdb.iter_pois_id(categories_slug = categories_slug, term = data['term']))
+    pois_id_by_commune_id = {}
+    if pois_id:
+        pois_id_by_competence_territory_id = {}
+        for commune_id in competence_territories_id:
+            commune = ramdb.territory_by_id.get(commune_id)
+            if commune is None:
+                continue
+            if commune.__class__.__name__ in (u'ArrondissementOfCommuneOfFrance', u'CommuneOfFrance') \
+                    and commune.code not in (u'13055', u'69123', u'75056'):
+                commune_pois_id = set()
+                for related_territory_id in ramdb.get_territory_related_territories_id(commune):
+                    if related_territory_id not in pois_id_by_competence_territory_id:
+                        related_territory_pois_id = ramdb.pois_id_by_competence_territory_id.get(related_territory_id)
+                        pois_id_by_competence_territory_id[related_territory_id] = pois_id.intersection(
+                            related_territory_pois_id) if related_territory_pois_id is not None else set()
+                    commune_pois_id.update(pois_id_by_competence_territory_id[related_territory_id])
+                if commune_pois_id:
+                    pois_id_by_commune_id[commune_id] = commune_pois_id
+    return pois_id_by_commune_id_to_csv_infos(pois_id_by_commune_id, state = state)
+
+
 def inputs_to_pois_csv_infos(inputs, state = None):
     from . import conf, ramdb
     if state is None:
@@ -579,6 +634,54 @@ def layer_data_to_clusters(data, state = None):
                 and not related_territories_id.isdisjoint(poi.competence_territories_id):
             cluster.competent = True
     return clusters, None
+
+
+def pois_id_by_commune_id_to_csv_infos(pois_id_by_commune_id, state = None):
+    from . import ramdb
+    if pois_id_by_commune_id is None:
+        return None, None
+    if state is None:
+        state = default_state
+    csv_infos_by_schema_name = {}
+    for commune_id, commune_pois_id in pois_id_by_commune_id.iteritems():
+        commune = ramdb.territory_by_id.get(commune_id)
+        if commune is None:
+            continue
+        for poi_id in commune_pois_id:
+            poi = ramdb.poi_by_id.get(poi_id)
+            if poi is None:
+                continue
+            csv_infos = csv_infos_by_schema_name.get(poi.schema_name)
+            if csv_infos is None:
+                csv_infos_by_schema_name[poi.schema_name] = csv_infos = dict(
+                    columns_label = [u'Code commune', u'Nom commune'],
+                    columns_ref = [None, None],
+                    rows = [],
+                    )
+            columns_label = csv_infos['columns_label']
+            columns_index = {}
+            columns_ref = csv_infos['columns_ref']
+            row = [commune.code, commune.name] + [None] * len(columns_ref)
+            for field_ref, field in poi.iter_csv_fields(state):
+                # Detect column number to use for field. Create a new column if needed.
+                column_ref = tuple(field_ref[:-1])
+                same_ref_columns_count = field_ref[-1]
+                if columns_ref.count(column_ref) == same_ref_columns_count:
+                    column_index = len(columns_ref)
+                    columns_label.append(field.label)  # or u' - '.join(label for label in field_ref[::2])
+                    columns_ref.append(column_ref)
+                    row.append(None)
+                else:
+                    column_index = columns_ref.index(column_ref, columns_index.get(column_ref, -1) + 1)
+                columns_index[column_ref] = column_index
+                row[column_index] = field.value
+            csv_infos['rows'].append(row)
+
+    # Sort rows by commune code and POI ID.
+    for csv_infos in csv_infos_by_schema_name.itervalues():
+        csv_infos['rows'].sort(key = lambda row: (row[0], row[2]))
+
+    return csv_infos_by_schema_name or None, None
 
 
 def pois_id_to_csv_infos(pois_id, state = None):
