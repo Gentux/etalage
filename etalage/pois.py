@@ -286,6 +286,16 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
 
         return fields
 
+    @classmethod
+    def generate_search_inputs(cls, ctx):
+        return dict(
+            category = params.getall('category'),
+            filter = params.get('filter'),
+            term = params.get('term'),
+            territory = params.get('territory'),
+            )
+
+
     def get_first_field(self, id, label = None):
         return get_first_field(self.fields, id, label = label)
 

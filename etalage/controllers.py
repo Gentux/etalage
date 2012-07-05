@@ -52,7 +52,7 @@ def about(req):
     ctx = contexts.Ctx(req)
 
     params = req.GET
-    base_inputs = init_base(ctx, params)
+    inputs = init_base(ctx, params)
     return templates.render(ctx, '/about.mako')
 
 
@@ -172,14 +172,8 @@ def csv(req):
         return wsgihelpers.not_found(ctx, explanation = ctx._(u'Export disabled by configuration'))
 
     params = req.GET
-    base_inputs = init_base(ctx, params)
-    inputs = dict(
-        category = params.getall('category'),
-        filter = params.get('filter'),
-        term = params.get('term'),
-        territory = params.get('territory'),
-        )
-    inputs.update(base_inputs)
+    inputs = init_base(ctx, params)
+    inputs.update(model.Pois.generate_search_inputs(ctx))
 
     csv_bytes_by_name, errors = conv.pipe(
         conv.inputs_to_pois_csv_infos,
@@ -212,14 +206,8 @@ def excel(req):
         return wsgihelpers.not_found(ctx, explanation = ctx._(u'Export disabled by configuration'))
 
     params = req.GET
-    base_inputs = init_base(ctx, params)
-    inputs = dict(
-        category = params.getall('category'),
-        filter = params.get('filter'),
-        term = params.get('term'),
-        territory = params.get('territory'),
-        )
-    inputs.update(base_inputs)
+    inputs = init_base(ctx, params)
+    inputs.update(model.Pois.generate_search_inputs(ctx))
 
     excel_bytes, errors = conv.pipe(
         conv.inputs_to_pois_csv_infos,
@@ -243,19 +231,16 @@ def export_directory_csv(req):
         return wsgihelpers.not_found(ctx, explanation = ctx._(u'Export disabled by configuration'))
 
     params = req.GET
-    base_inputs = init_base(ctx, params)
+    inputs = init_base(ctx, params)
+    inputs.update(model.Pois.generate_search_inputs(ctx))
+    inputs.update(dict(
+        accept = params.get('accept'),
+        submit = params.get('submit'),
+        ))
+
     format = u'csv'
     mode = u'export'
     type = u'annuaire'
-    inputs = dict(
-        accept = params.get('accept'),
-        category = params.getall('category'),
-        filter = params.get('filter'),
-        submit = params.get('submit'),
-        term = params.get('term'),
-        territory = params.get('territory'),
-        )
-    inputs.update(base_inputs)
 
     accept, error = conv.pipe(conv.guess_bool, conv.default(False), conv.test_is(True))(inputs['accept'], state = ctx)
     if error is None:
@@ -300,19 +285,16 @@ def export_directory_excel(req):
         return wsgihelpers.not_found(ctx, explanation = ctx._(u'Export disabled by configuration'))
 
     params = req.GET
-    base_inputs = init_base(ctx, params)
+    inputs = init_base(ctx, params)
+    inputs.update(model.Pois.generate_search_inputs(ctx))
+    inputs.update(dict(
+        accept = params.get('accept'),
+        submit = params.get('submit'),
+        ))
+
     format = u'excel'
     mode = u'export'
     type = u'annuaire'
-    inputs = dict(
-        accept = params.get('accept'),
-        category = params.getall('category'),
-        filter = params.get('filter'),
-        submit = params.get('submit'),
-        term = params.get('term'),
-        territory = params.get('territory'),
-        )
-    inputs.update(base_inputs)
 
     accept, error = conv.pipe(conv.guess_bool, conv.default(False), conv.test_is(True))(inputs['accept'], state = ctx)
     if error is None:
@@ -357,19 +339,16 @@ def export_directory_geojson(req):
         return wsgihelpers.not_found(ctx, explanation = ctx._(u'Export disabled by configuration'))
 
     params = req.GET
-    base_inputs = init_base(ctx, params)
+    inputs = init_base(ctx, params)
+    inputs.update(model.Pois.generate_search_inputs(ctx))
+    inputs.update(dict(
+        accept = params.get('accept'),
+        submit = params.get('submit'),
+        ))
+
     format = u'geojson'
     mode = u'export'
     type = u'annuaire'
-    inputs = dict(
-        accept = params.get('accept'),
-        category = params.getall('category'),
-        filter = params.get('filter'),
-        submit = params.get('submit'),
-        term = params.get('term'),
-        territory = params.get('territory'),
-        )
-    inputs.update(base_inputs)
 
     accept, error = conv.pipe(conv.guess_bool, conv.default(False), conv.test_is(True))(inputs['accept'], state = ctx)
     if error is None:
@@ -414,19 +393,16 @@ def export_directory_kml(req):
         return wsgihelpers.not_found(ctx, explanation = ctx._(u'Export disabled by configuration'))
 
     params = req.GET
-    base_inputs = init_base(ctx, params)
+    inputs = init_base(ctx, params)
+    inputs.update(model.Pois.generate_search_inputs(ctx))
+    inputs.update(dict(
+        accept = params.get('accept'),
+        submit = params.get('submit'),
+        ))
+
     format = u'kml'
     mode = u'export'
     type = u'annuaire'
-    inputs = dict(
-        accept = params.get('accept'),
-        category = params.getall('category'),
-        filter = params.get('filter'),
-        submit = params.get('submit'),
-        term = params.get('term'),
-        territory = params.get('territory'),
-        )
-    inputs.update(base_inputs)
 
     accept, error = conv.pipe(conv.guess_bool, conv.default(False), conv.test_is(True))(inputs['accept'], state = ctx)
     if error is None:
@@ -525,18 +501,14 @@ def geojson(req):
     ctx = contexts.Ctx(req)
 
     params = req.GET
-    base_inputs = init_base(ctx, params)
-    inputs = dict(
+    inputs = init_base(ctx, params)
+    inputs.update(model.Pois.generate_search_inputs(ctx))
+    inputs.update(dict(
         bbox = params.get('bbox'),
-        category = params.getall('category'),
         context = params.get('context'),
         current = params.get('current'),
-        filter = params.get('filter'),
         jsonp = params.get('jsonp'),
-        term = params.get('term'),
-        territory = params.get('territory'),
-        )
-    inputs.update(base_inputs)
+        ))
 
     data, errors = conv.pipe(
         conv.inputs_to_pois_layer_data,
@@ -619,7 +591,7 @@ def index(req):
     ctx = contexts.Ctx(req)
 
     params = req.params
-    base_inputs = init_base(ctx, params)
+    inputs = init_base(ctx, params)
 
     # Redirect to another page.
     url_args = (conf['default_tab'],)
@@ -642,15 +614,9 @@ def index_directory(req):
         return wsgihelpers.not_found(ctx, explanation = ctx._(u'Directory page disabled by configuration'))
 
     params = req.GET
-    base_inputs = init_base(ctx, params)
+    inputs = init_base(ctx, params)
+    inputs.update(model.Pois.generate_search_inputs(ctx))
     mode = u'annuaire'
-    inputs = dict(
-        category = params.getall('category'),
-        filter = params.get('filter'),
-        term = params.get('term'),
-        territory = params.get('territory'),
-        )
-    inputs.update(base_inputs)
 
     data, errors = conv.inputs_to_pois_directory_data(inputs, state = ctx)
     if errors is not None:
@@ -742,19 +708,13 @@ def index_export(req):
         return wsgihelpers.not_found(ctx, explanation = ctx._(u'Export disabled by configuration'))
 
     params = req.GET
-    base_inputs = init_base(ctx, params)
-    mode = u'export'
-    inputs = dict(
-        category = params.getall('category'),
-        filter = params.get('filter'),
-# TODO
+    inputs = init_base(ctx, params)
+    inputs.update(model.Pois.generate_search_inputs(ctx))
+    inputs.update(dict(
         submit = params.get('submit'),
-        term = params.get('term'),
-        territory = params.get('territory'),
-# TODO
         type_and_format = params.get('type_and_format'),
-        )
-    inputs.update(base_inputs)
+        ))
+    mode = u'export'
 
     data, errors = conv.pipe(
         # Must be renamed before struct, to be able to use categories on errors
@@ -818,15 +778,9 @@ def index_gadget(req):
         return wsgihelpers.not_found(ctx, explanation = ctx._(u'Gadget page disabled by configuration'))
 
     params = req.GET
-    base_inputs = init_base(ctx, params)
+    inputs = init_base(ctx, params)
+    inputs.update(model.Pois.generate_search_inputs(ctx))
     mode = u'gadget'
-    inputs = dict(
-        category = params.getall('category'),
-        filter = params.get('filter'),
-        term = params.get('term'),
-        territory = params.get('territory'),
-        )
-    inputs.update(base_inputs)
 
     data, errors = conv.inputs_to_pois_list_data(inputs, state = ctx)
 
@@ -843,16 +797,12 @@ def index_list(req):
     ctx = contexts.Ctx(req)
 
     params = req.GET
-    base_inputs = init_base(ctx, params)
-    mode = u'liste'
-    inputs = dict(
-        category = params.getall('category'),
-        filter = params.get('filter'),
+    inputs = init_base(ctx, params)
+    inputs.update(model.Pois.generate_search_inputs(ctx))
+    inputs.update(dict(
         page = params.get('page'),
-        term = params.get('term'),
-        territory = params.get('territory'),
-        )
-    inputs.update(base_inputs)
+        ))
+    mode = u'liste'
 
     data, errors = conv.inputs_to_pois_list_data(inputs, state = ctx)
     if errors is not None:
@@ -940,16 +890,12 @@ def index_map(req):
         return wsgihelpers.not_found(ctx, explanation = ctx._(u'Map page disabled by configuration'))
 
     params = req.GET
-    base_inputs = init_base(ctx, params)
-    mode = u'carte'
-    inputs = dict(
+    inputs = init_base(ctx, params)
+    inputs.update(model.Pois.generate_search_inputs(ctx))
+    inputs.update(dict(
         bbox = params.get('bbox'),
-        category = params.getall('category'),
-        filter = params.get('filter'),
-        term = params.get('term'),
-        territory = params.get('territory'),
-        )
-    inputs.update(base_inputs)
+        ))
+    mode = u'carte'
 
     data, errors = conv.pipe(
         conv.inputs_to_pois_layer_data,
@@ -972,7 +918,7 @@ def index_map(req):
 
 
 def init_base(ctx, params):
-    base_inputs = dict(
+    inputs = dict(
         base_category = params.getall('base_category'),
         category_tag = params.getall('category_tag'),
         container_base_url = params.get('container_base_url'),
@@ -987,23 +933,23 @@ def init_base(ctx, params):
 
     ctx.base_categories_slug, error = conv.uniform_sequence(
         conv.str_to_category_slug,
-        )(base_inputs['base_category'], state = ctx)
+        )(inputs['base_category'], state = ctx)
     if error is not None:
         raise wsgihelpers.bad_request(ctx, explanation = ctx._('Base Categories Error: {0}').format(error))
 
     ctx.category_tags_slug, error = conv.uniform_sequence(
         conv.str_to_category_slug,
-        )(base_inputs['category_tag'], state = ctx)
+        )(inputs['category_tag'], state = ctx)
     if error is not None:
         raise wsgihelpers.bad_request(ctx, explanation = ctx._('Category Tags Error: {0}').format(error))
 
-    container_base_url = base_inputs['container_base_url'] or None
+    container_base_url = inputs['container_base_url'] or None
     if container_base_url is None:
         container_hostname = None
     else:
         container_hostname = urlparse.urlsplit(container_base_url).hostname or None
     try:
-        gadget_id = int(base_inputs['gadget'])
+        gadget_id = int(inputs['gadget'])
     except (TypeError, ValueError):
         gadget_id = None
     if gadget_id is None:
@@ -1075,46 +1021,46 @@ def init_base(ctx, params):
         conv.input_to_float,
         conv.test_between(0.0, 40075.16),
         conv.default(20.0),
-        )(base_inputs['distance'], state = ctx)
+        )(inputs['distance'], state = ctx)
     if error is not None:
         raise wsgihelpers.bad_request(ctx, explanation = ctx._('Distance Error: {0}').format(error))
 
     ctx.hide_category, error = conv.pipe(
         conv.guess_bool,
         conv.default(False),
-        )(base_inputs['hide_category'], state = ctx)
+        )(inputs['hide_category'], state = ctx)
     if error is not None:
         raise wsgihelpers.bad_request(ctx, explanation = ctx._('Hide Category Error: {0}').format(error))
 
     ctx.hide_directory, error = conv.pipe(
         conv.guess_bool,
         conv.default(False),
-        )(base_inputs['hide_directory'], state = ctx)
+        )(inputs['hide_directory'], state = ctx)
     if error is not None:
         raise wsgihelpers.bad_request(ctx, explanation = ctx._('Hide Directory Error: {0}').format(error))
 
     ctx.hide_term, error = conv.pipe(
         conv.guess_bool,
         conv.default(False),
-        )(base_inputs['hide_term'], state = ctx)
+        )(inputs['hide_term'], state = ctx)
     if error is not None:
         raise wsgihelpers.bad_request(ctx, explanation = ctx._('Hide Term Error: {0}').format(error))
 
     ctx.hide_territory, error = conv.pipe(
         conv.guess_bool,
         conv.default(False),
-        )(base_inputs['hide_territory'], state = ctx)
+        )(inputs['hide_territory'], state = ctx)
     if error is not None:
         raise wsgihelpers.bad_request(ctx, explanation = ctx._('Hide Territory Error: {0}').format(error))
 
     ctx.show_filter, error = conv.pipe(
         conv.guess_bool,
         conv.default(False),
-        )(base_inputs['show_filter'], state = ctx)
+        )(inputs['show_filter'], state = ctx)
     if error is not None:
         raise wsgihelpers.bad_request(ctx, explanation = ctx._('Show Filter Error: {0}').format(error))
 
-    return base_inputs
+    return inputs
 
 
 @wsgihelpers.wsgify
@@ -1123,17 +1069,13 @@ def kml(req):
     ctx = contexts.Ctx(req)
 
     params = req.GET
-    base_inputs = init_base(ctx, params)
-    inputs = dict(
+    inputs = init_base(ctx, params)
+    inputs.update(model.Pois.generate_search_inputs(ctx))
+    inputs.update(dict(
         bbox = params.get('bbox'),
-        category = params.getall('category'),
         context = params.get('context'),
         current = params.get('current'),
-        filter = params.get('filter'),
-        term = params.get('term'),
-        territory = params.get('territory'),
-        )
-    inputs.update(base_inputs)
+        ))
 
     clusters, errors = conv.pipe(
         conv.inputs_to_pois_layer_data,
@@ -1189,13 +1131,12 @@ def minisite(req):
         return wsgihelpers.not_found(ctx, explanation = ctx._(u'Minisite disabled by configuration'))
 
     params = req.params
-    base_inputs = init_base(ctx, params)
-    inputs = dict(
+    inputs = init_base(ctx, params)
+    inputs.update(dict(
         encoding = params.get('encoding') or u'',
         poi_id = req.urlvars.get('poi_id'),
         slug = req.urlvars.get('slug'),
-        )
-    inputs.update(base_inputs)
+        ))
 
     data, errors = conv.pipe(
         conv.struct(
@@ -1235,12 +1176,11 @@ def poi(req):
     ctx = contexts.Ctx(req)
 
     params = req.params
-    base_inputs = init_base(ctx, params)
-    inputs = dict(
+    inputs = init_base(ctx, params)
+    inputs.update(dict(
         poi_id = req.urlvars.get('poi_id'),
         slug = req.urlvars.get('slug'),
-        )
-    inputs.update(base_inputs)
+        ))
 
     poi, error = conv.pipe(
         conv.input_to_object_id,
@@ -1268,13 +1208,13 @@ def poi_embedded(req):
         return wsgihelpers.not_found(ctx, explanation = ctx._(u'Minisite disabled by configuration'))
 
     params = req.params
-    base_inputs = init_base(ctx, params)
-    inputs = dict(
+    inputs = init_base(ctx, params)
+    inputs.update(model.Pois.generate_search_inputs(ctx))
+    inputs.update(dict(
         encoding = params.get('encoding') or u'',
         poi_id = req.urlvars.get('poi_id'),
         slug = req.urlvars.get('slug'),
-        )
-    inputs.update(base_inputs)
+        ))
 
     poi, error = conv.pipe(
         conv.input_to_object_id,
