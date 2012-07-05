@@ -257,6 +257,15 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
         if attributes:
             self.set_attributes(**attributes)
 
+    @classmethod
+    def extract_search_inputs_from_params(cls, ctx):
+        return dict(
+            category = params.getall('category'),
+            filter = params.get('filter'),
+            term = params.get('term'),
+            territory = params.get('territory'),
+            )
+
     def generate_all_fields(self):
         """Return all fields of POI including dynamic ones (ie linked fields, etc)."""
         fields = self.fields[:] if self.fields is not None else []
@@ -285,15 +294,6 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
             )))
 
         return fields
-
-    @classmethod
-    def generate_search_inputs(cls, ctx):
-        return dict(
-            category = params.getall('category'),
-            filter = params.get('filter'),
-            term = params.get('term'),
-            territory = params.get('territory'),
-            )
 
 
     def get_first_field(self, id, label = None):

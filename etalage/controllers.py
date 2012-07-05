@@ -173,7 +173,7 @@ def csv(req):
 
     params = req.GET
     inputs = init_base(ctx, params)
-    inputs.update(model.Pois.generate_search_inputs(ctx))
+    inputs.update(model.Pois.extract_search_inputs_from_params(ctx))
 
     csv_bytes_by_name, errors = conv.pipe(
         conv.inputs_to_pois_csv_infos,
@@ -207,7 +207,7 @@ def excel(req):
 
     params = req.GET
     inputs = init_base(ctx, params)
-    inputs.update(model.Pois.generate_search_inputs(ctx))
+    inputs.update(model.Pois.extract_search_inputs_from_params(ctx))
 
     excel_bytes, errors = conv.pipe(
         conv.inputs_to_pois_csv_infos,
@@ -232,7 +232,7 @@ def export_directory_csv(req):
 
     params = req.GET
     inputs = init_base(ctx, params)
-    inputs.update(model.Pois.generate_search_inputs(ctx))
+    inputs.update(model.Pois.extract_search_inputs_from_params(ctx))
     inputs.update(dict(
         accept = params.get('accept'),
         submit = params.get('submit'),
@@ -286,7 +286,7 @@ def export_directory_excel(req):
 
     params = req.GET
     inputs = init_base(ctx, params)
-    inputs.update(model.Pois.generate_search_inputs(ctx))
+    inputs.update(model.Pois.extract_search_inputs_from_params(ctx))
     inputs.update(dict(
         accept = params.get('accept'),
         submit = params.get('submit'),
@@ -340,7 +340,7 @@ def export_directory_geojson(req):
 
     params = req.GET
     inputs = init_base(ctx, params)
-    inputs.update(model.Pois.generate_search_inputs(ctx))
+    inputs.update(model.Pois.extract_search_inputs_from_params(ctx))
     inputs.update(dict(
         accept = params.get('accept'),
         submit = params.get('submit'),
@@ -394,7 +394,7 @@ def export_directory_kml(req):
 
     params = req.GET
     inputs = init_base(ctx, params)
-    inputs.update(model.Pois.generate_search_inputs(ctx))
+    inputs.update(model.Pois.extract_search_inputs_from_params(ctx))
     inputs.update(dict(
         accept = params.get('accept'),
         submit = params.get('submit'),
@@ -448,7 +448,7 @@ def export_geographical_coverage_csv(req):
 
     params = req.GET
     inputs = init_base(ctx, params)
-    inputs.update(model.Pois.generate_search_inputs(ctx))
+    inputs.update(model.Pois.extract_search_inputs_from_params(ctx))
     inputs.update(dict(
         accept = params.get('accept'),
         submit = params.get('submit'),
@@ -502,7 +502,7 @@ def export_geographical_coverage_excel(req):
 
     params = req.GET
     inputs = init_base(ctx, params)
-    inputs.update(model.Pois.generate_search_inputs(ctx))
+    inputs.update(model.Pois.extract_search_inputs_from_params(ctx))
     inputs.update(dict(
         accept = params.get('accept'),
         submit = params.get('submit'),
@@ -556,7 +556,7 @@ def geographical_coverage_csv(req):
 
     params = req.GET
     inputs = init_base(ctx, params)
-    inputs.update(model.Pois.generate_search_inputs(ctx))
+    inputs.update(model.Pois.extract_search_inputs_from_params(ctx))
 
     csv_bytes_by_name, errors = conv.pipe(
         conv.inputs_to_geographical_coverage_csv_infos,
@@ -590,7 +590,7 @@ def geographical_coverage_excel(req):
 
     params = req.GET
     inputs = init_base(ctx, params)
-    inputs.update(model.Pois.generate_search_inputs(ctx))
+    inputs.update(model.Pois.extract_search_inputs_from_params(ctx))
 
     excel_bytes, errors = conv.pipe(
         conv.inputs_to_geographical_coverage_csv_infos,
@@ -612,7 +612,7 @@ def geojson(req):
 
     params = req.GET
     inputs = init_base(ctx, params)
-    inputs.update(model.Pois.generate_search_inputs(ctx))
+    inputs.update(model.Pois.extract_search_inputs_from_params(ctx))
     inputs.update(dict(
         bbox = params.get('bbox'),
         context = params.get('context'),
@@ -725,7 +725,7 @@ def index_directory(req):
 
     params = req.GET
     inputs = init_base(ctx, params)
-    inputs.update(model.Pois.generate_search_inputs(ctx))
+    inputs.update(model.Pois.extract_search_inputs_from_params(ctx))
     mode = u'annuaire'
 
     data, errors = conv.inputs_to_pois_directory_data(inputs, state = ctx)
@@ -819,7 +819,7 @@ def index_export(req):
 
     params = req.GET
     inputs = init_base(ctx, params)
-    inputs.update(model.Pois.generate_search_inputs(ctx))
+    inputs.update(model.Pois.extract_search_inputs_from_params(ctx))
     inputs.update(dict(
         submit = params.get('submit'),
         type_and_format = params.get('type_and_format'),
@@ -889,7 +889,7 @@ def index_gadget(req):
 
     params = req.GET
     inputs = init_base(ctx, params)
-    inputs.update(model.Pois.generate_search_inputs(ctx))
+    inputs.update(model.Pois.extract_search_inputs_from_params(ctx))
     mode = u'gadget'
 
     data, errors = conv.inputs_to_pois_list_data(inputs, state = ctx)
@@ -908,7 +908,7 @@ def index_list(req):
 
     params = req.GET
     inputs = init_base(ctx, params)
-    inputs.update(model.Pois.generate_search_inputs(ctx))
+    inputs.update(model.Pois.extract_search_inputs_from_params(ctx))
     inputs.update(dict(
         page = params.get('page'),
         ))
@@ -1001,7 +1001,7 @@ def index_map(req):
 
     params = req.GET
     inputs = init_base(ctx, params)
-    inputs.update(model.Pois.generate_search_inputs(ctx))
+    inputs.update(model.Pois.extract_search_inputs_from_params(ctx))
     inputs.update(dict(
         bbox = params.get('bbox'),
         ))
@@ -1180,7 +1180,7 @@ def kml(req):
 
     params = req.GET
     inputs = init_base(ctx, params)
-    inputs.update(model.Pois.generate_search_inputs(ctx))
+    inputs.update(model.Pois.extract_search_inputs_from_params(ctx))
     inputs.update(dict(
         bbox = params.get('bbox'),
         context = params.get('context'),
@@ -1321,7 +1321,7 @@ def poi_embedded(req):
 
     params = req.params
     inputs = init_base(ctx, params)
-    inputs.update(model.Pois.generate_search_inputs(ctx))
+    inputs.update(model.Pois.extract_search_inputs_from_params(ctx))
     inputs.update(dict(
         encoding = params.get('encoding') or u'',
         poi_id = req.urlvars.get('poi_id'),
