@@ -93,54 +93,6 @@ def iter_categories_slug(organism_types_only = False, tags_slug = None, term = N
     return categories_slug
 
 
-def iter_pois_id(categories_slug = None, competence_territories_id = None, presence_territory = None, term = None):
-    intersected_sets = []
-
-    if competence_territories_id is not None:
-        territory_competent_pois_id = union_set(
-            pois_id_by_competence_territory_id.get(competence_territory_id)
-            for competence_territory_id in competence_territories_id
-            )
-        if not territory_competent_pois_id:
-            return set()
-        intersected_sets.append(territory_competent_pois_id)
-
-    if presence_territory is not None:
-        territory_present_pois_id = pois_id_by_presence_territory_id.get(presence_territory._id)
-        if not territory_present_pois_id:
-            return set()
-        intersected_sets.append(territory_present_pois_id)
-
-    for category_slug in set(categories_slug or []):
-        if category_slug is not None:
-            category_pois_id = pois_id_by_category_slug.get(category_slug)
-            if not category_pois_id:
-                return set()
-            intersected_sets.append(category_pois_id)
-
-    # We should filter on term *after* having looked for competent organizations. Otherwise, when no organization
-    # matching term is found, the nearest organizations will be used even when there are competent organizations (that
-    # don't match the term).
-    if term:
-        prefixes = strings.slugify(term).split(u'-')
-        pois_id_by_prefix = {}
-        for prefix in prefixes:
-            if prefix in pois_id_by_prefix:
-                # TODO? Handle pois with several words sharing the same prefix?
-                continue
-            pois_id_by_prefix[prefix] = union_set(
-                pois_id
-                for word, pois_id in pois_id_by_word.iteritems()
-                if word.startswith(prefix)
-                ) or set()
-        intersected_sets.extend(pois_id_by_prefix.itervalues())
-
-    found_pois_id = intersection_set(intersected_sets)
-    if found_pois_id is None:
-        return indexed_pois_id
-    return found_pois_id
-
-
 def load():
     """Load MongoDB data into RAM-based database."""
     from . import model

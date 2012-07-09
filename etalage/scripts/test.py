@@ -9,7 +9,7 @@ import time
 
 import paste.deploy
 
-from etalage import conv, environment, ramdb
+from etalage import conv, environment, model, ramdb
 
 
 app_name = os.path.splitext(os.path.basename(__file__))[0]
@@ -30,60 +30,60 @@ def main(argv = None):
     print 'Categories:', len(ramdb.category_by_slug)
     print 'pois_id_by_category_slug:', len(ramdb.pois_id_by_category_slug)
 
-    print "ramdb.iter_pois_id()"
+    print "model.Poi.iter_ids()"
     print "===================="
     print
     start_time = time.time()
-    print len(list(ramdb.iter_pois_id()))
+    print len(list(model.Poi.iter_ids()))
     print time.time() - start_time
     print
 
-    print "ramdb.iter_pois_id(categories_slug = [u'mairie'])"
+    print "model.Poi.iter_ids(categories_slug = [u'mairie'])"
     print "================================================="
     print
     start_time = time.time()
-    print len(ramdb.iter_pois_id(categories_slug = [u'mairie']))
+    print len(model.Poi.iter_ids(categories_slug = [u'mairie']))
     print time.time() - start_time
     print
 
-    print "ramdb.iter_pois_id(term = u'Mairie')"
+    print "model.Poi.iter_ids(term = u'Mairie')"
     print "===================================="
     print
     start_time = time.time()
-    print len(ramdb.iter_pois_id(term = u'Mairie'))
+    print len(model.Poi.iter_ids(term = u'Mairie'))
     print time.time() - start_time
     print
 
-    print "ramdb.iter_pois_id(presence_territory = conv(u'92 HAUTS DE SEINE'))"
+    print "model.Poi.iter_ids(presence_territory = conv(u'92 HAUTS DE SEINE'))"
     print "==================================================================="
     print
     start_time = time.time()
-    print len(list(ramdb.iter_pois_id(presence_territory = conv.check(
+    print len(list(model.Poi.iter_ids(presence_territory = conv.check(
         conv.input_to_postal_distribution_to_geolocated_territory)(u'92 HAUTS DE SEINE'))))
     print time.time() - start_time
     print
 
-    print "ramdb.iter_pois_id(categories_slug = [u'mairie'], term = u'Mairie')"
+    print "model.Poi.iter_ids(categories_slug = [u'mairie'], term = u'Mairie')"
     print "==================================================================="
     print
     start_time = time.time()
-    print len(ramdb.iter_pois_id(categories_slug = [u'mairie'], term = u'Mairie'))
+    print len(model.Poi.iter_ids(categories_slug = [u'mairie'], term = u'Mairie'))
     print time.time() - start_time
     print
 
-    print "ramdb.iter_pois_id(categories_slug = [u'mairie'], term = u'Préf')"
+    print "model.Poi.iter_ids(categories_slug = [u'mairie'], term = u'Préf')"
     print "================================================================="
     print
     start_time = time.time()
-    print len(ramdb.iter_pois_id(categories_slug = [u'mairie'], term = u'Préf'))
+    print len(model.Poi.iter_ids(categories_slug = [u'mairie'], term = u'Préf'))
     print time.time() - start_time
     print
 
-    print "ramdb.iter_pois_id(categories_slug = ['mairie'], presence_territory = '92 HAUTS DE SEINE', term = 'Mairie')"
+    print "model.Poi.iter_ids(categories_slug = ['mairie'], presence_territory = '92 HAUTS DE SEINE', term = 'Mairie')"
     print "==========================================================================================================="
     print
     start_time = time.time()
-    print len(list(ramdb.iter_pois_id(
+    print len(list(model.Poi.iter_ids(
         categories_slug = [u'mairie'],
         presence_territory = conv.check(conv.input_to_postal_distribution_to_geolocated_territory)(
             u'92 HAUTS DE SEINE'),

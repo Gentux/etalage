@@ -708,12 +708,6 @@ def index_directory(req):
         directory = None
         territory = None
     else:
-        categories_slug = set(ctx.base_categories_slug or [])
-        if data['categories'] is not None:
-            categories_slug.update(
-                category.slug
-                for category in data['categories']
-                )
         territory = data['territory']
         related_territories_id = ramdb.get_territory_related_territories_id(territory)
         filter = data['filter']
@@ -726,9 +720,10 @@ def index_directory(req):
         else:
             competence_territories_id = None
             presence_territory = None
-        pois_id_iter = ramdb.iter_pois_id(categories_slug = categories_slug,
-            competence_territories_id = competence_territories_id, presence_territory = presence_territory,
-            term = data['term'])
+        pois_id_iter = model.Poi.iter_ids(ctx,
+            competence_territories_id = competence_territories_id,
+            presence_territory = presence_territory,
+            **model.Poi.extract_non_territorial_search_data(ctx, data))
         pois = set(
             poi
             for poi in (
@@ -889,12 +884,6 @@ def index_list(req):
     if errors is not None:
         pager = None
     else:
-        categories_slug = set(ctx.base_categories_slug or [])
-        if data['categories'] is not None:
-            categories_slug.update(
-                category.slug
-                for category in data['categories']
-                )
         filter = data['filter']
         territory = data['territory']
         related_territories_id = ramdb.get_territory_related_territories_id(territory) \
@@ -908,9 +897,10 @@ def index_list(req):
         else:
             competence_territories_id = None
             presence_territory = None
-        pois_id_iter = ramdb.iter_pois_id(categories_slug = categories_slug,
-            competence_territories_id = competence_territories_id, presence_territory = presence_territory,
-            term = data['term'])
+        pois_id_iter = model.Poi.iter_ids(ctx,
+            competence_territories_id = competence_territories_id,
+            presence_territory = presence_territory,
+            **model.Poi.extract_non_territorial_search_data(ctx, data))
         pois = set(
             poi
             for poi in (

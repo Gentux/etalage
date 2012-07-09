@@ -145,7 +145,7 @@ def csv_infos_to_excel_bytes(csv_infos_by_schema_name, state = None):
 
 def default_pois_layer_data_bbox(data, state = None):
     """Compute bounding box and add it when it is missing from data. Return modified data."""
-    from . import ramdb
+    from . import model, ramdb
     if data is None:
         return data, None
     if state is None:
@@ -153,21 +153,16 @@ def default_pois_layer_data_bbox(data, state = None):
     if data['bbox'] is not None:
         return data, None
     data = data.copy()
-    categories_slug = set(state.base_categories_slug or [])
-    if data['categories'] is not None:
-        categories_slug.update(
-            category.slug
-            for category in data['categories']
-            )
     filter = data['filter']
     territory = data['territory']
     poi_by_id = ramdb.poi_by_id
     if territory is None:
         competence_territories_id = None
         presence_territory = None
-        pois_id_iter = ramdb.iter_pois_id(categories_slug = categories_slug,
-            competence_territories_id = competence_territories_id, presence_territory = presence_territory,
-            term = data['term'])
+        pois_id_iter = model.Poi.iter_ids(state,
+            competence_territories_id = competence_territories_id,
+            presence_territory = presence_territory,
+            **model.Poi.extract_non_territorial_search_data(state, data))
         pois = [
             poi
             for poi in (
@@ -191,9 +186,10 @@ def default_pois_layer_data_bbox(data, state = None):
         if filter == 'competence':
             competence_territories_id = ramdb.get_territory_related_territories_id(territory)
             presence_territory = None
-            pois_id_iter = ramdb.iter_pois_id(categories_slug = categories_slug,
-                competence_territories_id = competence_territories_id, presence_territory = presence_territory,
-                term = data['term'])
+            pois_id_iter = model.Poi.iter_ids(state,
+                competence_territories_id = competence_territories_id,
+                presence_territory = presence_territory,
+                **model.Poi.extract_non_territorial_search_data(state, data))
             pois = [
                 poi
                 for poi in (
@@ -205,9 +201,10 @@ def default_pois_layer_data_bbox(data, state = None):
         elif filter == 'presence':
             competence_territories_id = None
             presence_territory = territory
-            pois_id_iter = ramdb.iter_pois_id(categories_slug = categories_slug,
-                competence_territories_id = competence_territories_id, presence_territory = presence_territory,
-                term = data['term'])
+            pois_id_iter = model.Poi.iter_ids(state,
+                competence_territories_id = competence_territories_id,
+                presence_territory = presence_territory,
+                **model.Poi.extract_non_territorial_search_data(state, data))
             pois = [
                 poi
                 for poi in (
@@ -221,9 +218,10 @@ def default_pois_layer_data_bbox(data, state = None):
             # present in the territory).
             competence_territories_id = None
             presence_territory = territory
-            pois_id_iter = ramdb.iter_pois_id(categories_slug = categories_slug,
-                competence_territories_id = competence_territories_id, presence_territory = presence_territory,
-                term = data['term'])
+            pois_id_iter = model.Poi.iter_ids(state,
+                competence_territories_id = competence_territories_id,
+                presence_territory = presence_territory,
+                **model.Poi.extract_non_territorial_search_data(state, data))
             pois = [
                 poi
                 for poi in (
@@ -236,9 +234,10 @@ def default_pois_layer_data_bbox(data, state = None):
                 # When no POI has been found in territory, use the bounding box enclosing every competent POI.
                 competence_territories_id = ramdb.get_territory_related_territories_id(territory)
                 presence_territory = None
-                pois_id_iter = ramdb.iter_pois_id(categories_slug = categories_slug,
-                    competence_territories_id = competence_territories_id, presence_territory = presence_territory,
-                    term = data['term'])
+                pois_id_iter = model.Poi.iter_ids(state,
+                    competence_territories_id = competence_territories_id,
+                    presence_territory = presence_territory,
+                    **model.Poi.extract_non_territorial_search_data(state, data))
                 pois = [
                     poi
                     for poi in (
@@ -325,21 +324,11 @@ def inputs_to_geographical_coverage_csv_infos(inputs, state = None):
     if errors is not None:
         return data, errors
 
-    categories_slug = set(state.base_categories_slug or [])
-    if data['categories'] is not None:
-        categories_slug.update(
-            category.slug
-            for category in data['categories']
-            )
     territory = data['territory']
     competence_territories_id = ramdb.get_territory_related_territories_id(territory) if territory is not None else None
     if competence_territories_id is None:
         competence_territories_id = set(ramdb.territory_by_id.iterkeys())
-    if not categories_slug and data['term'] is None:
-        # No criteria specified => Export every POI, even non indexed ones.
-        pois_id = set(ramdb.poi_by_id.iterkeys())
-    else:
-        pois_id = set(ramdb.iter_pois_id(categories_slug = categories_slug, term = data['term']))
+    pois_id = set(model.Poi.iter_ids(state, **model.Poi.extract_non_territorial_search_data(state, data)))
     pois_id_by_commune_id = {}
     if pois_id:
         pois_id_by_competence_territory_id = {}
@@ -379,12 +368,6 @@ def inputs_to_pois_csv_infos(inputs, state = None):
     if errors is not None:
         return data, errors
 
-    categories_slug = set(state.base_categories_slug or [])
-    if data['categories'] is not None:
-        categories_slug.update(
-            category.slug
-            for category in data['categories']
-            )
     filter = data['filter']
     territory = data['territory']
     related_territories_id = ramdb.get_territory_related_territories_id(territory) if territory is not None else None
@@ -397,13 +380,10 @@ def inputs_to_pois_csv_infos(inputs, state = None):
     else:
         competence_territories_id = None
         presence_territory = None
-    if not categories_slug and data['term'] is None and data['territory'] is None:
-        # No criteria specified => Export every POI, even non indexed ones.
-        pois_id = list(ramdb.poi_by_id.iterkeys())
-    else:
-        pois_id = list(ramdb.iter_pois_id(categories_slug = categories_slug,
-            competence_territories_id = competence_territories_id, presence_territory = presence_territory,
-            term = data['term']))
+    pois_id = list(model.Poi.iter_ids(state,
+        competence_territories_id = competence_territories_id,
+        presence_territory = presence_territory,
+        **model.Poi.extract_non_territorial_search_data(state, data)))
     return pois_id_to_csv_infos(pois_id, state = state)
 
 
@@ -483,6 +463,7 @@ def inputs_to_pois_layer_data(inputs, state = None):
 
 
 def inputs_to_pois_list_data(inputs, state = None):
+    from . import model
     if state is None:
         state = default_state
     return pipe(
@@ -516,12 +497,6 @@ def layer_data_to_clusters(data, state = None):
     center_latitude_cos = math.cos(math.radians(center_latitude))
     center_latitude_sin = math.sin(math.radians(center_latitude))
     center_longitude = (left + right) / 2.0
-    categories_slug = set(state.base_categories_slug or [])
-    if data['categories'] is not None:
-        categories_slug.update(
-            category.slug
-            for category in data['categories']
-            )
     filter = data['filter']
     territory = data['territory']
     related_territories_id = ramdb.get_territory_related_territories_id(territory) if territory is not None else None
@@ -534,9 +509,10 @@ def layer_data_to_clusters(data, state = None):
     else:
         competence_territories_id = None
         presence_territory = None
-    pois_id_iter = ramdb.iter_pois_id(categories_slug = categories_slug,
-        competence_territories_id = competence_territories_id, presence_territory = presence_territory,
-        term = data['term'])
+    pois_id_iter = model.Poi.iter_ids(state,
+        competence_territories_id = competence_territories_id,
+        presence_territory = presence_territory,
+        **model.Poi.extract_non_territorial_search_data(state, data))
     poi_by_id = ramdb.poi_by_id
     current = data['current']
     pois_iter = (
