@@ -250,20 +250,16 @@ def export_directory_csv(req):
         raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, u'api/v1/{0}/{1}'.format(type, format),
             **url_params))
 
-    data, errors = conv.pipe(
-        # Must be renamed before struct, to be able to use categories on errors
-        conv.rename_item('category', 'categories'),
-        conv.struct(
-            dict(
-                accept = conv.test(lambda value: not inputs['submit'],
-                    error = N_(u"You must accept license to be allowed to download data."),
-                    handle_none_value = True,
-                    ),
-                categories = conv.uniform_sequence(conv.input_to_slug_to_category),
+    data, errors = conv.struct(
+        dict(
+            accept = conv.test(lambda value: not inputs['submit'],
+                error = N_(u"You must accept license to be allowed to download data."),
+                handle_none_value = True,
                 ),
-            default = 'drop',
-            keep_none_values = True,
+            categories = conv.uniform_sequence(conv.input_to_slug_to_category),
             ),
+        default = 'drop',
+        keep_none_values = True,
         )(inputs, state = ctx)
     return templates.render(ctx, '/export-accept-license.mako',
         categories = data['categories'],
@@ -304,20 +300,16 @@ def export_directory_excel(req):
         raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, u'api/v1/{0}/{1}'.format(type, format),
             **url_params))
 
-    data, errors = conv.pipe(
-        # Must be renamed before struct, to be able to use categories on errors
-        conv.rename_item('category', 'categories'),
-        conv.struct(
-            dict(
-                accept = conv.test(lambda value: not inputs['submit'],
-                    error = N_(u"You must accept license to be allowed to download data."),
-                    handle_none_value = True,
-                    ),
-                categories = conv.uniform_sequence(conv.input_to_slug_to_category),
+    data, errors = conv.struct(
+        dict(
+            accept = conv.test(lambda value: not inputs['submit'],
+                error = N_(u"You must accept license to be allowed to download data."),
+                handle_none_value = True,
                 ),
-            default = 'drop',
-            keep_none_values = True,
+            categories = conv.uniform_sequence(conv.input_to_slug_to_category),
             ),
+        default = 'drop',
+        keep_none_values = True,
         )(inputs, state = ctx)
     return templates.render(ctx, '/export-accept-license.mako',
         categories = data['categories'],
@@ -358,20 +350,16 @@ def export_directory_geojson(req):
         raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, u'api/v1/{0}/{1}'.format(type, format),
             **url_params))
 
-    data, errors = conv.pipe(
-        # Must be renamed before struct, to be able to use categories on errors
-        conv.rename_item('category', 'categories'),
-        conv.struct(
-            dict(
-                accept = conv.test(lambda value: not inputs['submit'],
-                    error = N_(u"You must accept license to be allowed to download data."),
-                    handle_none_value = True,
-                    ),
-                categories = conv.uniform_sequence(conv.input_to_slug_to_category),
+    data, errors = conv.struct(
+        dict(
+            accept = conv.test(lambda value: not inputs['submit'],
+                error = N_(u"You must accept license to be allowed to download data."),
+                handle_none_value = True,
                 ),
-            default = 'drop',
-            keep_none_values = True,
+            categories = conv.uniform_sequence(conv.input_to_slug_to_category),
             ),
+        default = 'drop',
+        keep_none_values = True,
         )(inputs, state = ctx)
     return templates.render(ctx, '/export-accept-license.mako',
         categories = data['categories'],
@@ -412,20 +400,16 @@ def export_directory_kml(req):
         raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, u'api/v1/{0}/{1}'.format(type, format),
             **url_params))
 
-    data, errors = conv.pipe(
-        # Must be renamed before struct, to be able to use categories on errors
-        conv.rename_item('category', 'categories'),
-        conv.struct(
-            dict(
-                accept = conv.test(lambda value: not inputs['submit'],
-                    error = N_(u"You must accept license to be allowed to download data."),
-                    handle_none_value = True,
-                    ),
-                categories = conv.uniform_sequence(conv.input_to_slug_to_category),
+    data, errors = conv.struct(
+        dict(
+            accept = conv.test(lambda value: not inputs['submit'],
+                error = N_(u"You must accept license to be allowed to download data."),
+                handle_none_value = True,
                 ),
-            default = 'drop',
-            keep_none_values = True,
+            categories = conv.uniform_sequence(conv.input_to_slug_to_category),
             ),
+        default = 'drop',
+        keep_none_values = True,
         )(inputs, state = ctx)
     return templates.render(ctx, '/export-accept-license.mako',
         categories = data['categories'],
@@ -466,20 +450,16 @@ def export_geographical_coverage_csv(req):
         raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, u'api/v1/{0}/{1}'.format(type, format),
             **url_params))
 
-    data, errors = conv.pipe(
-        # Must be renamed before struct, to be able to use categories on errors
-        conv.rename_item('category', 'categories'),
-        conv.struct(
-            dict(
-                accept = conv.test(lambda value: not inputs['submit'],
-                    error = N_(u"You must accept license to be allowed to download data."),
-                    handle_none_value = True,
-                    ),
-                categories = conv.uniform_sequence(conv.input_to_slug_to_category),
+    data, errors = conv.struct(
+        dict(
+            accept = conv.test(lambda value: not inputs['submit'],
+                error = N_(u"You must accept license to be allowed to download data."),
+                handle_none_value = True,
                 ),
-            default = 'drop',
-            keep_none_values = True,
+            categories = conv.uniform_sequence(conv.input_to_slug_to_category),
             ),
+        default = 'drop',
+        keep_none_values = True,
         )(inputs, state = ctx)
     return templates.render(ctx, '/export-accept-license.mako',
         categories = data['categories'],
@@ -520,20 +500,16 @@ def export_geographical_coverage_excel(req):
         raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, u'api/v1/{0}/{1}'.format(type, format),
             **url_params))
 
-    data, errors = conv.pipe(
-        # Must be renamed before struct, to be able to use categories on errors
-        conv.rename_item('category', 'categories'),
-        conv.struct(
-            dict(
-                accept = conv.test(lambda value: not inputs['submit'],
-                    error = N_(u"You must accept license to be allowed to download data."),
-                    handle_none_value = True,
-                    ),
-                categories = conv.uniform_sequence(conv.input_to_slug_to_category),
+    data, errors = conv.struct(
+        dict(
+            accept = conv.test(lambda value: not inputs['submit'],
+                error = N_(u"You must accept license to be allowed to download data."),
+                handle_none_value = True,
                 ),
-            default = 'drop',
-            keep_none_values = True,
+            categories = conv.uniform_sequence(conv.input_to_slug_to_category),
             ),
+        default = 'drop',
+        keep_none_values = True,
         )(inputs, state = ctx)
     return templates.render(ctx, '/export-accept-license.mako',
         categories = data['categories'],
@@ -826,27 +802,23 @@ def index_export(req):
         ))
     mode = u'export'
 
-    data, errors = conv.pipe(
-        # Must be renamed before struct, to be able to use categories on errors
-        conv.rename_item('category', 'categories'),
-        conv.struct(
-            dict(
-                categories = conv.uniform_sequence(conv.input_to_slug_to_category),
-                type_and_format = conv.pipe(
-                    conv.input_to_slug,
-                    conv.test_in([
-                        'annuaire-csv',
-                        'annuaire-excel',
-                        'annuaire-geojson',
-                        'annuaire-kml',
-                        'couverture-csv',
-                        'couverture-excel',
-                        ]),
-                    ),
+    data, errors = conv.struct(
+        dict(
+            categories = conv.uniform_sequence(conv.input_to_slug_to_category),
+            type_and_format = conv.pipe(
+                conv.input_to_slug,
+                conv.test_in([
+                    'annuaire-csv',
+                    'annuaire-excel',
+                    'annuaire-geojson',
+                    'annuaire-kml',
+                    'couverture-csv',
+                    'couverture-excel',
+                    ]),
                 ),
-            default = 'drop',
-            keep_none_values = True,
             ),
+        default = 'drop',
+        keep_none_values = True,
         )(inputs, state = ctx)
     if errors is None:
         if inputs['submit']:
@@ -856,7 +828,7 @@ def index_export(req):
                 # Form submitted. Redirect to another page.
                 url_args = ('export', type, format)
                 url_kwargs = dict(
-                    category = inputs['category'],
+                    category = inputs['categories'],
                     filter = inputs['filter'],
                     term = inputs['term'],
                     territory = inputs['territory'],

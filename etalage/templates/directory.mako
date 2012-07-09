@@ -55,7 +55,7 @@ from etalage import ramdb, urls
                     url_args = dict(
                         (name, value)
                         for name, value in inputs.iteritems()
-                        if name != 'category' and value is not None
+                        if name != 'categories' and value is not None
                         )
                     url_args['category'] = category.name
 %>\

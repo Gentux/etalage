@@ -321,17 +321,14 @@ def inputs_to_geographical_coverage_csv_infos(inputs, state = None):
     from . import conf, ramdb
     if state is None:
         state = default_state
-    data, errors = pipe(
-        rename_item('category', 'categories'),  # Must be renamed before struct, to be able to use categories on errors
-        struct(
-            dict(
-                categories = uniform_sequence(input_to_slug_to_category),
-                term = input_to_slug,
-                territory = input_to_postal_distribution_to_geolocated_territory,
-                ),
-            default = 'drop',
-            keep_none_values = True,
+    data, errors = struct(
+        dict(
+            categories = uniform_sequence(input_to_slug_to_category),
+            term = input_to_slug,
+            territory = input_to_postal_distribution_to_geolocated_territory,
             ),
+        default = 'drop',
+        keep_none_values = True,
         )(inputs, state = state)
     if errors is not None:
         return data, errors
@@ -376,22 +373,19 @@ def inputs_to_pois_csv_infos(inputs, state = None):
     from . import conf, ramdb
     if state is None:
         state = default_state
-    data, errors = pipe(
-        rename_item('category', 'categories'),  # Must be renamed before struct, to be able to use categories on errors
-        struct(
-            dict(
-                categories = uniform_sequence(input_to_slug_to_category),
-                filter = pipe(
-                    str_to_filter,
-                    # By default, when no default_filter is given, export only POIs present on given territory.
-                    default(conf['default_filter'] or 'presence'),
-                    ),
-                term = input_to_slug,
-                territory = input_to_postal_distribution_to_geolocated_territory,
+    data, errors = struct(
+        dict(
+            categories = uniform_sequence(input_to_slug_to_category),
+            filter = pipe(
+                str_to_filter,
+                # By default, when no default_filter is given, export only POIs present on given territory.
+                default(conf['default_filter'] or 'presence'),
                 ),
-            default = 'drop',
-            keep_none_values = True,
+            term = input_to_slug,
+            territory = input_to_postal_distribution_to_geolocated_territory,
             ),
+        default = 'drop',
+        keep_none_values = True,
         )(inputs, state = state)
     if errors is not None:
         return data, errors
@@ -429,7 +423,6 @@ def inputs_to_pois_directory_data(inputs, state = None):
     if state is None:
         state = default_state
     return pipe(
-        rename_item('category', 'categories'),  # Must be renamed before struct, to be able to use categories on errors
         struct(
             dict(
                 categories = uniform_sequence(input_to_slug_to_category),
@@ -453,7 +446,6 @@ def inputs_to_pois_layer_data(inputs, state = None):
     if state is None:
         state = default_state
     return pipe(
-        rename_item('category', 'categories'),  # Must be renamed before struct, to be able to use categories on errors
         struct(
             dict(
                 bbox = pipe(
@@ -508,7 +500,6 @@ def inputs_to_pois_list_data(inputs, state = None):
     if state is None:
         state = default_state
     return pipe(
-        rename_item('category', 'categories'),  # Must be renamed before struct, to be able to use categories on errors
         struct(
             dict(
                 categories = uniform_sequence(input_to_slug_to_category),

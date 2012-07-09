@@ -260,7 +260,7 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
     @classmethod
     def extract_search_inputs_from_params(cls, ctx):
         return dict(
-            category = params.getall('category'),
+            categories = params.getall('category'),
             filter = params.get('filter'),
             term = params.get('term'),
             territory = params.get('territory'),

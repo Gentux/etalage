@@ -113,7 +113,7 @@ $(function () {
 <%
         if name in (
                 'bbox',
-                'category' if not ctx.hide_category else None,
+                'categories' if not ctx.hide_category else None,
                 'filter' if ctx.show_filter else None,
                 'page',
                 'term' if not ctx.hide_term else None,
@@ -153,7 +153,7 @@ $(function () {
             % endif
         % endfor
     % endif
-                        <input class="input-xlarge" id="category" name="category" type="text" value="${inputs['category'][error_index] \
+                        <input class="input-xlarge" id="category" name="category" type="text" value="${inputs['categories'][error_index] \
                                 if error_index is not None else ''}">
         % if error_message:
                         <span class="help-inline">${error_message}</span>
