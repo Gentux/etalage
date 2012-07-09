@@ -318,18 +318,10 @@ def input_to_slug_to_category(value, state = None):
 
 
 def inputs_to_geographical_coverage_csv_infos(inputs, state = None):
-    from . import conf, ramdb
+    from . import model, ramdb
     if state is None:
         state = default_state
-    data, errors = struct(
-        dict(
-            categories = uniform_sequence(input_to_slug_to_category),
-            term = input_to_slug,
-            territory = input_to_postal_distribution_to_geolocated_territory,
-            ),
-        default = 'drop',
-        keep_none_values = True,
-        )(inputs, state = state)
+    data, errors = model.Poi.inputs_to_search_data(inputs, state = state)
     if errors is not None:
         return data, errors
 
@@ -370,22 +362,19 @@ def inputs_to_geographical_coverage_csv_infos(inputs, state = None):
 
 
 def inputs_to_pois_csv_infos(inputs, state = None):
-    from . import conf, ramdb
+    from . import conf, model, ramdb
     if state is None:
         state = default_state
-    data, errors = struct(
-        dict(
-            categories = uniform_sequence(input_to_slug_to_category),
-            filter = pipe(
-                str_to_filter,
+    data, errors = pipe(
+        model.Poi.inputs_to_search_data,
+        struct(
+            dict(
                 # By default, when no default_filter is given, export only POIs present on given territory.
-                default(conf['default_filter'] or 'presence'),
+                filter = default(conf['default_filter'] or 'presence'),
                 ),
-            term = input_to_slug,
-            territory = input_to_postal_distribution_to_geolocated_territory,
+            default = noop,
+            keep_none_values = True,
             ),
-        default = 'drop',
-        keep_none_values = True,
         )(inputs, state = state)
     if errors is not None:
         return data, errors
@@ -423,19 +412,16 @@ def inputs_to_pois_directory_data(inputs, state = None):
     if state is None:
         state = default_state
     return pipe(
+        model.Poi.inputs_to_search_data,
         struct(
             dict(
-                categories = uniform_sequence(input_to_slug_to_category),
-                filter = str_to_filter,
-                term = input_to_slug,
                 territory = pipe(
-                    input_to_postal_distribution_to_geolocated_territory,
                     test(lambda territory: territory.__class__.__name__ in model.communes_kinds,
                         error = N_(u'In "directory" mode, territory must be a commune')),
                     test_not_none(error = N_(u'In "directory" mode, a commune is required')),
                     ),
                 ),
-            default = 'drop',
+            default = noop,
             keep_none_values = True,
             ),
         set_default_filter,
@@ -443,54 +429,54 @@ def inputs_to_pois_directory_data(inputs, state = None):
 
 
 def inputs_to_pois_layer_data(inputs, state = None):
+    from . import model
     if state is None:
         state = default_state
     return pipe(
-        struct(
-            dict(
-                bbox = pipe(
-                    function(lambda bbox: bbox.split(u',')),
-                    struct(
-                        [
-                            # West longitude
-                            pipe(
-                                input_to_float,
-                                test_between(-180, 180),
-                                not_none,
-                                ),
-                            # South latitude
-                            pipe(
-                                input_to_float,
-                                test_between(-90, 90),
-                                not_none,
-                                ),
-                            # East longitude
-                            pipe(
-                                input_to_float,
-                                test_between(-180, 180),
-                                not_none,
-                                ),
-                            # North latitude
-                            pipe(
-                                input_to_float,
-                                test_between(-90, 90),
-                                not_none,
-                                ),
-                            ],
+        merge(
+            model.Poi.inputs_to_search_data,
+            struct(
+                dict(
+                    bbox = pipe(
+                        function(lambda bbox: bbox.split(u',')),
+                        struct(
+                            [
+                                # West longitude
+                                pipe(
+                                    input_to_float,
+                                    test_between(-180, 180),
+                                    not_none,
+                                    ),
+                                # South latitude
+                                pipe(
+                                    input_to_float,
+                                    test_between(-90, 90),
+                                    not_none,
+                                    ),
+                                # East longitude
+                                pipe(
+                                    input_to_float,
+                                    test_between(-180, 180),
+                                    not_none,
+                                    ),
+                                # North latitude
+                                pipe(
+                                    input_to_float,
+                                    test_between(-90, 90),
+                                    not_none,
+                                    ),
+                                ],
+                            ),
+                        ),
+                    current = pipe(
+                        input_to_object_id,
+                        id_to_poi,
+                        test(lambda poi: poi.geo is not None, error = N_('POI has no geographical coordinates')),
                         ),
                     ),
-                categories = uniform_sequence(input_to_slug_to_category),
-                current = pipe(
-                    input_to_object_id,
-                    id_to_poi,
-                    test(lambda poi: poi.geo is not None, error = N_('POI has no geographical coordinates')),
-                    ),
-                filter = str_to_filter,
-                term = input_to_slug,
-                territory = input_to_postal_distribution_to_geolocated_territory,
+                default = 'drop',
+                keep_none_values = True,
                 ),
-            default = 'drop',
-            keep_none_values = True,
             ),
         set_default_filter,
         )(inputs, state = state)
@@ -500,20 +486,19 @@ def inputs_to_pois_list_data(inputs, state = None):
     if state is None:
         state = default_state
     return pipe(
-        struct(
-            dict(
-                categories = uniform_sequence(input_to_slug_to_category),
-                filter = str_to_filter,
-                page = pipe(
-                    input_to_int,
-                    test_greater_or_equal(1),
-                    default(1),
+        merge(
+            model.Poi.inputs_to_search_data,
+            struct(
+                dict(
+                    page = pipe(
+                        input_to_int,
+                        test_greater_or_equal(1),
+                        default(1),
+                        ),
                     ),
-                term = input_to_slug,
-                territory = input_to_postal_distribution_to_geolocated_territory,
+                default = 'drop',
+                keep_none_values = True,
                 ),
-            default = 'drop',
-            keep_none_values = True,
             ),
         set_default_filter,
         rename_item('page', 'page_number'),

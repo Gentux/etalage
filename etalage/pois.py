@@ -244,6 +244,16 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
     competence_territories_id = None
     fields = None
     geo = None
+    inputs_to_search_data = staticmethod(conv.struct(
+        dict(
+            categories = conv.uniform_sequence(conv.input_to_slug_to_category),
+            filter = conv.str_to_filter,
+            term = conv.input_to_slug,
+            territory = conv.input_to_postal_distribution_to_geolocated_territory,
+            ),
+        default = 'drop',
+        keep_none_values = True,
+        ))
     last_update_datetime = None
     last_update_organization = None
     name = None
@@ -258,7 +268,7 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
             self.set_attributes(**attributes)
 
     @classmethod
-    def extract_search_inputs_from_params(cls, ctx):
+    def extract_search_inputs_from_params(cls, ctx, params):
         return dict(
             categories = params.getall('category'),
             filter = params.get('filter'),
@@ -294,7 +304,6 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
             )))
 
         return fields
-
 
     def get_first_field(self, id, label = None):
         return get_first_field(self.fields, id, label = label)

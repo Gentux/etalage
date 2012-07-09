@@ -34,7 +34,6 @@ import logging
 import math
 import sys
 import urllib2
-import urlparse
 import zipfile
 
 from biryani import strings
@@ -52,7 +51,7 @@ def about(req):
     ctx = contexts.Ctx(req)
 
     params = req.GET
-    inputs = init_base(ctx, params)
+    init_base(ctx, params)
     return templates.render(ctx, '/about.mako')
 
 
@@ -173,7 +172,7 @@ def csv(req):
 
     params = req.GET
     inputs = init_base(ctx, params)
-    inputs.update(model.Pois.extract_search_inputs_from_params(ctx))
+    inputs.update(model.Pois.extract_search_inputs_from_params(ctx, params))
 
     csv_bytes_by_name, errors = conv.pipe(
         conv.inputs_to_pois_csv_infos,
@@ -207,7 +206,7 @@ def excel(req):
 
     params = req.GET
     inputs = init_base(ctx, params)
-    inputs.update(model.Pois.extract_search_inputs_from_params(ctx))
+    inputs.update(model.Pois.extract_search_inputs_from_params(ctx, params))
 
     excel_bytes, errors = conv.pipe(
         conv.inputs_to_pois_csv_infos,
@@ -232,7 +231,7 @@ def export_directory_csv(req):
 
     params = req.GET
     inputs = init_base(ctx, params)
-    inputs.update(model.Pois.extract_search_inputs_from_params(ctx))
+    inputs.update(model.Pois.extract_search_inputs_from_params(ctx, params))
     inputs.update(dict(
         accept = params.get('accept'),
         submit = params.get('submit'),
@@ -282,7 +281,7 @@ def export_directory_excel(req):
 
     params = req.GET
     inputs = init_base(ctx, params)
-    inputs.update(model.Pois.extract_search_inputs_from_params(ctx))
+    inputs.update(model.Pois.extract_search_inputs_from_params(ctx, params))
     inputs.update(dict(
         accept = params.get('accept'),
         submit = params.get('submit'),
@@ -332,7 +331,7 @@ def export_directory_geojson(req):
 
     params = req.GET
     inputs = init_base(ctx, params)
-    inputs.update(model.Pois.extract_search_inputs_from_params(ctx))
+    inputs.update(model.Pois.extract_search_inputs_from_params(ctx, params))
     inputs.update(dict(
         accept = params.get('accept'),
         submit = params.get('submit'),
@@ -382,7 +381,7 @@ def export_directory_kml(req):
 
     params = req.GET
     inputs = init_base(ctx, params)
-    inputs.update(model.Pois.extract_search_inputs_from_params(ctx))
+    inputs.update(model.Pois.extract_search_inputs_from_params(ctx, params))
     inputs.update(dict(
         accept = params.get('accept'),
         submit = params.get('submit'),
@@ -432,7 +431,7 @@ def export_geographical_coverage_csv(req):
 
     params = req.GET
     inputs = init_base(ctx, params)
-    inputs.update(model.Pois.extract_search_inputs_from_params(ctx))
+    inputs.update(model.Pois.extract_search_inputs_from_params(ctx, params))
     inputs.update(dict(
         accept = params.get('accept'),
         submit = params.get('submit'),
@@ -482,7 +481,7 @@ def export_geographical_coverage_excel(req):
 
     params = req.GET
     inputs = init_base(ctx, params)
-    inputs.update(model.Pois.extract_search_inputs_from_params(ctx))
+    inputs.update(model.Pois.extract_search_inputs_from_params(ctx, params))
     inputs.update(dict(
         accept = params.get('accept'),
         submit = params.get('submit'),
@@ -532,7 +531,7 @@ def geographical_coverage_csv(req):
 
     params = req.GET
     inputs = init_base(ctx, params)
-    inputs.update(model.Pois.extract_search_inputs_from_params(ctx))
+    inputs.update(model.Pois.extract_search_inputs_from_params(ctx, params))
 
     csv_bytes_by_name, errors = conv.pipe(
         conv.inputs_to_geographical_coverage_csv_infos,
@@ -566,7 +565,7 @@ def geographical_coverage_excel(req):
 
     params = req.GET
     inputs = init_base(ctx, params)
-    inputs.update(model.Pois.extract_search_inputs_from_params(ctx))
+    inputs.update(model.Pois.extract_search_inputs_from_params(ctx, params))
 
     excel_bytes, errors = conv.pipe(
         conv.inputs_to_geographical_coverage_csv_infos,
@@ -588,7 +587,7 @@ def geojson(req):
 
     params = req.GET
     inputs = init_base(ctx, params)
-    inputs.update(model.Pois.extract_search_inputs_from_params(ctx))
+    inputs.update(model.Pois.extract_search_inputs_from_params(ctx, params))
     inputs.update(dict(
         bbox = params.get('bbox'),
         context = params.get('context'),
@@ -677,7 +676,7 @@ def index(req):
     ctx = contexts.Ctx(req)
 
     params = req.params
-    inputs = init_base(ctx, params)
+    init_base(ctx, params)
 
     # Redirect to another page.
     url_args = (conf['default_tab'],)
@@ -701,7 +700,7 @@ def index_directory(req):
 
     params = req.GET
     inputs = init_base(ctx, params)
-    inputs.update(model.Pois.extract_search_inputs_from_params(ctx))
+    inputs.update(model.Pois.extract_search_inputs_from_params(ctx, params))
     mode = u'annuaire'
 
     data, errors = conv.inputs_to_pois_directory_data(inputs, state = ctx)
@@ -795,7 +794,7 @@ def index_export(req):
 
     params = req.GET
     inputs = init_base(ctx, params)
-    inputs.update(model.Pois.extract_search_inputs_from_params(ctx))
+    inputs.update(model.Pois.extract_search_inputs_from_params(ctx, params))
     inputs.update(dict(
         submit = params.get('submit'),
         type_and_format = params.get('type_and_format'),
@@ -861,7 +860,7 @@ def index_gadget(req):
 
     params = req.GET
     inputs = init_base(ctx, params)
-    inputs.update(model.Pois.extract_search_inputs_from_params(ctx))
+    inputs.update(model.Pois.extract_search_inputs_from_params(ctx, params))
     mode = u'gadget'
 
     data, errors = conv.inputs_to_pois_list_data(inputs, state = ctx)
@@ -880,7 +879,7 @@ def index_list(req):
 
     params = req.GET
     inputs = init_base(ctx, params)
-    inputs.update(model.Pois.extract_search_inputs_from_params(ctx))
+    inputs.update(model.Pois.extract_search_inputs_from_params(ctx, params))
     inputs.update(dict(
         page = params.get('page'),
         ))
@@ -973,7 +972,7 @@ def index_map(req):
 
     params = req.GET
     inputs = init_base(ctx, params)
-    inputs.update(model.Pois.extract_search_inputs_from_params(ctx))
+    inputs.update(model.Pois.extract_search_inputs_from_params(ctx, params))
     inputs.update(dict(
         bbox = params.get('bbox'),
         ))
@@ -1026,10 +1025,10 @@ def init_base(ctx, params):
         raise wsgihelpers.bad_request(ctx, explanation = ctx._('Category Tags Error: {0}').format(error))
 
     container_base_url = inputs['container_base_url'] or None
-    if container_base_url is None:
-        container_hostname = None
-    else:
-        container_hostname = urlparse.urlsplit(container_base_url).hostname or None
+#    if container_base_url is None:
+#        container_hostname = None
+#    else:
+#        container_hostname = urlparse.urlsplit(container_base_url).hostname or None
     try:
         gadget_id = int(inputs['gadget'])
     except (TypeError, ValueError):
@@ -1038,7 +1037,7 @@ def init_base(ctx, params):
         if container_base_url is not None:
             # Ignore container site when no gadget ID is given.
             container_base_url = None
-            container_hostname = None
+#             container_hostname = None
     elif conf['require_subscription']:
         subscriber = model.Subscriber.find_one({'sites.subscriptions.id': gadget_id})
         if subscriber is None:
@@ -1073,7 +1072,7 @@ def init_base(ctx, params):
             # search engine. We need to retrieve the URL of page containing gadget to do a JavaScript redirection (in
             # publication.mako).
             container_base_url = subscription.url or None
-            container_hostname = urlparse.urlsplit(container_base_url).hostname or None
+#             container_hostname = urlparse.urlsplit(container_base_url).hostname or None
     ctx.container_base_url = container_base_url
     ctx.gadget_id = gadget_id
 
@@ -1152,7 +1151,7 @@ def kml(req):
 
     params = req.GET
     inputs = init_base(ctx, params)
-    inputs.update(model.Pois.extract_search_inputs_from_params(ctx))
+    inputs.update(model.Pois.extract_search_inputs_from_params(ctx, params))
     inputs.update(dict(
         bbox = params.get('bbox'),
         context = params.get('context'),
@@ -1293,7 +1292,7 @@ def poi_embedded(req):
 
     params = req.params
     inputs = init_base(ctx, params)
-    inputs.update(model.Pois.extract_search_inputs_from_params(ctx))
+    inputs.update(model.Pois.extract_search_inputs_from_params(ctx, params))
     inputs.update(dict(
         encoding = params.get('encoding') or u'',
         poi_id = req.urlvars.get('poi_id'),
