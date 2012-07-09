@@ -304,12 +304,28 @@ def id_to_poi(poi_id, state = None):
     return poi, None
 
 
+def input_to_categor_slug(value, state = None):
+    from . import ramdb
+    if state is None:
+        state = default_state
+    return pipe(
+        input_to_slug,
+        test(lambda slug: slug in ramdb.category_by_slug, error = N_(u'Invalid category')),
+        )(value, state = state)
+
+
+input_to_filter = pipe(
+    input_to_slug,
+    test_in(['competence', 'presence']),
+    )
+
+
 def input_to_slug_to_category(value, state = None):
     from . import ramdb
     if state is None:
         state = default_state
     return pipe(
-        str_to_category_slug,
+        input_to_categor_slug,
         function(lambda slug: ramdb.category_by_slug[slug]),
         test(lambda category: (category.tags_slug or set()).issuperset(state.category_tags_slug or []),
             error = N_(u'Missing required tags for category')),
@@ -729,22 +745,6 @@ def site_to_bson(subscriber, state = None):
             default = noop,
             ),
         )(session, state = state)
-
-
-def str_to_category_slug(value, state = None):
-    from . import ramdb
-    if state is None:
-        state = default_state
-    return pipe(
-        input_to_slug,
-        test(lambda slug: slug in ramdb.category_by_slug, error = N_(u'Invalid category')),
-        )(value, state = state)
-
-
-str_to_filter = pipe(
-    input_to_slug,
-    test_in(['competence', 'presence']),
-    )
 
 
 def subscriber_to_bson(subscriber, state = None):

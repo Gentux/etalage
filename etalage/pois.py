@@ -247,7 +247,7 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
     inputs_to_search_data = staticmethod(conv.struct(
         dict(
             categories = conv.uniform_sequence(conv.input_to_slug_to_category),
-            filter = conv.str_to_filter,
+            filter = conv.input_to_filter,
             term = conv.input_to_slug,
             territory = conv.input_to_postal_distribution_to_geolocated_territory,
             ),

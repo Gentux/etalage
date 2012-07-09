@@ -78,7 +78,7 @@ def autocomplete_category(req):
                     conv.test_greater_or_equal(1),
                     conv.default(1),
                     ),
-                tag = conv.uniform_sequence(conv.str_to_category_slug),
+                tag = conv.uniform_sequence(conv.input_to_categor_slug),
                 term = conv.make_input_to_slug(separator = u' ', transform = strings.upper),
                 ),
             default = 'drop',
@@ -1003,13 +1003,13 @@ def init_base(ctx, params):
         )
 
     ctx.base_categories_slug, error = conv.uniform_sequence(
-        conv.str_to_category_slug,
+        conv.input_to_categor_slug,
         )(inputs['base_category'], state = ctx)
     if error is not None:
         raise wsgihelpers.bad_request(ctx, explanation = ctx._('Base Categories Error: {0}').format(error))
 
     ctx.category_tags_slug, error = conv.uniform_sequence(
-        conv.str_to_category_slug,
+        conv.input_to_categor_slug,
         )(inputs['category_tag'], state = ctx)
     if error is not None:
         raise wsgihelpers.bad_request(ctx, explanation = ctx._('Category Tags Error: {0}').format(error))
