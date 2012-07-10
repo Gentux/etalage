@@ -30,7 +30,7 @@ def delete_remaining(indexes, remaining):
     for index_type, remaining_for_type in remaining.iteritems():
         if index_type == 'dict_of_sets':
             for index_name, remaining_for_index in remaining_for_type.iteritems():
-                index = indexes[index_name]
+                index = getattr(indexes, index_name)
                 for value, keys in remaining_for_index.iteritems():
                     for key in keys:
                         key_values = index[key]
@@ -39,7 +39,7 @@ def delete_remaining(indexes, remaining):
                             del index[key]
         elif index_type == 'dict_of_values':
             for index_name, remaining_for_index in remaining_for_type.iteritems():
-                index = indexes[index_name]
+                index = getattr(indexes, index_name)
                 for value, keys in remaining_for_index.iteritems():
                     for key in keys:
                         del index[key]
@@ -48,7 +48,7 @@ def delete_remaining(indexes, remaining):
 
 
 def find_existing(indexes, index_name, index_type, value, existing):
-    found_keys = find_value_functions[index_type](indexes[index_name], value)
+    found_keys = find_value_functions[index_type](getattr(indexes, index_name), value)
     if found_keys is not None:
         existing.setdefault(index_type, {}).setdefault(index_name, {})[value] = found_keys
     return found_keys

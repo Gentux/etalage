@@ -261,14 +261,13 @@ def export_directory_csv(req):
         keep_none_values = True,
         )(inputs, state = ctx)
     return templates.render(ctx, '/export-accept-license.mako',
-        categories = data['categories'],
         export_title = ctx._(u"Directory Export in CSV Format"),
         errors = errors,
         format = format,
         inputs = inputs,
         mode = mode,
         type = type,
-        )
+        **model.Poi.extract_non_territorial_search_data(ctx, data))
 
 
 @wsgihelpers.wsgify
@@ -311,14 +310,13 @@ def export_directory_excel(req):
         keep_none_values = True,
         )(inputs, state = ctx)
     return templates.render(ctx, '/export-accept-license.mako',
-        categories = data['categories'],
         export_title = ctx._(u"Directory Export in Excel Format"),
         errors = errors,
         format = format,
         inputs = inputs,
         mode = mode,
         type = type,
-        )
+        **model.Poi.extract_non_territorial_search_data(ctx, data))
 
 
 @wsgihelpers.wsgify
@@ -361,14 +359,13 @@ def export_directory_geojson(req):
         keep_none_values = True,
         )(inputs, state = ctx)
     return templates.render(ctx, '/export-accept-license.mako',
-        categories = data['categories'],
         export_title = ctx._(u"Directory Export in GeoJSON Format"),
         errors = errors,
         format = format,
         inputs = inputs,
         mode = mode,
         type = type,
-        )
+        **model.Poi.extract_non_territorial_search_data(ctx, data))
 
 
 @wsgihelpers.wsgify
@@ -411,14 +408,13 @@ def export_directory_kml(req):
         keep_none_values = True,
         )(inputs, state = ctx)
     return templates.render(ctx, '/export-accept-license.mako',
-        categories = data['categories'],
         export_title = ctx._(u"Directory Export in KML Format"),
         errors = errors,
         format = format,
         inputs = inputs,
         mode = mode,
         type = type,
-        )
+        **model.Poi.extract_non_territorial_search_data(ctx, data))
 
 
 @wsgihelpers.wsgify
@@ -461,14 +457,13 @@ def export_geographical_coverage_csv(req):
         keep_none_values = True,
         )(inputs, state = ctx)
     return templates.render(ctx, '/export-accept-license.mako',
-        categories = data['categories'],
         export_title = ctx._(u"Geographical Coverage Export in CSV Format"),
         errors = errors,
         format = format,
         inputs = inputs,
         mode = mode,
         type = type,
-        )
+        **model.Poi.extract_non_territorial_search_data(ctx, data))
 
 
 @wsgihelpers.wsgify
@@ -511,14 +506,13 @@ def export_geographical_coverage_excel(req):
         keep_none_values = True,
         )(inputs, state = ctx)
     return templates.render(ctx, '/export-accept-license.mako',
-        categories = data['categories'],
         export_title = ctx._(u"Geographical Coverage Export in Excel Format"),
         errors = errors,
         format = format,
         inputs = inputs,
         mode = mode,
         type = type,
-        )
+        **model.Poi.extract_non_territorial_search_data(ctx, data))
 
 
 @wsgihelpers.wsgify
@@ -770,13 +764,12 @@ def index_directory(req):
             else:
                 organism_type_pois.append(poi)
     return templates.render(ctx, '/directory.mako',
-        categories = data['categories'],
         directory = directory,
         errors = errors,
         inputs = inputs,
         mode = mode,
         territory = territory,
-        )
+        **model.Poi.extract_non_territorial_search_data(ctx, data))
 
 
 @wsgihelpers.wsgify
@@ -838,11 +831,10 @@ def index_export(req):
                 type_and_format = ctx._(u'Missing value'),
                 )
     return templates.render(ctx, '/export.mako',
-        categories = data['categories'],
         errors = errors,
         inputs = inputs,
         mode = mode,
-        )
+        **model.Poi.extract_non_territorial_search_data(ctx, data))
 
 
 @wsgihelpers.wsgify
@@ -944,12 +936,11 @@ def index_list(req):
                     pager.first_item_index, pager.last_item_number)
                 ]
     return templates.render(ctx, '/list.mako',
-        categories = data['categories'],
         errors = errors,
         inputs = inputs,
         mode = mode,
         pager = pager,
-        )
+        **model.Poi.extract_non_territorial_search_data(ctx, data))
 
 
 @wsgihelpers.wsgify
@@ -980,12 +971,11 @@ def index_map(req):
         territory = None
     return templates.render(ctx, '/map.mako',
         bbox = bbox,
-        categories = data['categories'],
         errors = errors,
         inputs = inputs,
         mode = mode,
         territory = territory,
-        )
+        **model.Poi.extract_non_territorial_search_data(ctx, data))
 
 
 def init_base(ctx, params):

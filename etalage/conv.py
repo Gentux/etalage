@@ -111,7 +111,7 @@ def csv_infos_to_csv_bytes(csv_infos_by_schema_name, state = None):
                 unicode(cell).encode('utf-8') if cell is not None else None
                 for cell in row
                 ])
-        csv_filename = '{0}.csv'.format(strings.slugify(ramdb.schemas_title_by_name.get(schema_name, schema_name)))
+        csv_filename = '{0}.csv'.format(strings.slugify(ramdb.schema_title_by_name.get(schema_name, schema_name)))
         csv_bytes_by_name[csv_filename] = csv_file.getvalue()
     return csv_bytes_by_name or None, None
 
@@ -124,7 +124,7 @@ def csv_infos_to_excel_bytes(csv_infos_by_schema_name, state = None):
         state = default_state
     book = xlwt.Workbook(encoding = 'utf-8')
     for schema_name, csv_infos in csv_infos_by_schema_name.iteritems():
-        sheet = book.add_sheet(ramdb.schemas_title_by_name.get(schema_name, schema_name)[:31])
+        sheet = book.add_sheet(ramdb.schema_title_by_name.get(schema_name, schema_name)[:31])
         sheet_row = sheet.row(0)
         for column_index, label in enumerate(csv_infos['columns_label']):
             sheet_row.write(column_index, label or u'')
@@ -336,7 +336,7 @@ def inputs_to_geographical_coverage_csv_infos(inputs, state = None):
     from . import model, ramdb
     if state is None:
         state = default_state
-    data, errors = model.Poi.inputs_to_search_data(inputs, state = state)
+    data, errors = model.Poi.make_inputs_to_search_data()(inputs, state = state)
     if errors is not None:
         return data, errors
 
@@ -371,7 +371,7 @@ def inputs_to_pois_csv_infos(inputs, state = None):
     if state is None:
         state = default_state
     data, errors = pipe(
-        model.Poi.inputs_to_search_data,
+        model.Poi.make_inputs_to_search_data(),
         struct(
             dict(
                 # By default, when no default_filter is given, export only POIs present on given territory.
@@ -408,7 +408,7 @@ def inputs_to_pois_directory_data(inputs, state = None):
     if state is None:
         state = default_state
     return pipe(
-        model.Poi.inputs_to_search_data,
+        model.Poi.make_inputs_to_search_data(),
         struct(
             dict(
                 territory = pipe(
@@ -430,7 +430,7 @@ def inputs_to_pois_layer_data(inputs, state = None):
         state = default_state
     return pipe(
         merge(
-            model.Poi.inputs_to_search_data,
+            model.Poi.make_inputs_to_search_data(),
             struct(
                 dict(
                     bbox = pipe(
@@ -484,7 +484,7 @@ def inputs_to_pois_list_data(inputs, state = None):
         state = default_state
     return pipe(
         merge(
-            model.Poi.inputs_to_search_data,
+            model.Poi.make_inputs_to_search_data(),
             struct(
                 dict(
                     page = pipe(

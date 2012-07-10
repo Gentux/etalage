@@ -50,7 +50,7 @@ pois_id_by_category_slug = {}
 pois_id_by_competence_territory_id = {}
 pois_id_by_presence_territory_id = {}
 pois_id_by_word = {}
-schemas_title_by_name = {}
+schema_title_by_name = {}
 territories_id_by_ancestor_id = {}
 territories_id_by_postal_distribution = {}
 territory_by_id = {}
@@ -154,11 +154,13 @@ def load():
         territories_id_by_postal_distribution[(main_postal_distribution['postal_code'],
             main_postal_distribution['postal_routing'])] = territory_id
 
-    schemas_title_by_name.clear()
+    schema_title_by_name.clear()
     for schema in model.db.schemas.find(None, ['name', 'title']):
-        schemas_title_by_name[schema['name']] = schema['title']
+        schema_title_by_name[schema['name']] = schema['title']
 
-    load_pois()
+    model.Poi.clear_indexes()
+    model.Poi.load_pois()
+    model.Poi.index_pois()
 
 #    # Remove unused categories.
 #    for category_slug in category_by_slug.keys():
@@ -177,23 +179,11 @@ def load():
     log.info('RAM-based database loaded in {0} seconds'.format(datetime.datetime.utcnow() - start_time))
 
 
-def load_pois():
-    from . import model
-
-    indexed_pois_id.clear()
-    poi_by_id.clear()
-    pois_id_by_category_slug.clear()
-    pois_id_by_competence_territory_id.clear()
-    pois_id_by_presence_territory_id.clear()
-    pois_id_by_word.clear()
-    model.Poi.load_pois()
-    model.Poi.index_pois()
-
-
 def ramdb_based(controller):
     """A decorator that allow to use ramdb data and update it regularily from MongoDB data."""
     def invoke(req):
         from . import model
+
         global last_timestamp
         reset_pois = False
         for data_update in model.db[conf['data_updates_collection']].find(dict(
@@ -208,7 +198,7 @@ def ramdb_based(controller):
                 try:
                     # First find changes to do on indexes.
                     existing = {}
-                    indexes = sys.modules[__name__].__dict__
+                    indexes = sys.modules[__name__]
                     find_existing(indexes, 'categories_slug_by_tag_slug', 'dict_of_sets', slug, existing)
                     find_existing(indexes, 'categories_slug_by_word', 'dict_of_sets', slug, existing)
                     find_existing(indexes, 'category_slug_by_pivot_code', 'dict_of_values', slug, existing)
@@ -248,9 +238,10 @@ def ramdb_based(controller):
                         # will publish their change.
                         # First find changes to do on indexes.
                         existing = {}
-                        indexes = sys.modules[__name__].__dict__
+                        indexes = sys.modules[__name__]
                         find_existing(indexes, 'pois_id_by_category_slug', 'dict_of_sets', id, existing)
                         find_existing(indexes, 'pois_id_by_competence_territory_id', 'dict_of_sets', id, existing)
+                        find_existing(model.Poi, 'pois_id_by_parent_id', 'dict_of_sets', id, existing)
                         find_existing(indexes, 'pois_id_by_presence_territory_id', 'dict_of_sets', id, existing)
                         find_existing(indexes, 'pois_id_by_word', 'dict_of_sets', id, existing)
                         # Then update indexes.
@@ -269,11 +260,13 @@ def ramdb_based(controller):
         if reset_pois:
             read_write_lock.acquire()
             try:
-                load_pois()
+                model.Poi.clear_indexes()
+                model.Poi.load_pois()
+                model.Poi.index_pois()
             finally:
                 read_write_lock.release()
 
-        # TODO: Handle schemas updates & schemas_title_by_name.
+        # TODO: Handle schemas updates & schema_title_by_name.
 
         read_write_lock.acquire(shared = True)
         try:

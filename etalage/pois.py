@@ -244,21 +244,12 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
     competence_territories_id = None
     fields = None
     geo = None
-    inputs_to_search_data = staticmethod(conv.struct(
-        dict(
-            categories = conv.uniform_sequence(conv.input_to_slug_to_category),
-            filter = conv.input_to_filter,
-            term = conv.input_to_slug,
-            territory = conv.input_to_postal_distribution_to_geolocated_territory,
-            ),
-        default = 'drop',
-        keep_none_values = True,
-        ))
     last_update_datetime = None
     last_update_organization = None
     name = None
     organism_type_slug = None
     parent_id = None
+    pois_id_by_parent_id = {}  # class attribute
     postal_distribution_str = None
     schema_name = None
     street_address = None
@@ -266,6 +257,16 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
     def __init__(self, **attributes):
         if attributes:
             self.set_attributes(**attributes)
+
+    @classmethod
+    def clear_indexes(cls):
+        ramdb.indexed_pois_id.clear()
+        ramdb.poi_by_id.clear()
+        cls.pois_id_by_parent_id.clear()
+        ramdb.pois_id_by_category_slug.clear()
+        ramdb.pois_id_by_competence_territory_id.clear()
+        ramdb.pois_id_by_presence_territory_id.clear()
+        ramdb.pois_id_by_word.clear()
 
     @classmethod
     def extract_non_territorial_search_data(cls, ctx, data):
@@ -296,14 +297,13 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
         # Add children POIs as linked fields.
         children = sorted(
             (
-                child
-                for child in ramdb.poi_by_id.itervalues()
-                if child.parent_id == self._id
+                ramdb.poi_by_id[child_id]
+                for child_id in self.pois_id_by_parent_id.get(self._id, set())
                 ),
             key = lambda child: (child.schema_name, child.name),
             )
         for child in children:
-            fields.append(Field(id = 'link', label = ramdb.schemas_title_by_name[child.schema_name],
+            fields.append(Field(id = 'link', label = ramdb.schema_title_by_name[child.schema_name],
                 value = child._id))
 
         # Add last-update field.
@@ -472,6 +472,8 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
         self.bson = poi_bson
 
         ramdb.poi_by_id[self._id] = self
+        if self.parent_id is not None:
+            cls.pois_id_by_parent_id.setdefault(self.parent_id, set()).add(self._id)
         return self
 
     @classmethod
@@ -479,6 +481,18 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
         for poi_bson in cls.get_collection().find({'metadata.deleted': {'$exists': False}}):
             cls.load(poi_bson)
 
+    @classmethod
+    def make_inputs_to_search_data(cls):
+        return conv.struct(
+            dict(
+                categories = conv.uniform_sequence(conv.input_to_slug_to_category),
+                filter = conv.input_to_filter,
+                term = conv.input_to_slug,
+                territory = conv.input_to_postal_distribution_to_geolocated_territory,
+                ),
+            default = 'drop',
+            keep_none_values = True,
+            )
     @property
     def parent(self):
         if self.parent_id is None:

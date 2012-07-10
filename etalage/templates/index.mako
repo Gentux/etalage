@@ -103,35 +103,18 @@ $(function () {
 
 <%def name="search_form()" filter="trim">
         <form action="${urls.get_url(ctx, mode)}" class="form-horizontal internal" id="search-form" method="get">
-            <%self:search_form_content/>
+            <%self:search_form_hidden/>
+            <fieldset>
+                <%self:search_form_fields/>
+                <div class="form-actions">
+                    <button class="btn btn-primary" type="submit"><i class="icon-search icon-white"></i> ${_('Search')}</button>
+                </div>
+            <fieldset>
         </form>
 </%def>
 
 
-<%def name="search_form_content()" filter="trim">
-    % for name, value in sorted(inputs.iteritems()):
-<%
-        if name in (
-                'bbox',
-                'categories' if not ctx.hide_category else None,
-                'filter' if ctx.show_filter else None,
-                'page',
-                'term' if not ctx.hide_term else None,
-                'territory' if not ctx.hide_territory else None,
-                ):
-            continue
-        if value is None or value == u'':
-            continue
-%>\
-        % if isinstance(value, list):
-            % for item_value in value:
-            <input name="${name}" type="hidden" value="${item_value or ''}">
-            % endfor
-        % else:
-            <input name="${name}" type="hidden" value="${value or ''}">
-        % endif
-    % endfor
-            <fieldset>
+<%def name="search_form_field_categories()" filter="trim">
     % if not ctx.hide_category:
 <%
         error = errors.get('categories') if errors is not None else None
@@ -161,34 +144,10 @@ $(function () {
                     </div>
                 </div>
     % endif
-    % if not ctx.hide_term:
-<%
-        error = errors.get('term') if errors is not None else None
-%>\
-                <div class="control-group${' error' if error else ''}">
-                    <label class="control-label" for="term">Intitulé</label>
-                    <div class="controls">
-                        <input class="input-xlarge" id="term" name="term" type="text" value="${inputs['term'] or ''}">
-        % if error:
-                        <span class="help-inline">${error}</span>
-        % endif
-                    </div>
-                </div>
-    % endif
-    % if not ctx.hide_territory:
-<%
-        error = errors.get('territory') if errors is not None else None
-%>\
-                <div class="control-group${' error' if error else ''}">
-                    <label class="control-label" for="territory">Territoire</label>
-                    <div class="controls">
-                        <input class="input-xlarge" id="territory" name="territory" type="text" value="${inputs['territory'] or ''}">
-        % if error:
-                        <span class="help-inline">${error}</span>
-        % endif
-                    </div>
-                </div>
-    % endif
+</%def>
+
+
+<%def name="search_form_field_filter()" filter="trim">
     % if ctx.show_filter:
 <%
         error = errors.get('filter') if errors is not None else None
@@ -214,9 +173,78 @@ $(function () {
                     </div>
                 </div>
     % endif
-                <div class="form-actions">
-                    <button class="btn btn-primary" type="submit"><i class="icon-search icon-white"></i> ${_('Search')}</button>
+</%def>
+
+
+<%def name="search_form_field_term()" filter="trim">
+    % if not ctx.hide_term:
+<%
+        error = errors.get('term') if errors is not None else None
+%>\
+                <div class="control-group${' error' if error else ''}">
+                    <label class="control-label" for="term">Intitulé</label>
+                    <div class="controls">
+                        <input class="input-xlarge" id="term" name="term" type="text" value="${inputs['term'] or ''}">
+        % if error:
+                        <span class="help-inline">${error}</span>
+        % endif
+                    </div>
                 </div>
-            <fieldset>
+    % endif
+</%def>
+
+
+<%def name="search_form_field_territory()" filter="trim">
+    % if not ctx.hide_territory:
+<%
+        error = errors.get('territory') if errors is not None else None
+%>\
+                <div class="control-group${' error' if error else ''}">
+                    <label class="control-label" for="territory">Territoire</label>
+                    <div class="controls">
+                        <input class="input-xlarge" id="territory" name="territory" type="text" value="${inputs['territory'] or ''}">
+        % if error:
+                        <span class="help-inline">${error}</span>
+        % endif
+                    </div>
+                </div>
+    % endif
+</%def>
+
+
+<%def name="search_form_fields()" filter="trim">
+                <%self:search_form_field_categories/>
+                <%self:search_form_field_term/>
+                <%self:search_form_field_territory/>
+                <%self:search_form_field_filter/>
+</%def>
+
+
+<%def name="search_form_hidden()" filter="trim">
+    % for name, value in sorted(inputs.iteritems()):
+<%
+        name = {
+            'cetegories': 'category',
+            }.get(name, name)
+        if name in (
+                'bbox',
+                'category' if not ctx.hide_category else None,
+                'filter' if ctx.show_filter else None,
+                'page',
+                'term' if not ctx.hide_term else None,
+                'territory' if not ctx.hide_territory else None,
+                ):
+            continue
+        if value is None or value == u'':
+            continue
+%>\
+        % if isinstance(value, list):
+            % for item_value in value:
+            <input name="${name}" type="hidden" value="${item_value or ''}">
+            % endfor
+        % else:
+            <input name="${name}" type="hidden" value="${value or ''}">
+        % endif
+    % endfor
 </%def>
 
