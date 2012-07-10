@@ -155,7 +155,7 @@ def default_pois_layer_data_bbox(data, state = None):
     data = data.copy()
     filter = data['filter']
     territory = data['territory']
-    poi_by_id = ramdb.poi_by_id
+    poi_by_id = model.Poi.instance_by_id
     if territory is None:
         competence_territories_id = None
         presence_territory = None
@@ -293,12 +293,12 @@ def id_name_dict_list_to_ignored_fields(value, state = None):
 
 
 def id_to_poi(poi_id, state = None):
-    import ramdb
+    import model
     if poi_id is None:
         return poi_id, None
     if state is None:
         state = default_state
-    poi = ramdb.poi_by_id.get(poi_id)
+    poi = model.Poi.instance_by_id.get(poi_id)
     if poi is None:
         return poi_id, state._("POI {0} doesn't exist").format(poi_id)
     return poi, None
@@ -529,7 +529,7 @@ def layer_data_to_clusters(data, state = None):
         competence_territories_id = competence_territories_id,
         presence_territory = presence_territory,
         **model.Poi.extract_non_territorial_search_data(state, data))
-    poi_by_id = ramdb.poi_by_id
+    poi_by_id = model.Poi.instance_by_id
     current = data['current']
     pois_iter = (
         poi
@@ -605,7 +605,7 @@ def layer_data_to_clusters(data, state = None):
 
 
 def pois_id_by_commune_id_to_csv_infos(pois_id_by_commune_id, state = None):
-    from . import ramdb
+    from . import model, ramdb
     if pois_id_by_commune_id is None:
         return None, None
     if state is None:
@@ -616,7 +616,7 @@ def pois_id_by_commune_id_to_csv_infos(pois_id_by_commune_id, state = None):
         if commune is None:
             continue
         for poi_id in commune_pois_id:
-            poi = ramdb.poi_by_id.get(poi_id)
+            poi = model.Poi.instance_by_id.get(poi_id)
             if poi is None:
                 continue
             csv_infos = csv_infos_by_schema_name.get(poi.schema_name)
@@ -653,7 +653,7 @@ def pois_id_by_commune_id_to_csv_infos(pois_id_by_commune_id, state = None):
 
 
 def pois_id_to_csv_infos(pois_id, state = None):
-    from . import ramdb
+    from . import model
     if pois_id is None:
         return None, None
     if state is None:
@@ -663,7 +663,7 @@ def pois_id_to_csv_infos(pois_id, state = None):
     while pois_id:
         remaining_pois_id = []
         for poi_id in pois_id:
-            poi = ramdb.poi_by_id.get(poi_id)
+            poi = model.Poi.instance_by_id.get(poi_id)
             if poi is None:
                 continue
             csv_infos = csv_infos_by_schema_name.get(poi.schema_name)

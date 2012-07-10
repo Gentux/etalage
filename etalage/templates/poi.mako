@@ -268,7 +268,7 @@ etalage.map.singleMarkerMap("map-poi", ${field.value[0]}, ${field.value[1]});
 
 <%def name="field_value_link(field, depth = 0)" filter="trim">
 <%
-    target = ramdb.poi_by_id.get(field.value)
+    target = model.Poi.instance_by_id.get(field.value)
 %>\
     % if target is None:
             <em class="field-value">Lien manquant</em>
@@ -289,7 +289,7 @@ etalage.map.singleMarkerMap("map-poi", ${field.value[0]}, ${field.value[1]});
             <ul class="field-value">
         % for target_id in field.value:
 <%
-            target = ramdb.poi_by_id.get(target_id)
+            target = model.Poi.instance_by_id.get(target_id)
             if target is None:
                 continue
 %>\

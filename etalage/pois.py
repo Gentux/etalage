@@ -244,12 +244,18 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
     competence_territories_id = None
     fields = None
     geo = None
+    ids_by_category_slug = {}
+    ids_by_competence_territory_id = {}
+    ids_by_parent_id = {}  # class attribute
+    ids_by_presence_territory_id = {}
+    ids_by_word = {}
+    indexed_ids = set()
+    instance_by_id = {}
     last_update_datetime = None
     last_update_organization = None
     name = None
     organism_type_slug = None
     parent_id = None
-    pois_id_by_parent_id = {}  # class attribute
     postal_distribution_str = None
     schema_name = None
     street_address = None
@@ -260,13 +266,13 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
 
     @classmethod
     def clear_indexes(cls):
-        ramdb.indexed_pois_id.clear()
-        ramdb.poi_by_id.clear()
-        cls.pois_id_by_parent_id.clear()
-        ramdb.pois_id_by_category_slug.clear()
-        ramdb.pois_id_by_competence_territory_id.clear()
-        ramdb.pois_id_by_presence_territory_id.clear()
-        ramdb.pois_id_by_word.clear()
+        cls.indexed_ids.clear()
+        cls.instance_by_id.clear()
+        cls.ids_by_parent_id.clear()
+        cls.ids_by_category_slug.clear()
+        cls.ids_by_competence_territory_id.clear()
+        cls.ids_by_presence_territory_id.clear()
+        cls.ids_by_word.clear()
 
     @classmethod
     def extract_non_territorial_search_data(cls, ctx, data):
@@ -297,8 +303,8 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
         # Add children POIs as linked fields.
         children = sorted(
             (
-                ramdb.poi_by_id[child_id]
-                for child_id in self.pois_id_by_parent_id.get(self._id, set())
+                self.instance_by_id[child_id]
+                for child_id in self.ids_by_parent_id.get(self._id, set())
                 ),
             key = lambda child: (child.schema_name, child.name),
             )
@@ -326,7 +332,7 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
         metadata = poi_bson['metadata']
 
         for category_slug in (metadata.get('categories-index') or set()):
-            ramdb.pois_id_by_category_slug.setdefault(category_slug, set()).add(indexed_poi_id)
+            self.ids_by_category_slug.setdefault(category_slug, set()).add(indexed_poi_id)
 
         for i, territory_metadata in enumerate(metadata.get('territories') or []):
             # Note: Don't fail when territory doesn't exist, because Etalage can be configured to ignore some kinds
@@ -340,7 +346,7 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
                 if territory_id is not None
                 )
             for territory_id in self.competence_territories_id:
-                ramdb.pois_id_by_competence_territory_id.setdefault(territory_id, set()).add(indexed_poi_id)
+                self.ids_by_competence_territory_id.setdefault(territory_id, set()).add(indexed_poi_id)
             break
 
         poi_territories_id = set(
@@ -353,17 +359,17 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
             if territory_id is not None
             ) if metadata.get('territories-index') is not None else None
         for territory_id in (poi_territories_id or set()):
-            ramdb.pois_id_by_presence_territory_id.setdefault(territory_id, set()).add(indexed_poi_id)
+            self.ids_by_presence_territory_id.setdefault(territory_id, set()).add(indexed_poi_id)
 
         for word in strings.slugify(self.name).split(u'-'):
-            ramdb.pois_id_by_word.setdefault(word, set()).add(indexed_poi_id)
+            self.ids_by_word.setdefault(word, set()).add(indexed_poi_id)
 
     @classmethod
     def index_pois(cls):
-        for self in ramdb.poi_by_id.itervalues():
-            # Note: self._id is not added to ramdb.indexed_pois_id by method self.index(self._id) to allow
+        for self in cls.instance_by_id.itervalues():
+            # Note: self._id is not added to cls.indexed_ids by method self.index(self._id) to allow
             # customizations where not all POIs are indexed (Passim for example).
-            ramdb.indexed_pois_id.add(self._id)
+            cls.indexed_ids.add(self._id)
             self.index(self._id)
             del self.bson
 
@@ -386,7 +392,7 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
 
         if competence_territories_id is not None:
             territory_competent_pois_id = ramdb.union_set(
-                ramdb.pois_id_by_competence_territory_id.get(competence_territory_id)
+                cls.ids_by_competence_territory_id.get(competence_territory_id)
                 for competence_territory_id in competence_territories_id
                 )
             if not territory_competent_pois_id:
@@ -394,14 +400,14 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
             intersected_sets.append(territory_competent_pois_id)
 
         if presence_territory is not None:
-            territory_present_pois_id = ramdb.pois_id_by_presence_territory_id.get(presence_territory._id)
+            territory_present_pois_id = cls.ids_by_presence_territory_id.get(presence_territory._id)
             if not territory_present_pois_id:
                 return set()
             intersected_sets.append(territory_present_pois_id)
 
         for category_slug in set(categories_slug or []):
             if category_slug is not None:
-                category_pois_id = ramdb.pois_id_by_category_slug.get(category_slug)
+                category_pois_id = cls.ids_by_category_slug.get(category_slug)
                 if not category_pois_id:
                     return set()
                 intersected_sets.append(category_pois_id)
@@ -418,14 +424,14 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
                     continue
                 pois_id_by_prefix[prefix] = ramdb.union_set(
                     pois_id
-                    for word, pois_id in ramdb.pois_id_by_word.iteritems()
+                    for word, pois_id in cls.ids_by_word.iteritems()
                     if word.startswith(prefix)
                     ) or set()
             intersected_sets.extend(pois_id_by_prefix.itervalues())
 
         found_pois_id = ramdb.intersection_set(intersected_sets)
         if found_pois_id is None:
-            return ramdb.indexed_pois_id
+            return cls.indexed_ids
         return found_pois_id
 
     @classmethod
@@ -471,9 +477,9 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
         # Temporarily store bson in poi because it is needed by index_pois.
         self.bson = poi_bson
 
-        ramdb.poi_by_id[self._id] = self
+        cls.instance_by_id[self._id] = self
         if self.parent_id is not None:
-            cls.pois_id_by_parent_id.setdefault(self.parent_id, set()).add(self._id)
+            cls.ids_by_parent_id.setdefault(self.parent_id, set()).add(self._id)
         return self
 
     @classmethod
@@ -493,11 +499,18 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
             default = 'drop',
             keep_none_values = True,
             )
+
     @property
     def parent(self):
         if self.parent_id is None:
             return None
-        return ramdb.poi_by_id.get(self.parent_id)
+        return self.instance_by_id.get(self.parent_id)
+
+    @classmethod
+    def rename_input_to_param(cls, input_name):
+        return dict(
+            categories = u'category',
+            ).get(input_name, input_name)
 
     def set_attributes(self, **attributes):
         for name, value in attributes.iteritems():

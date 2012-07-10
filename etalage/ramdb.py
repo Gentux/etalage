@@ -41,15 +41,9 @@ categories_slug_by_tag_slug = {}
 categories_slug_by_word = {}
 category_by_slug = {}
 category_slug_by_pivot_code = {}
-indexed_pois_id = set()
 last_timestamp = None
 read_write_lock = threading2.SHLock()
 log = logging.getLogger(__name__)
-poi_by_id = {}
-pois_id_by_category_slug = {}
-pois_id_by_competence_territory_id = {}
-pois_id_by_presence_territory_id = {}
-pois_id_by_word = {}
 schema_title_by_name = {}
 territories_id_by_ancestor_id = {}
 territories_id_by_postal_distribution = {}
@@ -164,13 +158,13 @@ def load():
 
 #    # Remove unused categories.
 #    for category_slug in category_by_slug.keys():
-#        if category_slug not in pois_id_by_category_slug:
+#        if category_slug not in model.Poi.ids_by_category_slug:
 #            log.warning('Ignoring category "{0}" not used by any POI.'.format(category_slug))
 #            del category_by_slug[category_slug]
-#    for category_slug in pois_id_by_category_slug'].keys():
+#    for category_slug in model.Poi.ids_by_category_slug'].keys():
 #        if category_slug not in category_by_slug:
 #            log.warning('Ignoring category "{0}" not defined in categories collection.'.format(category_slug))
-#            del pois_id_by_category_slug[category_slug]
+#            del model.Poi.ids_by_category_slug[category_slug]
 
 ##    for category_slug in category_by_slug.iterkeys():
 #        for word in category_slug.split(u'-'):
@@ -206,7 +200,7 @@ def ramdb_based(controller):
                     delete_remaining(indexes, existing)
                     if category_bson is None:
                         category_by_slug.pop(slug, None)
-                        pois_id_by_category_slug.pop(slug, None)
+                        model.Poi.ids_by_category_slug.pop(slug, None)
                     else:
                         category = model.Category.load(category_bson)
                         category.index()
@@ -238,20 +232,19 @@ def ramdb_based(controller):
                         # will publish their change.
                         # First find changes to do on indexes.
                         existing = {}
-                        indexes = sys.modules[__name__]
-                        find_existing(indexes, 'pois_id_by_category_slug', 'dict_of_sets', id, existing)
-                        find_existing(indexes, 'pois_id_by_competence_territory_id', 'dict_of_sets', id, existing)
-                        find_existing(model.Poi, 'pois_id_by_parent_id', 'dict_of_sets', id, existing)
-                        find_existing(indexes, 'pois_id_by_presence_territory_id', 'dict_of_sets', id, existing)
-                        find_existing(indexes, 'pois_id_by_word', 'dict_of_sets', id, existing)
+                        find_existing(model.Poi, 'ids_by_category_slug', 'dict_of_sets', id, existing)
+                        find_existing(model.Poi, 'ids_by_competence_territory_id', 'dict_of_sets', id, existing)
+                        find_existing(model.Poi, 'ids_by_parent_id', 'dict_of_sets', id, existing)
+                        find_existing(model.Poi, 'ids_by_presence_territory_id', 'dict_of_sets', id, existing)
+                        find_existing(model.Poi, 'ids_by_word', 'dict_of_sets', id, existing)
                         # Then update indexes.
-                        delete_remaining(indexes, existing)
+                        delete_remaining(model.Poi, existing)
                         if poi_bson is None or poi_bson['metadata'].get('deleted', False):
-                            poi_by_id.pop(id, None)
-                            indexed_pois_id.discard(id)
+                            model.Poi.instance_by_id.pop(id, None)
+                            model.Poi.indexed_ids.discard(id)
                         else:
                             poi = model.Poi.load(poi_bson)
-                            indexed_pois_id.add(poi._id)
+                            model.Poi.indexed_ids.add(poi._id)
                             poi.index(poi._id)
                             del poi.bson
                     finally:

@@ -111,12 +111,12 @@ def autocomplete_category(req):
             )
 
     possible_pois_id = ramdb.intersection_set(
-        ramdb.pois_id_by_category_slug[category_slug]
+        model.Poi.ids_by_category_slug[category_slug]
         for category_slug in (data['tags_slug'] or [])
         )
     if possible_pois_id is None:
         categories_infos = sorted(
-            (-len(ramdb.pois_id_by_category_slug.get(category_slug, [])), category_slug)
+            (-len(model.Poi.ids_by_category_slug.get(category_slug, [])), category_slug)
             for category_slug in ramdb.iter_categories_slug(tags_slug = data['tags_slug'], term = data['term'])
             if category_slug not in (data['tags_slug'] or [])
             )
@@ -125,7 +125,7 @@ def autocomplete_category(req):
             (-count, category_slug)
             for count, category_slug in (
                 (
-                    len(set(ramdb.pois_id_by_category_slug.get(category_slug, [])).intersection(possible_pois_id)),
+                    len(set(model.Poi.ids_by_category_slug.get(category_slug, [])).intersection(possible_pois_id)),
                     category_slug,
                     )
                 for category_slug in ramdb.iter_categories_slug(tags_slug = data['tags_slug'], term = data['term'])
@@ -721,7 +721,7 @@ def index_directory(req):
         pois = set(
             poi
             for poi in (
-                ramdb.poi_by_id.get(poi_id)
+                model.Poi.instance_by_id.get(poi_id)
                 for poi_id in pois_id_iter
                 )
             if poi is not None
@@ -896,7 +896,7 @@ def index_list(req):
         pois = set(
             poi
             for poi in (
-                ramdb.poi_by_id.get(poi_id)
+                model.Poi.instance_by_id.get(poi_id)
                 for poi_id in pois_id_iter
                 )
             if poi is not None
