@@ -31,35 +31,7 @@ from etalage import model, urls
 <%inherit file="/index.mako"/>
 
 
-<%def name="results()" filter="trim">
-        <form action="${urls.get_url(ctx, mode)}" class="form-horizontal internal" id="export-form" method="get">
-            <fieldset>
-                <legend>${_('Select export options')}</legend>
-    % for name, value in sorted(inputs.iteritems()):
-<%
-        name = model.Poi.rename_input_to_param(name)
-        if name in (
-                'submit',
-                'type_and_format',
-                ):
-            continue
-        if value is None or value == u'':
-            continue
-%>\
-        % if isinstance(value, list):
-            % for item_value in value:
-                <input name="${name}" type="hidden" value="${item_value or ''}">
-            % endfor
-        % else:
-                <input name="${name}" type="hidden" value="${value or ''}">
-        % endif
-    % endfor
-<%
-    error = errors.get('type_and_format') if errors is not None else None
-%>\
-                <div class="control-group${' error' if error else ''}">
-                    <label class="control-label">${_(u"Export Type")}</label>
-                    <div class="controls">
+<%def name="types_and_formats_radios()" filter="trim">
                         <label class="radio">
                             <input type="radio" value="annuaire-excel" name="type_and_format">
                             Annuaire (format Excel) &mdash; Les informations détaillées,
@@ -89,6 +61,39 @@ from etalage import model, urls
                             KML &mdash; Pour visualiser les organismes dans certains sites et applications
                                 cartographiques
                         </label>
+</%def>
+
+
+<%def name="results()" filter="trim">
+        <form action="${urls.get_url(ctx, mode)}" class="form-horizontal internal" id="export-form" method="get">
+            <fieldset>
+                <legend>${_('Select export options')}</legend>
+    % for name, value in sorted(inputs.iteritems()):
+<%
+        name = model.Poi.rename_input_to_param(name)
+        if name in (
+                'submit',
+                'type_and_format',
+                ):
+            continue
+        if value is None or value == u'':
+            continue
+%>\
+        % if isinstance(value, list):
+            % for item_value in value:
+                <input name="${name}" type="hidden" value="${item_value or ''}">
+            % endfor
+        % else:
+                <input name="${name}" type="hidden" value="${value or ''}">
+        % endif
+    % endfor
+<%
+    error = errors.get('type_and_format') if errors is not None else None
+%>\
+                <div class="control-group${' error' if error else ''}">
+                    <label class="control-label">${_(u"Export Type")}</label>
+                    <div class="controls">
+                        <%self:types_and_formats_radios/>
     % if error:
                         <p class="help-block">${error}</p>
     % endif
