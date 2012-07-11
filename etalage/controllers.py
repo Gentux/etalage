@@ -28,11 +28,9 @@
 
 from cStringIO import StringIO
 import datetime
-import itertools
 import json
 import logging
 import math
-import sys
 import urllib2
 import zipfile
 
@@ -908,6 +906,7 @@ def index_list(req):
     mode = u'liste'
 
     data, errors = conv.inputs_to_pois_list_data(inputs, state = ctx)
+    non_territorial_search_data = model.Poi.extract_non_territorial_search_data(ctx, data)
     if errors is not None:
         pager = None
     else:
@@ -927,55 +926,24 @@ def index_list(req):
         pois_id_iter = model.Poi.iter_ids(ctx,
             competence_territories_id = competence_territories_id,
             presence_territory = presence_territory,
-            **model.Poi.extract_non_territorial_search_data(ctx, data))
-        pois = set(
-            poi
+            **non_territorial_search_data)
+        poi_by_id = dict(
+            (poi._id, poi)
             for poi in (
                 model.Poi.instance_by_id.get(poi_id)
                 for poi_id in pois_id_iter
                 )
             if poi is not None
             )
-        pager = pagers.Pager(item_count = len(pois), page_number = data['page_number'])
-        if territory is None:
-            pois = sorted(pois, key = lambda poi: poi.name)  # TODO: Use slug instead of name.
-            pager.items = [
-                poi
-                for poi in itertools.islice(pois, pager.first_item_index, pager.last_item_number)
-                ]
-        else:
-            territory_latitude_cos = math.cos(math.radians(territory.geo[0]))
-            territory_latitude_sin = math.sin(math.radians(territory.geo[0]))
-            incompetence_distance_and_poi_triples = sorted(
-                (
-                    (
-                        # is not competent
-                        poi.competence_territories_id is not None
-                            and related_territories_id.isdisjoint(poi.competence_territories_id),
-                        # distance
-                        6372.8 * math.acos(
-                            math.sin(math.radians(poi.geo[0])) * territory_latitude_sin
-                            + math.cos(math.radians(poi.geo[0])) * territory_latitude_cos
-                                * math.cos(math.radians(poi.geo[1] - territory.geo[1]))
-                            ) if poi.geo is not None else (sys.float_info.max, poi),
-                        # POI
-                        poi,
-                        )
-                    for poi in pois
-                    ),
-                key = lambda incompetence_distance_and_poi_triple: incompetence_distance_and_poi_triple[:2],
-                )
-            pager.items = [
-                poi
-                for incompetence, distance, poi in itertools.islice(incompetence_distance_and_poi_triples,
-                    pager.first_item_index, pager.last_item_number)
-                ]
+        pager = pagers.Pager(item_count = len(poi_by_id), page_number = data['page_number'])
+        pager.items = model.Poi.sort_and_paginate_pois_list(ctx, pager, poi_by_id,
+            related_territories_id = related_territories_id, territory = territory, **non_territorial_search_data)
     return templates.render(ctx, '/list.mako',
         errors = errors,
         inputs = inputs,
         mode = mode,
         pager = pager,
-        **model.Poi.extract_non_territorial_search_data(ctx, data))
+        **non_territorial_search_data)
 
 
 @wsgihelpers.wsgify

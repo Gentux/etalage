@@ -26,7 +26,10 @@
 """Objects for POIs"""
 
 
+import itertools
 import logging
+import math
+import sys
 
 from biryani import strings
 from suq import monpyjama, representations
@@ -539,6 +542,42 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
     @property
     def slug(self):
         return strings.slugify(self.name)
+
+    @classmethod
+    def sort_and_paginate_pois_list(cls, ctx, pager, poi_by_id, related_territories_id = None, territory = None,
+            **other_search_data):
+        if territory is None:
+            pois = sorted(poi_by_id.itervalues(), key = lambda poi: poi.name)  # TODO: Use slug instead of name.
+            return [
+                poi
+                for poi in itertools.islice(pois, pager.first_item_index, pager.last_item_number)
+                ]
+        territory_latitude_cos = math.cos(math.radians(territory.geo[0]))
+        territory_latitude_sin = math.sin(math.radians(territory.geo[0]))
+        incompetence_distance_and_poi_triples = sorted(
+            (
+                (
+                    # is not competent
+                    poi.competence_territories_id is not None
+                        and related_territories_id.isdisjoint(poi.competence_territories_id),
+                    # distance
+                    6372.8 * math.acos(
+                        math.sin(math.radians(poi.geo[0])) * territory_latitude_sin
+                        + math.cos(math.radians(poi.geo[0])) * territory_latitude_cos
+                            * math.cos(math.radians(poi.geo[1] - territory.geo[1]))
+                        ) if poi.geo is not None else (sys.float_info.max, poi),
+                    # POI
+                    poi,
+                    )
+                for poi in poi_by_id.itervalues()
+                ),
+            key = lambda incompetence_distance_and_poi_triple: incompetence_distance_and_poi_triple[:2],
+            )
+        return [
+            poi
+            for incompetence, distance, poi in itertools.islice(incompetence_distance_and_poi_triples,
+                pager.first_item_index, pager.last_item_number)
+            ]
 
 
 def get_first_field(fields, id, label = None):
