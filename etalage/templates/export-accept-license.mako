@@ -24,7 +24,7 @@
 
 
 <%!
-from etalage import urls
+from etalage import model, urls
 %>
 
 
@@ -96,6 +96,7 @@ from etalage import urls
             <fieldset>
     % for name, value in sorted(inputs.iteritems()):
 <%
+        name = model.Poi.rename_input_to_param(name)
         if name in (
                 'accept',
                 'submit',

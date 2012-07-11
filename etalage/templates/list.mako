@@ -26,7 +26,7 @@
 <%!
 import markupsafe
 
-from etalage import urls
+from etalage import model, urls
 %>
 
 
@@ -45,7 +45,7 @@ from etalage import urls
                 <ul>
 <%
         url_args = dict(
-            (dict(categories = 'category').get(name, name), value)
+            (model.Poi.rename_input_to_param(name), value)
             for name, value in inputs.iteritems()
             if name != 'page' and value is not None
             )

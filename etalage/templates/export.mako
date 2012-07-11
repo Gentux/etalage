@@ -24,7 +24,7 @@
 
 
 <%!
-from etalage import urls
+from etalage import model, urls
 %>
 
 
@@ -37,6 +37,7 @@ from etalage import urls
                 <legend>${_('Select export options')}</legend>
     % for name, value in sorted(inputs.iteritems()):
 <%
+        name = model.Poi.rename_input_to_param(name)
         if name in (
                 'submit',
                 'type_and_format',

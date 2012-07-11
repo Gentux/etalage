@@ -24,7 +24,7 @@
 
 
 <%!
-from etalage import conf, urls
+from etalage import conf, model, urls
 %>
 
 
@@ -58,7 +58,7 @@ from etalage import conf, urls
 etalage.map.center = new L.LatLng(${territory.geo[0] | n, js}, ${territory.geo[1] | n, js});
     % endif
 etalage.map.geojsonParams = ${dict(
-    (dict(categories = 'category').get(name, name), value)
+    (model.Poi.rename_input_to_param(name), value)
     for name, value in inputs.iteritems()
     if name not in ('bbox', 'context', 'jsonp') and value is not None
     )| n, js};

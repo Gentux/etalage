@@ -26,7 +26,7 @@
 <%!
 import urlparse
 
-from etalage import conf, urls
+from etalage import conf, model, ramdb, urls
 %>
 
 
@@ -63,7 +63,7 @@ from etalage import conf, urls
         (u'export', u'Export', conf['hide_export']),
         )
     url_args = dict(
-        (dict(categories = 'category').get(name, name), value)
+        (model.Poi.rename_input_to_param(name), value)
         for name, value in inputs.iteritems()
         if name != 'page' and value is not None
         )
@@ -114,10 +114,10 @@ $(function () {
 </%def>
 
 
-<%def name="search_form_field_categories()" filter="trim">
-    % if not ctx.hide_category:
+<%def name="search_form_field_categories_slug()" filter="trim">
+    % if model.Poi.is_search_param_visible(ctx, 'category'):
 <%
-        error = errors.get('categories') if errors is not None else None
+        error = errors.get('categories_slug') if errors is not None else None
         if error and isinstance(error, dict):
             error_index, error_message = sorted(error.iteritems())[0]
         else:
@@ -127,16 +127,19 @@ $(function () {
                 <div class="control-group${' error' if error else ''}">
                     <label class="control-label" for="category">Catégorie</label>
                     <div class="controls">
-    % if categories:
-        % for category_index, category in enumerate(categories):
+    % if categories_slug:
+        % for category_index, category_slug in enumerate(categories_slug):
             % if error is None or category_index not in error:
+<%
+                category = ramdb.category_by_slug[category_slug]
+%>\
                         <label class="checkbox"><input checked name="category" type="checkbox" value="${category.name}">
                             <span class="label label-success"><i class="icon-tag icon-white"></i>
                             ${category.name}</span></label>
             % endif
         % endfor
     % endif
-                        <input class="input-xlarge" id="category" name="category" type="text" value="${inputs['categories'][error_index] \
+                        <input class="input-xlarge" id="category" name="category" type="text" value="${inputs['categories_slug'][error_index] \
                                 if error_index is not None else ''}">
         % if error_message:
                         <span class="help-inline">${error_message}</span>
@@ -148,7 +151,7 @@ $(function () {
 
 
 <%def name="search_form_field_filter()" filter="trim">
-    % if ctx.show_filter:
+    % if model.Poi.is_search_param_visible(ctx, 'filter'):
 <%
         error = errors.get('filter') if errors is not None else None
 %>\
@@ -177,7 +180,7 @@ $(function () {
 
 
 <%def name="search_form_field_term()" filter="trim">
-    % if not ctx.hide_term:
+    % if model.Poi.is_search_param_visible(ctx, 'term'):
 <%
         error = errors.get('term') if errors is not None else None
 %>\
@@ -195,7 +198,7 @@ $(function () {
 
 
 <%def name="search_form_field_territory()" filter="trim">
-    % if not ctx.hide_territory:
+    % if model.Poi.is_search_param_visible(ctx, 'territory'):
 <%
         error = errors.get('territory') if errors is not None else None
 %>\
@@ -213,7 +216,7 @@ $(function () {
 
 
 <%def name="search_form_fields()" filter="trim">
-                <%self:search_form_field_categories/>
+                <%self:search_form_field_categories_slug/>
                 <%self:search_form_field_term/>
                 <%self:search_form_field_territory/>
                 <%self:search_form_field_filter/>
@@ -221,19 +224,15 @@ $(function () {
 
 
 <%def name="search_form_hidden()" filter="trim">
+<%
+    search_params_name = model.Poi.get_search_params_name(ctx)
+%>\
     % for name, value in sorted(inputs.iteritems()):
 <%
-        name = {
-            'cetegories': 'category',
-            }.get(name, name)
-        if name in (
-                'bbox',
-                'category' if not ctx.hide_category else None,
-                'filter' if ctx.show_filter else None,
-                'page',
-                'term' if not ctx.hide_term else None,
-                'territory' if not ctx.hide_territory else None,
-                ):
+        name = model.Poi.rename_input_to_param(name)
+        if name in search_params_name and model.Poi.is_search_param_visible(ctx, name):
+            continue
+        if name in ('bbox', 'page'):
             continue
         if value is None or value == u'':
             continue

@@ -48,12 +48,8 @@ class Ctx(object):
         controller_name = None,
         distance = None,  # Max distance in km
         gadget_id = None,
-        hide_category = False,
         hide_directory = False,
-        hide_term = False,
-        hide_territory = False,
         req = None,
-        show_filter = False,
         subscriber = None,
         )
     env_keys = ('_lang', '_scopes', '_translator')

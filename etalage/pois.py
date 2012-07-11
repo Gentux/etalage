@@ -30,6 +30,7 @@ import logging
 
 from biryani import strings
 from suq import monpyjama, representations
+import webob.multidict
 
 from . import conv, ramdb
 
@@ -277,11 +278,8 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
     @classmethod
     def extract_non_territorial_search_data(cls, ctx, data):
         categories_slug = set(ctx.base_categories_slug or [])
-        if data['categories'] is not None:
-            categories_slug.update(
-                category.slug
-                for category in data['categories']
-                )
+        if data['categories_slug'] is not None:
+            categories_slug.update(data['categories_slug'])
         return dict(
             categories_slug = categories_slug,
             term = data['term'],
@@ -290,7 +288,7 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
     @classmethod
     def extract_search_inputs_from_params(cls, ctx, params):
         return dict(
-            categories = params.getall('category'),
+            categories_slug = params.getall('category'),
             filter = params.get('filter'),
             term = params.get('term'),
             territory = params.get('territory'),
@@ -326,6 +324,17 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
 
     def get_first_field(self, id, label = None):
         return get_first_field(self.fields, id, label = label)
+
+    @classmethod
+    def get_search_param_visibility_name(cls, ctx, name):
+        return 'show_{0}'.format(name) if name == 'filter' else 'hide_{0}'.format(name)
+
+    @classmethod
+    def get_search_params_name(cls, ctx):
+        return set(
+            cls.rename_input_to_param(name)
+            for name in cls.extract_search_inputs_from_params(ctx, webob.multidict.MultiDict()).iterkeys()
+            )
 
     def index(self, indexed_poi_id):
         poi_bson = self.bson
@@ -372,6 +381,13 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
             cls.indexed_ids.add(self._id)
             self.index(self._id)
             del self.bson
+
+    @classmethod
+    def is_search_param_visible(cls, ctx, name):
+        param_visibility_name = cls.get_search_param_visibility_name(ctx, name)
+        return getattr(ctx, param_visibility_name, False) \
+            if param_visibility_name.startswith('show_') \
+            else not getattr(ctx, param_visibility_name, False)
 
     def iter_csv_fields(self, ctx):
         counts_by_label = {}
@@ -491,7 +507,7 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
     def make_inputs_to_search_data(cls):
         return conv.struct(
             dict(
-                categories = conv.uniform_sequence(conv.input_to_slug_to_category),
+                categories_slug = conv.uniform_sequence(conv.input_to_category_slug),
                 filter = conv.input_to_filter,
                 term = conv.input_to_slug,
                 territory = conv.input_to_postal_distribution_to_geolocated_territory,
@@ -509,7 +525,7 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
     @classmethod
     def rename_input_to_param(cls, input_name):
         return dict(
-            categories = u'category',
+            categories_slug = u'category',
             ).get(input_name, input_name)
 
     def set_attributes(self, **attributes):

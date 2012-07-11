@@ -24,7 +24,7 @@
 
 
 <%!
-from etalage import conf, urls
+from etalage import conf, model, urls
 %>
 
 
@@ -45,12 +45,12 @@ textarea {
 <%
     gadget_id = 832 # TODO
     url_args = dict(
-        (name, value)
+        (model.Poi.rename_input_to_param(name), value)
         for name, value in inputs.iteritems()
         if name not in ('container_base_url', 'gadget') and value not in (None, [], '')
         )
     gadget_params = dict(
-        path = 'carte',
+        path = conf['default_tab'],
         )
     gadget_params.update(url_args)
 %>\

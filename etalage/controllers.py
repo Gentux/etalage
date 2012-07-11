@@ -78,7 +78,7 @@ def autocomplete_category(req):
                     conv.test_greater_or_equal(1),
                     conv.default(1),
                     ),
-                tag = conv.uniform_sequence(conv.input_to_categor_slug),
+                tag = conv.uniform_sequence(conv.input_to_tag_slug),
                 term = conv.make_input_to_slug(separator = u' ', transform = strings.upper),
                 ),
             default = 'drop',
@@ -249,16 +249,18 @@ def export_directory_csv(req):
         raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, u'api/v1/{0}/{1}'.format(type, format),
             **url_params))
 
-    data, errors = conv.struct(
-        dict(
-            accept = conv.test(lambda value: not inputs['submit'],
-                error = N_(u"You must accept license to be allowed to download data."),
-                handle_none_value = True,
+    data, errors = conv.merge(
+        model.Poi.make_inputs_to_search_data(),
+        conv.struct(
+            dict(
+                accept = conv.test(lambda value: not inputs['submit'],
+                    error = N_(u"You must accept license to be allowed to download data."),
+                    handle_none_value = True,
+                    ),
                 ),
-            categories = conv.uniform_sequence(conv.input_to_slug_to_category),
+            default = 'drop',
+            keep_none_values = True,
             ),
-        default = 'drop',
-        keep_none_values = True,
         )(inputs, state = ctx)
     return templates.render(ctx, '/export-accept-license.mako',
         export_title = ctx._(u"Directory Export in CSV Format"),
@@ -298,16 +300,18 @@ def export_directory_excel(req):
         raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, u'api/v1/{0}/{1}'.format(type, format),
             **url_params))
 
-    data, errors = conv.struct(
-        dict(
-            accept = conv.test(lambda value: not inputs['submit'],
-                error = N_(u"You must accept license to be allowed to download data."),
-                handle_none_value = True,
+    data, errors = conv.merge(
+        model.Poi.make_inputs_to_search_data(),
+        conv.struct(
+            dict(
+                accept = conv.test(lambda value: not inputs['submit'],
+                    error = N_(u"You must accept license to be allowed to download data."),
+                    handle_none_value = True,
+                    ),
                 ),
-            categories = conv.uniform_sequence(conv.input_to_slug_to_category),
+            default = 'drop',
+            keep_none_values = True,
             ),
-        default = 'drop',
-        keep_none_values = True,
         )(inputs, state = ctx)
     return templates.render(ctx, '/export-accept-license.mako',
         export_title = ctx._(u"Directory Export in Excel Format"),
@@ -347,16 +351,18 @@ def export_directory_geojson(req):
         raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, u'api/v1/{0}/{1}'.format(type, format),
             **url_params))
 
-    data, errors = conv.struct(
-        dict(
-            accept = conv.test(lambda value: not inputs['submit'],
-                error = N_(u"You must accept license to be allowed to download data."),
-                handle_none_value = True,
+    data, errors = conv.merge(
+        model.Poi.make_inputs_to_search_data(),
+        conv.struct(
+            dict(
+                accept = conv.test(lambda value: not inputs['submit'],
+                    error = N_(u"You must accept license to be allowed to download data."),
+                    handle_none_value = True,
+                    ),
                 ),
-            categories = conv.uniform_sequence(conv.input_to_slug_to_category),
+            default = 'drop',
+            keep_none_values = True,
             ),
-        default = 'drop',
-        keep_none_values = True,
         )(inputs, state = ctx)
     return templates.render(ctx, '/export-accept-license.mako',
         export_title = ctx._(u"Directory Export in GeoJSON Format"),
@@ -396,16 +402,18 @@ def export_directory_kml(req):
         raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, u'api/v1/{0}/{1}'.format(type, format),
             **url_params))
 
-    data, errors = conv.struct(
-        dict(
-            accept = conv.test(lambda value: not inputs['submit'],
-                error = N_(u"You must accept license to be allowed to download data."),
-                handle_none_value = True,
+    data, errors = conv.merge(
+        model.Poi.make_inputs_to_search_data(),
+        conv.struct(
+            dict(
+                accept = conv.test(lambda value: not inputs['submit'],
+                    error = N_(u"You must accept license to be allowed to download data."),
+                    handle_none_value = True,
+                    ),
                 ),
-            categories = conv.uniform_sequence(conv.input_to_slug_to_category),
+            default = 'drop',
+            keep_none_values = True,
             ),
-        default = 'drop',
-        keep_none_values = True,
         )(inputs, state = ctx)
     return templates.render(ctx, '/export-accept-license.mako',
         export_title = ctx._(u"Directory Export in KML Format"),
@@ -445,16 +453,18 @@ def export_geographical_coverage_csv(req):
         raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, u'api/v1/{0}/{1}'.format(type, format),
             **url_params))
 
-    data, errors = conv.struct(
-        dict(
-            accept = conv.test(lambda value: not inputs['submit'],
-                error = N_(u"You must accept license to be allowed to download data."),
-                handle_none_value = True,
+    data, errors = conv.merge(
+        model.Poi.make_inputs_to_search_data(),
+        conv.struct(
+            dict(
+                accept = conv.test(lambda value: not inputs['submit'],
+                    error = N_(u"You must accept license to be allowed to download data."),
+                    handle_none_value = True,
+                    ),
                 ),
-            categories = conv.uniform_sequence(conv.input_to_slug_to_category),
+            default = 'drop',
+            keep_none_values = True,
             ),
-        default = 'drop',
-        keep_none_values = True,
         )(inputs, state = ctx)
     return templates.render(ctx, '/export-accept-license.mako',
         export_title = ctx._(u"Geographical Coverage Export in CSV Format"),
@@ -494,16 +504,18 @@ def export_geographical_coverage_excel(req):
         raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, u'api/v1/{0}/{1}'.format(type, format),
             **url_params))
 
-    data, errors = conv.struct(
-        dict(
-            accept = conv.test(lambda value: not inputs['submit'],
-                error = N_(u"You must accept license to be allowed to download data."),
-                handle_none_value = True,
+    data, errors = conv.merge(
+        model.Poi.make_inputs_to_search_data(),
+        conv.struct(
+            dict(
+                accept = conv.test(lambda value: not inputs['submit'],
+                    error = N_(u"You must accept license to be allowed to download data."),
+                    handle_none_value = True,
+                    ),
                 ),
-            categories = conv.uniform_sequence(conv.input_to_slug_to_category),
+            default = 'drop',
+            keep_none_values = True,
             ),
-        default = 'drop',
-        keep_none_values = True,
         )(inputs, state = ctx)
     return templates.render(ctx, '/export-accept-license.mako',
         export_title = ctx._(u"Geographical Coverage Export in Excel Format"),
@@ -789,23 +801,25 @@ def index_export(req):
         ))
     mode = u'export'
 
-    data, errors = conv.struct(
-        dict(
-            categories = conv.uniform_sequence(conv.input_to_slug_to_category),
-            type_and_format = conv.pipe(
-                conv.input_to_slug,
-                conv.test_in([
-                    'annuaire-csv',
-                    'annuaire-excel',
-                    'annuaire-geojson',
-                    'annuaire-kml',
-                    'couverture-csv',
-                    'couverture-excel',
-                    ]),
+    data, errors = conv.merge(
+        model.Poi.make_inputs_to_search_data(),
+        conv.struct(
+            dict(
+                type_and_format = conv.pipe(
+                    conv.input_to_slug,
+                    conv.test_in([
+                        'annuaire-csv',
+                        'annuaire-excel',
+                        'annuaire-geojson',
+                        'annuaire-kml',
+                        'couverture-csv',
+                        'couverture-excel',
+                        ]),
+                    ),
                 ),
+            default = 'drop',
+            keep_none_values = True,
             ),
-        default = 'drop',
-        keep_none_values = True,
         )(inputs, state = ctx)
     if errors is None:
         if inputs['submit']:
@@ -814,11 +828,14 @@ def index_export(req):
 
                 # Form submitted. Redirect to another page.
                 url_args = ('export', type, format)
+                search_params_name = model.Poi.get_search_params_name(ctx)
                 url_kwargs = dict(
-                    category = inputs['categories'],
-                    filter = inputs['filter'],
-                    term = inputs['term'],
-                    territory = inputs['territory'],
+                    (param_name, value)
+                    for param_name, value in (
+                        (model.Poi.rename_input_to_param(input_name), value)
+                        for input_name, value in inputs.iteritems()
+                        )
+                    if param_name in search_params_name
                     )
                 if ctx.container_base_url is None or ctx.gadget_id is None:
                     raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, *url_args, **url_kwargs))
@@ -985,21 +1002,29 @@ def init_base(ctx, params):
         container_base_url = params.get('container_base_url'),
         distance = params.get('distance'),
         gadget = params.get('gadget'),
-        hide_category = params.get('hide_category'),
         hide_directory = params.get('hide_directory'),
-        hide_term = params.get('hide_term'),
-        hide_territory = params.get('hide_territory'),
-        show_filter = params.get('show_filter'),
         )
 
+    for name in model.Poi.get_search_params_name(ctx):
+        param_visibility_name = model.Poi.get_search_param_visibility_name(ctx, name)
+        inputs[param_visibility_name] = param_input = params.get(param_visibility_name)
+        param_visibility, error = conv.pipe(
+            conv.guess_bool,
+            conv.default(False),
+            )(param_input, state = ctx)
+        if error is not None:
+            raise wsgihelpers.bad_request(ctx, explanation = ctx._('Error for "{0}" parameter: {1}').format(
+                param_visibility_name, error))
+        setattr(ctx, param_visibility_name, param_visibility)
+
     ctx.base_categories_slug, error = conv.uniform_sequence(
-        conv.input_to_categor_slug,
+        conv.input_to_tag_slug,
         )(inputs['base_category'], state = ctx)
     if error is not None:
         raise wsgihelpers.bad_request(ctx, explanation = ctx._('Base Categories Error: {0}').format(error))
 
     ctx.category_tags_slug, error = conv.uniform_sequence(
-        conv.input_to_categor_slug,
+        conv.input_to_tag_slug,
         )(inputs['category_tag'], state = ctx)
     if error is not None:
         raise wsgihelpers.bad_request(ctx, explanation = ctx._('Category Tags Error: {0}').format(error))
@@ -1085,41 +1110,6 @@ def init_base(ctx, params):
         )(inputs['distance'], state = ctx)
     if error is not None:
         raise wsgihelpers.bad_request(ctx, explanation = ctx._('Distance Error: {0}').format(error))
-
-    ctx.hide_category, error = conv.pipe(
-        conv.guess_bool,
-        conv.default(False),
-        )(inputs['hide_category'], state = ctx)
-    if error is not None:
-        raise wsgihelpers.bad_request(ctx, explanation = ctx._('Hide Category Error: {0}').format(error))
-
-    ctx.hide_directory, error = conv.pipe(
-        conv.guess_bool,
-        conv.default(False),
-        )(inputs['hide_directory'], state = ctx)
-    if error is not None:
-        raise wsgihelpers.bad_request(ctx, explanation = ctx._('Hide Directory Error: {0}').format(error))
-
-    ctx.hide_term, error = conv.pipe(
-        conv.guess_bool,
-        conv.default(False),
-        )(inputs['hide_term'], state = ctx)
-    if error is not None:
-        raise wsgihelpers.bad_request(ctx, explanation = ctx._('Hide Term Error: {0}').format(error))
-
-    ctx.hide_territory, error = conv.pipe(
-        conv.guess_bool,
-        conv.default(False),
-        )(inputs['hide_territory'], state = ctx)
-    if error is not None:
-        raise wsgihelpers.bad_request(ctx, explanation = ctx._('Hide Territory Error: {0}').format(error))
-
-    ctx.show_filter, error = conv.pipe(
-        conv.guess_bool,
-        conv.default(False),
-        )(inputs['show_filter'], state = ctx)
-    if error is not None:
-        raise wsgihelpers.bad_request(ctx, explanation = ctx._('Show Filter Error: {0}').format(error))
 
     return inputs
 
