@@ -243,7 +243,10 @@ def export_directory_csv(req):
 
     accept, error = conv.pipe(conv.guess_bool, conv.default(False), conv.test_is(True))(inputs['accept'], state = ctx)
     if error is None:
-        url_params = inputs.copy()
+        url_params = dict(
+            (model.Poi.rename_input_to_param(input_name), value)
+            for input_name, value in inputs.iteritems()
+            )
         del url_params['accept']
         del url_params['submit']
         raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, u'api/v1/{0}/{1}'.format(type, format),
@@ -294,7 +297,10 @@ def export_directory_excel(req):
 
     accept, error = conv.pipe(conv.guess_bool, conv.default(False), conv.test_is(True))(inputs['accept'], state = ctx)
     if error is None:
-        url_params = inputs.copy()
+        url_params = dict(
+            (model.Poi.rename_input_to_param(input_name), value)
+            for input_name, value in inputs.iteritems()
+            )
         del url_params['accept']
         del url_params['submit']
         raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, u'api/v1/{0}/{1}'.format(type, format),
@@ -345,7 +351,10 @@ def export_directory_geojson(req):
 
     accept, error = conv.pipe(conv.guess_bool, conv.default(False), conv.test_is(True))(inputs['accept'], state = ctx)
     if error is None:
-        url_params = inputs.copy()
+        url_params = dict(
+            (model.Poi.rename_input_to_param(input_name), value)
+            for input_name, value in inputs.iteritems()
+            )
         del url_params['accept']
         del url_params['submit']
         raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, u'api/v1/{0}/{1}'.format(type, format),
@@ -396,7 +405,10 @@ def export_directory_kml(req):
 
     accept, error = conv.pipe(conv.guess_bool, conv.default(False), conv.test_is(True))(inputs['accept'], state = ctx)
     if error is None:
-        url_params = inputs.copy()
+        url_params = dict(
+            (model.Poi.rename_input_to_param(input_name), value)
+            for input_name, value in inputs.iteritems()
+            )
         del url_params['accept']
         del url_params['submit']
         raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, u'api/v1/{0}/{1}'.format(type, format),
@@ -447,7 +459,10 @@ def export_geographical_coverage_csv(req):
 
     accept, error = conv.pipe(conv.guess_bool, conv.default(False), conv.test_is(True))(inputs['accept'], state = ctx)
     if error is None:
-        url_params = inputs.copy()
+        url_params = dict(
+            (model.Poi.rename_input_to_param(input_name), value)
+            for input_name, value in inputs.iteritems()
+            )
         del url_params['accept']
         del url_params['submit']
         raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, u'api/v1/{0}/{1}'.format(type, format),
@@ -498,7 +513,10 @@ def export_geographical_coverage_excel(req):
 
     accept, error = conv.pipe(conv.guess_bool, conv.default(False), conv.test_is(True))(inputs['accept'], state = ctx)
     if error is None:
-        url_params = inputs.copy()
+        url_params = dict(
+            (model.Poi.rename_input_to_param(input_name), value)
+            for input_name, value in inputs.iteritems()
+            )
         del url_params['accept']
         del url_params['submit']
         raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, u'api/v1/{0}/{1}'.format(type, format),
