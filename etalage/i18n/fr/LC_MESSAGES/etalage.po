@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Etalage 0.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2012-02-23 15:19+0100\n"
-"PO-Revision-Date: 2012-02-23 15:24+0100\n"
+"POT-Creation-Date: 2012-07-12 11:40+0200\n"
+"PO-Revision-Date: 2012-07-12 11:50+0100\n"
 "Last-Translator: Emmanuel Raviart <eraviart@easter-eggs.com>\n"
 "Language-Team: fr <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n > 1)\n"
@@ -17,131 +17,175 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 0.9.6\n"
 
-#: etalage/controllers.py:185
-#: etalage/controllers.py:222
-#: etalage/controllers.py:521
-#: etalage/controllers.py:524
-#: etalage/controllers.py:1094
+#: etalage/controllers.py:169
+#: etalage/controllers.py:203
+#: etalage/controllers.py:228
+#: etalage/controllers.py:282
+#: etalage/controllers.py:336
+#: etalage/controllers.py:390
+#: etalage/controllers.py:444
+#: etalage/controllers.py:498
+#: etalage/controllers.py:552
+#: etalage/controllers.py:586
+#: etalage/controllers.py:809
+msgid "Export disabled by configuration"
+msgstr "Export désactivé par configuration"
+
+#: etalage/controllers.py:180
+#: etalage/controllers.py:214
+#: etalage/controllers.py:563
+#: etalage/controllers.py:597
+#: etalage/controllers.py:625
+#: etalage/controllers.py:628
+#: etalage/controllers.py:1123
 msgid "Error: {0}"
 msgstr "Erreur : {0}"
 
-#: etalage/controllers.py:263
-#: etalage/controllers.py:316
-#: etalage/controllers.py:369
-#: etalage/controllers.py:422
-#: etalage/controllers.py:477
+#: etalage/controllers.py:258
+#: etalage/controllers.py:312
+#: etalage/controllers.py:366
+#: etalage/controllers.py:420
+#: etalage/controllers.py:474
+#: etalage/controllers.py:528
 msgid "You must accept license to be allowed to download data."
 msgstr "Vous devez accepter la licence afin de pouvoir télécharger les données."
 
-#: etalage/controllers.py:274
+#: etalage/controllers.py:267
 msgid "Directory Export in CSV Format"
 msgstr "Export de l'annuaire au format CSV"
 
-#: etalage/controllers.py:327
-#| msgid "Directory Export in KML Format"
+#: etalage/controllers.py:321
 msgid "Directory Export in Excel Format"
 msgstr "Export de l'annuaire au format Excel"
 
-#: etalage/controllers.py:380
+#: etalage/controllers.py:375
 msgid "Directory Export in GeoJSON Format"
 msgstr "Export de l'annuaire au format GeoJSON"
 
-#: etalage/controllers.py:433
+#: etalage/controllers.py:429
 msgid "Directory Export in KML Format"
 msgstr "Export de l'annuaire au format KML"
 
-#: etalage/controllers.py:488
+#: etalage/controllers.py:483
 msgid "Geographical Coverage Export in CSV Format"
 msgstr "Export de la couverture géographique au format CSV"
 
-#: etalage/controllers.py:769
+#: etalage/controllers.py:537
+#| msgid "Geographical Coverage Export in CSV Format"
+msgid "Geographical Coverage Export in Excel Format"
+msgstr "Export de la couverture géographique au format Excel"
+
+#: etalage/controllers.py:721
+msgid "Directory page disabled by configuration"
+msgstr "Page annuaire désactiviée par configuration"
+
+#: etalage/controllers.py:864
 msgid "Missing value"
 msgstr "Valeur manquante"
 
-#: etalage/controllers.py:953
+#: etalage/controllers.py:879
+msgid "Gadget page disabled by configuration"
+msgstr "Page gadget désactiviée par configuration"
+
+#: etalage/controllers.py:955
+msgid "Map page disabled by configuration"
+msgstr "Page cartographique désactiviée par configuration"
+
+#: etalage/controllers.py:1002
+msgid "Error for \"{0}\" parameter: {1}"
+msgstr "Erreur sur le paramètre \"{0}\" : {1}"
+
+#: etalage/controllers.py:1010
 msgid "Base Categories Error: {0}"
 msgstr "Erreur dans les catégories de base : {0}"
 
-#: etalage/controllers.py:959
+#: etalage/controllers.py:1016
 msgid "Category Tags Error: {0}"
 msgstr "Erreur dans les étiquettes de catégories : {0}"
 
-#: etalage/controllers.py:1030
+#: etalage/controllers.py:1037
+#: etalage/controllers.py:1053
+msgid "Connect to "
+msgstr "Connectez-vous à "
+
+#: etalage/controllers.py:1040
+#: etalage/controllers.py:1056
+msgid ", rebuild component and copy the generated JavaScript into your website."
+msgstr ", regénérer le composant et copier le code JavaScript généré dans votre site web."
+
+#: etalage/controllers.py:1042
+#| msgid "POI {0} doesn't exist"
+msgid "The gadget ID \"{0}\" doesn't exist."
+msgstr "Le gadget d'identifiant {0} n'existe pas"
+
+#: etalage/controllers.py:1042
+#: etalage/controllers.py:1059
+msgid "Invalid Gadget ID"
+msgstr "Identifiant de gadget incorrect"
+
+#: etalage/controllers.py:1058
+msgid "The gadget ID \"{0}\" is used by another component."
+msgstr "L'identifiant de gadget \"{0}\" est utilisé par un autre composant."
+
+#: etalage/controllers.py:1098
 msgid "Distance Error: {0}"
 msgstr "Erreur de distance : {0}"
 
-#: etalage/controllers.py:1037
-msgid "Hide Category Error: {0}"
-msgstr "Erreur dans le masquage de catégorie : {0}"
+#: etalage/controllers.py:1170
+#: etalage/controllers.py:1247
+msgid "Minisite disabled by configuration"
+msgstr "Minisite désactivé par configuration"
 
-#: etalage/controllers.py:1044
-#| msgid "Hide Category Error: {0}"
-msgid "Hide Directory Error: {0}"
-msgstr "Erreur dans le masquage d'annuaire : {0}"
-
-#: etalage/controllers.py:1051
-#| msgid "Hide Category Error: {0}"
-msgid "Hide Term Error: {0}"
-msgstr "Erreur dans le masquage de terme : {0}"
-
-#: etalage/controllers.py:1058
-#| msgid "Hide Category Error: {0}"
-msgid "Hide Territory Error: {0}"
-msgstr "Erreur dans le masquage de territoire : {0}"
-
-#: etalage/controllers.py:1065
-#| msgid "Distance Error: {0}"
-msgid "Show Filter Error: {0}"
-msgstr "Erreur dans l'affichage de filtre : {0}"
-
-#: etalage/controllers.py:1173
+#: etalage/controllers.py:1206
 msgid "Access to organism failed"
 msgstr "L'accès à l'organisme a échoué"
 
-#: etalage/controllers.py:1198
-#: etalage/controllers.py:1229
+#: etalage/controllers.py:1230
+#: etalage/controllers.py:1264
 msgid "POI ID Error: {0}"
 msgstr "Erreur dans l'identifiant de point d'intérêt : {0}"
 
-#: etalage/controllers.py:1237
-#| msgid "Distance Error: {0}"
+#: etalage/controllers.py:1272
 msgid "Encoding Error: {0}"
 msgstr "Erreur d'encodage : {0}"
 
-#: etalage/conv.py:240
-#| msgid "POI {0} doesn't exist."
+#: etalage/conv.py:303
 msgid "POI {0} doesn't exist"
 msgstr "Le point d'intérêt {0} n'existe pas"
 
-#: etalage/conv.py:406
-msgid "In \"directory\" mode, territory must be a commune"
-msgstr "En mode \"annuaire\", le territoire doit être une commune"
+#: etalage/conv.py:321
+msgid "Missing required tags for category"
+msgstr "Étiquettes obligatoires de catégorie manquantes"
 
-#: etalage/conv.py:407
-msgid "In \"directory\" mode, a commune is required"
-msgstr "En mode \"annuaire\", la commune est nécessaire"
-
-#: etalage/conv.py:456
-#| msgid "Territory has no geographical coordinates"
-msgid "POI has no geographical coordinates"
-msgstr "Le point d'intérêt n'a pas de coordonnées géographiques"
-
-#: etalage/conv.py:542
-#: etalage/conv.py:545
-msgid "Unknown territory"
-msgstr "Territoire inconnu"
-
-#: etalage/conv.py:553
+#: etalage/conv.py:332
 msgid "Invalid category"
 msgstr "Catégorie incorrecte"
 
-#: etalage/conv.py:566
+#: etalage/conv.py:371
+#: etalage/conv.py:411
+msgid "Export is too big. Restrict some search criteria and try again."
+msgstr "L'export est trop gros. Réessayez en précisant certains critères de recherche."
+
+#: etalage/conv.py:425
+msgid "In \"directory\" mode, territory must be a commune"
+msgstr "En mode \"annuaire\", le territoire doit être une commune"
+
+#: etalage/conv.py:426
+msgid "In \"directory\" mode, a commune is required"
+msgstr "En mode \"annuaire\", la commune est nécessaire"
+
+#: etalage/conv.py:479
+msgid "POI has no geographical coordinates"
+msgstr "Le point d'intérêt n'a pas de coordonnées géographiques"
+
+#: etalage/conv.py:719
+#: etalage/conv.py:722
+msgid "Unknown territory"
+msgstr "Territoire inconnu"
+
+#: etalage/conv.py:786
 msgid "Territory has no geographical coordinates"
 msgstr "Le territoire n'a pas de coordonnées géographiques"
-
-#: etalage/conv.py:576
-msgid "Missing required tags for category"
-msgstr "Étiquettes obligatoires de catégorie manquantes"
 
 #: etalage/urls.py:111
 msgid "Page not found: {0}"
@@ -195,27 +239,27 @@ msgstr "Annuaire"
 msgid "Open Licence Logo"
 msgstr "Logo de la licence ouverte"
 
-#: etalage/templates/export-accept-license.mako:119
+#: etalage/templates/export-accept-license.mako:120
 msgid "Accept License"
 msgstr "Accepter la licence"
 
-#: etalage/templates/export-accept-license.mako:132
+#: etalage/templates/export-accept-license.mako:133
 msgid "Download"
 msgstr "Télécharger"
 
-#: etalage/templates/export.mako:37
+#: etalage/templates/export.mako:70
 msgid "Select export options"
 msgstr "Sélectionner les options d'export"
 
-#: etalage/templates/export.mako:60
+#: etalage/templates/export.mako:94
 msgid "Export Type"
 msgstr "Type d'export"
 
-#: etalage/templates/export.mako:93
+#: etalage/templates/export.mako:103
 msgid "Select"
 msgstr "Sélectionner"
 
-#: etalage/templates/export.mako:101
+#: etalage/templates/export.mako:111
 msgid "Export"
 msgstr "Exporter"
 
@@ -228,23 +272,23 @@ msgstr "Partager"
 msgid "Redirection"
 msgstr "Redirection"
 
-#: etalage/templates/index.mako:212
+#: etalage/templates/index.mako:110
 msgid "Search"
 msgstr "Rechercher"
 
-#: etalage/templates/list.mako:98
+#: etalage/templates/list.mako:105
 msgid "Name"
 msgstr "Nom"
 
-#: etalage/templates/list.mako:99
+#: etalage/templates/list.mako:106
 msgid "Street Address"
 msgstr "Adresse"
 
-#: etalage/templates/list.mako:100
+#: etalage/templates/list.mako:107
 msgid "Commune"
 msgstr "Commune"
 
-#: etalage/templates/list.mako:121
+#: etalage/templates/list.mako:126
 msgid "List"
 msgstr "Liste"
 
@@ -256,18 +300,9 @@ msgstr "Carte"
 msgid "Generate"
 msgstr "Générer"
 
-#: etalage/templates/site.mako:76
+#: etalage/templates/site.mako:80
 msgid "GNU Affero General Public License"
 msgstr "GNU Affero General Public License"
 
-#~ msgid "Accept license"
-#~ msgstr "Accepter la licence"
-
-#~ msgid "Error"
-#~ msgstr "Erreur"
-
-#~ msgid "Previous"
-#~ msgstr "Précédent"
-
-#~ msgid "Next"
-#~ msgstr "Suivant"
+#~ msgid "Hide Category Error: {0}"
+#~ msgstr "Erreur dans le masquage de catégorie : {0}"
