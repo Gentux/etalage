@@ -359,7 +359,7 @@ def inputs_to_geographical_coverage_csv_infos(inputs, state = None):
                 commune_pois_id = set()
                 for related_territory_id in ramdb.get_territory_related_territories_id(commune):
                     if related_territory_id not in pois_id_by_competence_territory_id:
-                        related_territory_pois_id = ramdb.pois_id_by_competence_territory_id.get(related_territory_id)
+                        related_territory_pois_id = model.Poi.ids_by_competence_territory_id.get(related_territory_id)
                         pois_id_by_competence_territory_id[related_territory_id] = pois_id.intersection(
                             related_territory_pois_id) if related_territory_pois_id is not None else set()
                     commune_pois_id.update(pois_id_by_competence_territory_id[related_territory_id])
