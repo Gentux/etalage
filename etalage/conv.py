@@ -347,6 +347,7 @@ def inputs_to_geographical_coverage_csv_infos(inputs, state = None):
         competence_territories_id = set(ramdb.territory_by_id.iterkeys())
     pois_id = set(model.Poi.iter_ids(state, **model.Poi.extract_non_territorial_search_data(state, data)))
     pois_id_by_commune_id = {}
+    rows_count = 0
     if pois_id:
         pois_id_by_competence_territory_id = {}
         for commune_id in competence_territories_id:
@@ -364,6 +365,10 @@ def inputs_to_geographical_coverage_csv_infos(inputs, state = None):
                     commune_pois_id.update(pois_id_by_competence_territory_id[related_territory_id])
                 if commune_pois_id:
                     pois_id_by_commune_id[commune_id] = commune_pois_id
+                    rows_count += len(commune_pois_id)
+                    if rows_count > 65535:
+                        # Excel doesn't support sheets with more than 65535 rows.
+                        return None, state._(u'Export is too big. Restrict some search criteria and try again.')
     return pois_id_by_commune_id_to_csv_infos(pois_id_by_commune_id, state = state)
 
 
@@ -401,6 +406,9 @@ def inputs_to_pois_csv_infos(inputs, state = None):
         competence_territories_id = competence_territories_id,
         presence_territory = presence_territory,
         **model.Poi.extract_non_territorial_search_data(state, data)))
+    if len(pois_id) > 65535:
+        # Excel doesn't support sheets with more than 65535 rows.
+        return None, state._(u'Export is too big. Restrict some search criteria and try again.')
     return pois_id_to_csv_infos(pois_id, state = state)
 
 

@@ -42,16 +42,16 @@ from etalage import model, urls
                             Annuaire (format CSV) &mdash; Les informations détaillées,
                             organisme par organisme
                         </label>
-##                        <label class="radio">
-##                            <input type="radio" value="couverture-excel" name="type_and_format">
-##                            Couverture géographique (format Excel) &mdash; Les informations détailléees des
-##                            organismes compétents, commune par commune
-##                        </label>
-##                        <label class="radio">
-##                            <input type="radio" value="couverture-csv" name="type_and_format">
-##                            Couverture géographique (format CSV) &mdash; Les informations détailléees des
-##                            organismes compétents, commune par commune
-##                        </label>
+                        <label class="radio">
+                            <input type="radio" value="couverture-excel" name="type_and_format">
+                            Couverture géographique (format Excel) &mdash; Les informations détailléees des
+                            organismes compétents, commune par commune
+                        </label>
+                        <label class="radio">
+                            <input type="radio" value="couverture-csv" name="type_and_format">
+                            Couverture géographique (format CSV) &mdash; Les informations détailléees des
+                            organismes compétents, commune par commune
+                        </label>
                         <label class="radio">
                             <input type="radio" value="annuaire-geojson" name="type_and_format">
                             GeoJSON &mdash; Pour récupérer les organismes en temps réel dans vos applications
