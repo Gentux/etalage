@@ -61,6 +61,12 @@ def load_environment(global_conf, app_conf):
             'custom_static_files_dir': conv.default(None),
             'custom_templates_dir': conv.default(None),
             'data_updates_collection': conv.default('data_updates'),
+            'data_email': conv.pipe(
+                conv.function(lambda lines: lines.split(u',')),
+                conv.uniform_sequence(
+                        conv.input_to_email,
+                    ),
+                ),
             'database': conv.default('souk'),
             'debug': conv.pipe(conv.guess_bool, conv.default(False)),
             'default_filter': conv.input_to_filter,
