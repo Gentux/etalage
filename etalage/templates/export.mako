@@ -52,15 +52,15 @@ from etalage import model, urls
                             Couverture géographique (format CSV) &mdash; Les informations détailléees des
                             organismes compétents, commune par commune
                         </label>
-                        <label class="radio">
-                            <input type="radio" value="annuaire-geojson" name="type_and_format">
-                            GeoJSON &mdash; Pour récupérer les organismes en temps réel dans vos applications
-                        </label>
-                        <label class="radio">
-                            <input type="radio" value="annuaire-kml" name="type_and_format">
-                            KML &mdash; Pour visualiser les organismes dans certains sites et applications
-                                cartographiques
-                        </label>
+##                        <label class="radio">
+##                            <input type="radio" value="annuaire-geojson" name="type_and_format">
+##                            GeoJSON &mdash; Pour récupérer les organismes en temps réel dans vos applications
+##                        </label>
+##                        <label class="radio">
+##                            <input type="radio" value="annuaire-kml" name="type_and_format">
+##                            KML &mdash; Pour visualiser les organismes dans certains sites et applications
+##                                cartographiques
+##                        </label>
 </%def>
 
 
