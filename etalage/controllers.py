@@ -86,7 +86,7 @@ def autocomplete_category(req):
         conv.rename_item('tag', 'tags_slug'),
         )(inputs, state = ctx)
     if errors is not None:
-        raise wsgihelpers.respond_json(ctx,
+        return wsgihelpers.respond_json(ctx,
             dict(
                 apiVersion = '1.0',
                 context = inputs['context'],
@@ -177,9 +177,9 @@ def csv(req):
         conv.csv_infos_to_csv_bytes,
         )(inputs, state = ctx)
     if errors is not None:
-        raise wsgihelpers.bad_request(ctx, explanation = ctx._('Error: {0}').format(errors))
+        return wsgihelpers.bad_request(ctx, explanation = ctx._('Error: {0}').format(errors))
     if not csv_bytes_by_name:
-        raise wsgihelpers.no_content(ctx)
+        return wsgihelpers.no_content(ctx)
     if len(csv_bytes_by_name) == 1:
         csv_filename, csv_bytes = csv_bytes_by_name.items()[0]
         req.response.content_type = 'text/csv; charset=utf-8'
@@ -211,9 +211,9 @@ def excel(req):
         conv.csv_infos_to_excel_bytes,
         )(inputs, state = ctx)
     if errors is not None:
-        raise wsgihelpers.bad_request(ctx, explanation = ctx._('Error: {0}').format(errors))
+        return wsgihelpers.bad_request(ctx, explanation = ctx._('Error: {0}').format(errors))
     if not excel_bytes:
-        raise wsgihelpers.no_content(ctx)
+        return wsgihelpers.no_content(ctx)
     req.response.content_type = 'application/vnd.ms-excel'
     req.response.content_disposition = 'attachment;filename=export.xls'
     return excel_bytes
@@ -247,7 +247,7 @@ def export_directory_csv(req):
             )
         del url_params['accept']
         del url_params['submit']
-        raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, u'api/v1/{0}/{1}'.format(type, format),
+        return wsgihelpers.redirect(ctx, location = urls.get_url(ctx, u'api/v1/{0}/{1}'.format(type, format),
             **url_params))
 
     data, errors = conv.merge(
@@ -301,7 +301,7 @@ def export_directory_excel(req):
             )
         del url_params['accept']
         del url_params['submit']
-        raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, u'api/v1/{0}/{1}'.format(type, format),
+        return wsgihelpers.redirect(ctx, location = urls.get_url(ctx, u'api/v1/{0}/{1}'.format(type, format),
             **url_params))
 
     data, errors = conv.merge(
@@ -355,7 +355,7 @@ def export_directory_geojson(req):
             )
         del url_params['accept']
         del url_params['submit']
-        raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, u'api/v1/{0}/{1}'.format(type, format),
+        return wsgihelpers.redirect(ctx, location = urls.get_url(ctx, u'api/v1/{0}/{1}'.format(type, format),
             **url_params))
 
     data, errors = conv.merge(
@@ -409,7 +409,7 @@ def export_directory_kml(req):
             )
         del url_params['accept']
         del url_params['submit']
-        raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, u'api/v1/{0}/{1}'.format(type, format),
+        return wsgihelpers.redirect(ctx, location = urls.get_url(ctx, u'api/v1/{0}/{1}'.format(type, format),
             **url_params))
 
     data, errors = conv.merge(
@@ -463,7 +463,7 @@ def export_geographical_coverage_csv(req):
             )
         del url_params['accept']
         del url_params['submit']
-        raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, u'api/v1/{0}/{1}'.format(type, format),
+        return wsgihelpers.redirect(ctx, location = urls.get_url(ctx, u'api/v1/{0}/{1}'.format(type, format),
             **url_params))
 
     data, errors = conv.merge(
@@ -517,7 +517,7 @@ def export_geographical_coverage_excel(req):
             )
         del url_params['accept']
         del url_params['submit']
-        raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, u'api/v1/{0}/{1}'.format(type, format),
+        return wsgihelpers.redirect(ctx, location = urls.get_url(ctx, u'api/v1/{0}/{1}'.format(type, format),
             **url_params))
 
     data, errors = conv.merge(
@@ -560,9 +560,9 @@ def geographical_coverage_csv(req):
         conv.csv_infos_to_csv_bytes,
         )(inputs, state = ctx)
     if errors is not None:
-        raise wsgihelpers.bad_request(ctx, explanation = ctx._('Error: {0}').format(errors))
+        return wsgihelpers.bad_request(ctx, explanation = ctx._('Error: {0}').format(errors))
     if not csv_bytes_by_name:
-        raise wsgihelpers.no_content(ctx)
+        return wsgihelpers.no_content(ctx)
     if len(csv_bytes_by_name) == 1:
         csv_filename, csv_bytes = csv_bytes_by_name.items()[0]
         req.response.content_type = 'text/csv; charset=utf-8'
@@ -594,7 +594,7 @@ def geographical_coverage_excel(req):
         conv.csv_infos_to_excel_bytes,
         )(inputs, state = ctx)
     if errors is not None:
-        raise wsgihelpers.bad_request(ctx, explanation = ctx._('Error: {0}').format(errors))
+        return wsgihelpers.bad_request(ctx, explanation = ctx._('Error: {0}').format(errors))
     if not excel_bytes:
         raise wsgihelpers.no_content(ctx)
     req.response.content_type = 'application/vnd.ms-excel'
