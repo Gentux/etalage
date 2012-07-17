@@ -31,6 +31,7 @@ import logging
 import math
 import sys
 
+import bson
 from biryani import strings
 from suq import monpyjama, representations
 import webob.multidict
@@ -192,6 +193,12 @@ class Field(representations.UserRepresentable):
             return None
         if isinstance(self.value, list):
             return self.value
+        if isinstance(self.value, basestring):
+            # When field is a CSV field, links are a linefeed-separated list of IDs
+            return [
+                bson.objectid.ObjectId(id_str)
+                for id_str in self.value.split()
+                ]
         return [self.value]
 
     @classmethod
