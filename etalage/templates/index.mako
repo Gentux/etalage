@@ -134,6 +134,8 @@ $(function () {
                 # Note: ``category_slug`` may be a category (and not a slug) when an error has occurred during
                 # categories_slug verification.
                 category = ramdb.category_by_slug[category_slug] if isinstance(category_slug, basestring) else category_slug
+                if category.slug in (ctx.base_categories_slug or []):
+                    continue
 %>\
                         <label class="checkbox"><input checked name="category" type="checkbox" value="${category.name}">
                             <span class="label label-success"><i class="icon-tag icon-white"></i>
