@@ -416,6 +416,13 @@ def inputs_to_pois_csv_infos(inputs, state = None):
     if len(pois_id) > 65535:
         # Excel doesn't support sheets with more than 65535 rows.
         return None, state._(u'Export is too big. Restrict some search criteria and try again.')
+
+    # Add sub-...-children of found POIs.
+    def add_children_id(poi_id, pois_id):
+        for child_id in (model.Poi.ids_by_parent_id.get(poi_id) or set()):
+            if child_id not in pois_id:
+                pois_id.add(child_id)
+                add_children_id(child_id, pois_id)
     for poi_id in pois_id.copy():
         add_children_id(poi_id, pois_id)
         if len(pois_id) > 65535:
