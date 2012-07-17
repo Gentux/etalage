@@ -402,13 +402,26 @@ def inputs_to_pois_csv_infos(inputs, state = None):
     else:
         competence_territories_id = None
         presence_territory = None
-    pois_id = list(model.Poi.iter_ids(state,
+    pois_id = set(model.Poi.iter_ids(state,
         competence_territories_id = competence_territories_id,
         presence_territory = presence_territory,
         **model.Poi.extract_non_territorial_search_data(state, data)))
+
+    # Add sub-...-children of found POIs.
+    def add_children_id(poi_id, pois_id):
+        for child_id in (model.Poi.ids_by_parent_id.get(poi_id) or set()):
+            if child_id not in pois_id:
+                pois_id.add(child_id)
+                add_children_id(child_id, pois_id)
     if len(pois_id) > 65535:
         # Excel doesn't support sheets with more than 65535 rows.
         return None, state._(u'Export is too big. Restrict some search criteria and try again.')
+    for poi_id in pois_id.copy():
+        add_children_id(poi_id, pois_id)
+        if len(pois_id) > 65535:
+            # Excel doesn't support sheets with more than 65535 rows.
+            return None, state._(u'Export is too big. Restrict some search criteria and try again.')
+
     return pois_id_to_csv_infos(pois_id, state = state)
 
 
