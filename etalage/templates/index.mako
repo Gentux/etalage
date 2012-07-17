@@ -131,7 +131,9 @@ $(function () {
         % for category_index, category_slug in enumerate(categories_slug):
             % if error is None or category_index not in error:
 <%
-                category = ramdb.category_by_slug[category_slug]
+                # Note: ``category_slug`` may be a category (and not a slug) when an error has occurred during
+                # categories_slug verification.
+                category = ramdb.category_by_slug[category_slug] if isinstance(category_slug, basestring) else category_slug
 %>\
                         <label class="checkbox"><input checked name="category" type="checkbox" value="${category.name}">
                             <span class="label label-success"><i class="icon-tag icon-white"></i>
