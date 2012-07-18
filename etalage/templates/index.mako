@@ -128,7 +128,7 @@ $(function () {
                     <label class="control-label" for="category">Catégorie</label>
                     <div class="controls">
     % if categories_slug:
-        % for category_index, category_slug in enumerate(categories_slug):
+        % for category_index, category_slug in enumerate(categories_slug, -len(ctx.base_categories_slug or [])):
             % if error is None or category_index not in error:
 <%
                 # Note: ``category_slug`` may be a category (and not a slug) when an error has occurred during
