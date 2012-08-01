@@ -241,12 +241,17 @@ class Field(representations.UserRepresentable):
             )
 
     def set_attributes(self, **attributes):
+        """Set given attributes and return a boolean stating whether existing attributes have changed."""
+        changed = False
         for name, value in attributes.iteritems():
             if value is getattr(self.__class__, name, UnboundLocalError):
                 if value is not getattr(self, name, UnboundLocalError):
                     delattr(self, name)
-            else:
+                    changed = True
+            elif value is not getattr(self, name, UnboundLocalError):
                 setattr(self, name, value)
+                changed = True
+        return changed
 
 
 class Poi(representations.UserRepresentable, monpyjama.Wrapper):
@@ -539,12 +544,17 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
             ).get(input_name, input_name)
 
     def set_attributes(self, **attributes):
+        """Set given attributes and return a boolean stating whether existing attributes have changed."""
+        changed = False
         for name, value in attributes.iteritems():
             if value is getattr(self.__class__, name, UnboundLocalError):
                 if value is not getattr(self, name, UnboundLocalError):
                     delattr(self, name)
-            else:
+                    changed = True
+            elif value is not getattr(self, name, UnboundLocalError):
                 setattr(self, name, value)
+                changed = True
+        return changed
 
     @property
     def slug(self):
