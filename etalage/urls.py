@@ -99,10 +99,12 @@ def make_router(*routings):
             if methods is None or req.method in methods:
                 match = regex.match(req.path_info)
                 if match is not None:
-                    req.urlvars = dict(
+                    if getattr(req, 'urlvars', None) is None:
+                        req.urlvars = {}
+                    req.urlvars.update(dict(
                         (name, value.decode('utf-8') if value is not None else None)
                         for name, value in match.groupdict().iteritems()
-                        )
+                        ))
                     req.urlvars.update(vars)
                     req.script_name += req.path_info[:match.end()]
                     req.path_info = req.path_info[match.end():]
