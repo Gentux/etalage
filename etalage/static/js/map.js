@@ -28,26 +28,163 @@ var etalage = etalage || {};
 etalage.map = (function ($) {
     var leafletMap;
 
+    function addFeature(feature, layer) {
+        // Icon settings
+        var blueBlankIcon = createIcon(etalage.map.markersUrl + '/misc/blueblank.png');
+        var blueMultipleIcon = createIcon(etalage.map.markersUrl + '/misc/bluemultiple.png');
+        var greenValidIcon = createIcon(etalage.map.markersUrl + '/misc/greenvalid.png');
+        var greenMultipleIcon = createIcon(etalage.map.markersUrl + '/misc/greenmultiple.png');
+        var homeIcon = createIcon(etalage.map.markersUrl + '/map-icons-collection-2.0/icons/home.png');
+        var redInvalidIcon = createIcon(etalage.map.markersUrl + '/misc/redinvalid.png');
+        var redMultipleIcon = createIcon(etalage.map.markersUrl + '/misc/redmultiple.png');
+
+        var properties = feature.properties;
+        etalage.map.layerByPoiId[properties.id] = layer;
+
+        if (properties.home) {
+            layer.setIcon(homeIcon);
+        } else {
+            if (properties.count > 1) {
+                if (properties.competent === true) {
+                    layer.setIcon(greenMultipleIcon);
+                } else if (properties.competent === false) {
+                    layer.setIcon(redMultipleIcon);
+                } else {
+                    layer.setIcon(blueMultipleIcon);
+                }
+            } else {
+                if (properties.competent === true) {
+                    layer.setIcon(greenValidIcon);
+                } else if (properties.competent === false) {
+                    layer.setIcon(redInvalidIcon);
+                } else {
+                    layer.setIcon(blueBlankIcon);
+                }
+            }
+
+            var nearbyPoiCount = properties.count - properties.centerPois.length;
+            var poi;
+            var $popupDiv = $('<div/>');
+            if (properties.count == 1 || nearbyPoiCount > 0) {
+                poi = properties.centerPois[0];
+                $popupDiv.append(
+                    $('<a/>', {
+                        'class': 'internal',
+                        href: '/organismes/' + poi.slug + '/' + poi.id
+                    }).append($('<strong/>').text(poi.name))
+                );
+                if (poi.streetAddress) {
+                    $.each(poi.streetAddress.split('\n'), function (index, line) {
+                        $popupDiv.append($('<div/>').text(line));
+                    });
+                }
+                if (poi.postalDistribution) {
+                    $popupDiv.append($('<div/>').text(poi.postalDistribution));
+                }
+            } else {
+                var $ul = $('<ul/>');
+                var $li;
+                $.each(properties.centerPois, function (index, poi) {
+                    $li = $('<li>').append(
+                        $('<a/>', {
+                            'class': 'internal',
+                            href: '/organismes/' + poi.slug + '/' + poi.id
+                        }).append($('<strong/>').text(poi.name))
+                    );
+                    if (poi.streetAddress) {
+                        $.each(poi.streetAddress.split('\n'), function (index, line) {
+                            $li.append($('<div/>').text(line));
+                        });
+                    }
+                    if (poi.postalDistribution) {
+                        $li.append($('<div/>').text(poi.postalDistribution));
+                    }
+                    $ul.append($li);
+                });
+                $popupDiv.append($ul);
+            }
+
+            if (nearbyPoiCount > 0) {
+                var bbox = feature.bbox;
+                var $a = $('<a/>', {
+                    'class': 'bbox',
+                    href: '/carte?' + $.param($.extend({bbox: bbox.join(",")}, etalage.map.geojsonParams || {}), true)
+                });
+                var $em = $('<em/>');
+                if (properties.count == 2) {
+                    $em.text('Ainsi qu\'1 autre organisme à proximité');
+                } else {
+                    $em.text('Ainsi que ' + (properties.count - 1) + ' autres organismes à proximité');
+                }
+                $popupDiv.append($('<div/>').append($a.append($em)));
+            }
+
+            layer
+                .bindPopup($popupDiv.html())
+                .on('click', function (e) {
+                    etalage.map.currentPoiId = properties.id;
+                    $('a.bbox', e.target._popup._contentNode).on('click', function () {
+                        leafletMap.fitBounds(L.latLngBounds(
+                            L.latLng(bbox[1], bbox[0]),
+                            L.latLng(bbox[3], bbox[2])
+                        ));
+                        return false;
+                    });
+                    $('a.internal', e.target._popup._contentNode).on('click', function () {
+                        rpc.requestNavigateTo($(this).attr('href'));
+                        return false;
+                    });
+                });
+        }
+    }
+
+    function createIcon(iconUrl) {
+        return L.icon({
+            iconUrl: iconUrl,
+            shadowUrl: etalage.map.markersUrl + '/misc/shadow.png',
+            iconSize: [27, 27],
+            shadowSize: [51, 27],
+            iconAnchor: [14, 24]
+        });
+    }
+
     function createMap(mapDiv, bbox) {
-        leafletMap = new L.Map(mapDiv, {
+        leafletMap = L.map(mapDiv, {
+            maxZoom: 18,
             scrollWheelZoom: false
         });
+
         var tileLayers = {};
         $.each(etalage.map.tileLayersOptions, function (index, options) {
-            var tileLayer = new L.TileLayer(options.url);
-            tileLayer.options.attribution = options.attribution;
-            if (options.subdomains) {
-                tileLayer.options.subdomains = options.subdomains;
-            }
-            tileLayers[options.name] = tileLayer;
+            tileLayers[options.name] = L.tileLayer(options.url, {
+                attribution: options.attribution,
+                subdomains: options.subdomains || 'abc'
+            });
         });
-        if (etalage.map.tileLayersOptions.length > 1) {
-            leafletMap.addControl(new L.Control.Layers(tileLayers, null));
-        }
-        leafletMap.addLayer($.merge(tileLayers[etalage.map.tileLayersOptions[0].name], {
-            maxZoom: 18
-        }));
+        leafletMap.addLayer(tileLayers[etalage.map.tileLayersOptions[0].name]);
         leafletMap.attributionControl.setPrefix(null); // Remove Leaflet attribution.
+        if (etalage.map.tileLayersOptions.length > 1) {
+            L.control.layers(tileLayers, null).addTo(leafletMap);
+        }
+
+        if (window.PIE) {
+            $('.leaflet-control, .leaflet-control-zoom, .leaflet-control-zoom-in, .leaflet-control-zoom-out').each(
+                function () {
+                    // Apply CSS3 border-radius for IE to zoom controls.
+                    PIE.attach(this);
+                }
+            );
+        }
+
+        // Text settings
+        $('.leaflet-control-zoom-in').attr('title', 'Zoomer');
+        $('.leaflet-control-zoom-out').attr('title', 'Dézoomer');
+
+        var geojsonLayer = L.geoJson(null, {
+            onEachFeature: addFeature
+        }).addTo(leafletMap);
+        etalage.map.geojsonLayer = geojsonLayer;
+
         leafletMap
             .on('dragend', function (e) {
                 fetchPois();
@@ -70,164 +207,6 @@ etalage.map = (function ($) {
             });
 
         if (window.PIE) {
-            $('.leaflet-control, .leaflet-control-zoom, .leaflet-control-zoom-in, .leaflet-control-zoom-out').each(
-                function () {
-                    // Apply CSS3 border-radius for IE to zoom controls.
-                    PIE.attach(this);
-                }
-            );
-        }
-
-        // Text settings
-        $('.leaflet-control-zoom-in').attr('title', 'Zoomer');
-        $('.leaflet-control-zoom-out').attr('title', 'Dézoomer');
-
-        // Icon settings
-        var blueBlankIcon = new L.Icon(etalage.map.markersUrl + '/misc/blueblank.png');
-        blueBlankIcon.iconAnchor = new L.Point(14, 24);
-        blueBlankIcon.iconSize = new L.Point(27, 27);
-        blueBlankIcon.shadowSize = new L.Point(51, 27);
-        blueBlankIcon.shadowUrl = etalage.map.markersUrl + '/misc/shadow.png';
-
-        var blueMultipleIcon = new L.Icon(etalage.map.markersUrl + '/misc/bluemultiple.png');
-        blueMultipleIcon.iconAnchor = new L.Point(14, 24);
-        blueMultipleIcon.iconSize = new L.Point(27, 27);
-        blueMultipleIcon.shadowSize = new L.Point(51, 27);
-        blueMultipleIcon.shadowUrl = etalage.map.markersUrl + '/misc/shadow.png';
-
-        var greenValidIcon = new L.Icon(etalage.map.markersUrl + '/misc/greenvalid.png');
-        greenValidIcon.iconAnchor = new L.Point(14, 24);
-        greenValidIcon.iconSize = new L.Point(27, 27);
-        greenValidIcon.shadowSize = new L.Point(51, 27);
-        greenValidIcon.shadowUrl = etalage.map.markersUrl + '/misc/shadow.png';
-
-        var greenMultipleIcon = new L.Icon(etalage.map.markersUrl + '/misc/greenmultiple.png');
-        greenMultipleIcon.iconAnchor = new L.Point(14, 24);
-        greenMultipleIcon.iconSize = new L.Point(27, 27);
-        greenMultipleIcon.shadowSize = new L.Point(51, 27);
-        greenMultipleIcon.shadowUrl = etalage.map.markersUrl + '/misc/shadow.png';
-
-        var homeIcon = new L.Icon(etalage.map.markersUrl + '/map-icons-collection-2.0/icons/home.png');
-        homeIcon.iconAnchor = new L.Point(14, 24);
-        homeIcon.iconSize = new L.Point(27, 27);
-        homeIcon.shadowSize = new L.Point(51, 27);
-        homeIcon.shadowUrl = etalage.map.markersUrl + '/misc/shadow.png';
-
-        var redInvalidIcon = new L.Icon(etalage.map.markersUrl + '/misc/redinvalid.png');
-        redInvalidIcon.iconAnchor = new L.Point(14, 24);
-        redInvalidIcon.iconSize = new L.Point(27, 27);
-        redInvalidIcon.shadowSize = new L.Point(51, 27);
-        redInvalidIcon.shadowUrl = etalage.map.markersUrl + '/misc/shadow.png';
-
-        var redMultipleIcon = new L.Icon(etalage.map.markersUrl + '/misc/redmultiple.png');
-        redMultipleIcon.iconAnchor = new L.Point(14, 24);
-        redMultipleIcon.iconSize = new L.Point(27, 27);
-        redMultipleIcon.shadowSize = new L.Point(51, 27);
-        redMultipleIcon.shadowUrl = etalage.map.markersUrl + '/misc/shadow.png';
-
-        var geojsonLayer = new L.GeoJSON();
-        geojsonLayer.on('featureparse', function (e) {
-            var properties = e.properties;
-            etalage.map.layerByPoiId[properties.id] = e.layer;
-
-            if (properties.home) {
-                e.layer.options.icon = homeIcon;
-            } else {
-                if (properties.count > 1) {
-                    if (properties.competent === true) {
-                        e.layer.options.icon = greenMultipleIcon;
-                    } else if (properties.competent === false) {
-                        e.layer.options.icon = redMultipleIcon;
-                    } else {
-                        e.layer.options.icon = blueMultipleIcon;
-                    }
-                } else {
-                    if (properties.competent === true) {
-                        e.layer.options.icon = greenValidIcon;
-                    } else if (properties.competent === false) {
-                        e.layer.options.icon = redInvalidIcon;
-                    } else {
-                        e.layer.options.icon = blueBlankIcon;
-                    }
-                }
-
-                var nearbyPoiCount = properties.count - properties.centerPois.length;
-                var poi;
-                var $popupDiv = $('<div/>');
-                if (properties.count == 1 || nearbyPoiCount > 0) {
-                    poi = properties.centerPois[0];
-                    $popupDiv.append(
-                        $('<a/>', {
-                            'class': 'internal',
-                            href: '/organismes/' + poi.slug + '/' + poi.id
-                        }).append($('<strong/>').text(poi.name))
-                    );
-                    if (poi.streetAddress) {
-                        $.each(poi.streetAddress.split('\n'), function (index, line) {
-                            $popupDiv.append($('<div/>').text(line));
-                        });
-                    }
-                    if (poi.postalDistribution) {
-                        $popupDiv.append($('<div/>').text(poi.postalDistribution));
-                    }
-                } else {
-                    var $ul = $('<ul/>');
-                    var $li;
-                    $.each(properties.centerPois, function (index, poi) {
-                        $li = $('<li>').append(
-                            $('<a/>', {
-                                'class': 'internal',
-                                href: '/organismes/' + poi.slug + '/' + poi.id
-                            }).append($('<strong/>').text(poi.name))
-                        );
-                        if (poi.streetAddress) {
-                            $.each(poi.streetAddress.split('\n'), function (index, line) {
-                                $li.append($('<div/>').text(line));
-                            });
-                        }
-                        if (poi.postalDistribution) {
-                            $li.append($('<div/>').text(poi.postalDistribution));
-                        }
-                        $ul.append($li);
-                    });
-                    $popupDiv.append($ul);
-                }
-
-                if (nearbyPoiCount > 0) {
-                    var bbox = e.bbox;
-                    var $a = $('<a/>', {
-                        'class': 'bbox',
-                        href: '/carte?' + $.param($.extend({bbox: bbox.join(",")}, etalage.map.geojsonParams || {}), true)
-                    });
-                    var $em = $('<em/>');
-                    if (properties.count == 2) {
-                        $em.text('Ainsi qu\'1 autre organisme à proximité');
-                    } else {
-                        $em.text('Ainsi que ' + (properties.count - 1) + ' autres organismes à proximité');
-                    }
-                    $popupDiv.append($('<div/>').append($a.append($em)));
-                }
-
-                e.layer
-                    .bindPopup($popupDiv.html())
-                    .on('click', function (e) {
-                        etalage.map.currentPoiId = properties.id;
-                        $('a.bbox', e.target._popup._contentNode).on('click', function () {
-                            leafletMap.fitBounds(new L.LatLngBounds(new L.LatLng(bbox[1], bbox[0]),
-                                new L.LatLng(bbox[3], bbox[2])));
-                            return false;
-                        });
-                        $('a.internal', e.target._popup._contentNode).on('click', function () {
-                            rpc.requestNavigateTo($(this).attr('href'));
-                            return false;
-                        });
-                    });
-            }
-        });
-        leafletMap.addLayer(geojsonLayer);
-        etalage.map.geojsonLayer = geojsonLayer;
-
-        if (window.PIE) {
             leafletMap.on('layeradd', function (e) {
                 if (e.layer._wrapper && e.layer._opened === true && e.layer._content) {
                     // Apply CSS3 border-radius for IE to popup.
@@ -235,10 +214,12 @@ etalage.map = (function ($) {
                 }
             });
         }
-
         etalage.map.layerByPoiId = {};
         if (bbox) {
-            leafletMap.fitBounds(new L.LatLngBounds(new L.LatLng(bbox[1], bbox[0]), new L.LatLng(bbox[3], bbox[2])));
+            leafletMap.fitBounds(L.latLngBounds(
+                L.latLng(bbox[1], bbox[0]),
+                L.latLng(bbox[3], bbox[2])
+            ));
             fetchPois();
         } else {
             // No POI found.
@@ -246,16 +227,23 @@ etalage.map = (function ($) {
                 leafletMap.setView(etalage.map.center, leafletMap.getMaxZoom() - 3);
             }
         }
+
+        // Add scale to map
+        L.control.scale({
+            metric: true,
+            imperial: false
+        }).addTo(leafletMap);
     }
 
     function fetchPois() {
         var context = (new Date()).getTime();
+
         // When map is larger than 360 degrees, fix min and max longitude returned by getBounds().
         var bounds = leafletMap.getBounds();
         var northEast = bounds.getNorthEast();
         var southWest = bounds.getSouthWest();
-        var lowestX = leafletMap.layerPointToContainerPoint(leafletMap.latLngToLayerPoint(new L.LatLng(0, -180))).x;
-        var zeroX = leafletMap.layerPointToContainerPoint(leafletMap.latLngToLayerPoint(new L.LatLng(0, 0))).x;
+        var lowestX = leafletMap.layerPointToContainerPoint(leafletMap.latLngToLayerPoint(L.latLng(0, -180))).x;
+        var zeroX = leafletMap.layerPointToContainerPoint(leafletMap.latLngToLayerPoint(L.latLng(0, 0))).x;
         // highestX = lowestX + 2 * (zeroX - lowestX) = 2 * zeroX - lowestX
         var east = 2 * zeroX - lowestX > leafletMap.getSize().x ?  northEast.lng : 180;
         var west = lowestX < 0 ? southWest.lng : -180;
@@ -270,74 +258,39 @@ etalage.map = (function ($) {
                 if (parseInt(data.properties.context) !== context) {
                     return;
                 }
-                setGeoJSONData(data);
+                // setGeoJSONData(data);
+                var geojsonLayer = etalage.map.geojsonLayer;
+                geojsonLayer.clearLayers();
+                geojsonLayer.addData(data);
             },
             traditional: true
         });
     }
 
-    function setGeoJSONData(data) {
-        var geojsonLayer = etalage.map.geojsonLayer;
-        var layerByPoiId = etalage.map.layerByPoiId;
-        // Retrieve existing POIs layers.
-        var obsoleteLayerByPoiId = {};
-        for (var poiId in layerByPoiId) {
-            if (layerByPoiId.hasOwnProperty(poiId)) {
-                obsoleteLayerByPoiId[poiId] = layerByPoiId[poiId];
-            }
-        }
-        // Add only new POIs layers.
-        if (data.features) {
-            var feature, poiId;
-            for (var i = 0, len = data.features.length; i < len; i++) {
-                feature = data.features[i];
-                poiId = feature.properties.id;
-                delete obsoleteLayerByPoiId[poiId];
-                if (!(poiId in layerByPoiId)) {
-                    geojsonLayer.addGeoJSON(feature);
-                }
-            }
-        }
-        // Delete obsolete POIs layers.
-        for (var poiId in obsoleteLayerByPoiId) {
-            if (obsoleteLayerByPoiId.hasOwnProperty(poiId)) {
-                geojsonLayer.removeLayer(obsoleteLayerByPoiId[poiId]);
-                delete layerByPoiId[poiId];
-            }
-        }
-    }
-
     function singleMarkerMap(mapDiv, latitude, longitude) {
-        var icon, latLng, map, marker, tileLayer, tileLayers;
+        var latLng, map, marker, tileLayer, tileLayers;
 
-        map = new L.Map(mapDiv, {
+        map = L.map(mapDiv, {
+            maxZoom: 18,
             scrollWheelZoom: false
         });
+
         tileLayers = {};
         $.each(etalage.map.tileLayersOptions, function (index, options) {
-            tileLayer = new L.TileLayer(options.url);
-            tileLayer.options.attribution = options.attribution;
-            if (options.subdomains) {
-                tileLayer.options.subdomains = options.subdomains;
-            }
-            tileLayers[options.name] = tileLayer;
+            tileLayers[options.name] = L.tileLayer(options.url, {
+                attribution: options.attribution,
+                subdomains: options.subdomains || 'abc'
+            });
         });
+        map.addLayer(tileLayers[etalage.map.tileLayersOptions[0].name]);
+        map.attributionControl.setPrefix(null); // Remove Leaflet attribution.
         if (etalage.map.tileLayersOptions.length > 1) {
-            map.addControl(new L.Control.Layers(tileLayers, null));
+            L.control.layers(tileLayers, null).addTo(map);
         }
-        map.addLayer($.merge(tileLayers[etalage.map.tileLayersOptions[0].name], {
-            maxZoom: 18
-        }));
 
-        icon = new L.Icon(etalage.map.markersUrl + '/misc/blueblank.png');
-        icon.iconAnchor = new L.Point(14, 24);
-        icon.iconSize = new L.Point(27, 27);
-        icon.shadowSize = new L.Point(51, 27);
-        icon.shadowUrl = etalage.map.markersUrl + '/misc/shadow.png';
-
-        latLng = new L.LatLng(latitude, longitude);
-        marker = new L.Marker(latLng);
-        marker.options.icon = icon;
+        latLng = L.latLng(latitude, longitude);
+        marker = L.marker(latLng);
+        marker.setIcon(createIcon(etalage.map.markersUrl + '/misc/blueblank.png'));
         map.addLayer(marker);
 
         map.setView(latLng, map.getMaxZoom() - 3);
@@ -349,6 +302,7 @@ etalage.map = (function ($) {
         center: null,
         createMap: createMap,
         currentPoiId: null,
+        fetchPois: fetchPois,
         geojsonLayer: null,
         geojsonParams: null,
         geojsonUrl: null,
