@@ -15,3 +15,7 @@
     overflow-y: auto;
 }
 
+.legend-icon {
+    height: 27px;
+    width: 27px;
+}

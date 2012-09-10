@@ -42,7 +42,37 @@ from etalage import conf, model, urls
 
 
 <%def name="results()" filter="trim">
-    <div id="map" style="height: 400px;"></div>
+    <div class="well" id="map" style="height: 400px;"></div>
+
+    <div class="well">
+        <p class="lead">Legend</p>
+        <ul class="unstyled">
+            <li>
+                <img class="legend-icon" src="${conf['markers_url'].rstrip('/')}/misc/blueblank.png">
+                L'organisme a une compétence géographique sur le territoire recherché (compétent par nature).
+            </li>
+
+            <li>
+                <img class="legend-icon" src="${conf['markers_url'].rstrip('/')}/misc/greenvalid.png">
+                L'organisme a une compétence administrative sur le territoire recherché.
+            </li>
+
+            <li>
+                <img class="legend-icon" src="${conf['markers_url'].rstrip('/')}/misc/bluemultiple.png">
+                Plusieurs organismes sont présents à cet endroit (idem pour vert et rouge).
+            </li>
+
+            <li>
+                <img class="legend-icon" src="${conf['markers_url'].rstrip('/')}/misc/redinvalid.png">
+                L'organisme n'est pas commpétent sur le territoire recherché.
+            </li>
+
+            <li>
+                <img class="legend-icon" src="${conf['markers_url'].rstrip('/')}/map-icons-collection-2.0/icons/home.png">
+                Centre du territoire recherché.
+            </li>
+        </ul>
+    </div>
 </%def>
 
 
