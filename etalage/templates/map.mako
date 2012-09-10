@@ -45,7 +45,7 @@ from etalage import conf, model, urls
     <div class="well" id="map" style="height: 400px;"></div>
 
     <div class="well">
-        <p class="lead">Legend</p>
+        <p><strong>Légende</strong> :</p>
         <ul class="unstyled">
             <li>
                 <img class="legend-icon" src="${conf['markers_url'].rstrip('/')}/misc/blueblank.png">
