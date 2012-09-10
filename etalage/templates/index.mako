@@ -94,6 +94,7 @@ etalage.territories.kinds = ${conf['territories_kinds'] | n, js};
 etalage.params = ${inputs | n, js};
 
 $(function () {
+    etalage.categories.bindToggleCategories($("input[name='category'][type='checkbox']"))
     etalage.categories.createAutocompleter($('#category'));
     etalage.territories.createAutocompleter($('#territory'));
 });
