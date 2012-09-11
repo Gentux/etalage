@@ -44,7 +44,7 @@ from etalage import conf, model, urls
 <%def name="results()" filter="trim">
     <div class="well" id="map" style="height: 400px;"></div>
 
-    <div class="well">
+    <div class="legend-text well">
         <p><strong>Légende</strong> :</p>
         <ul class="unstyled">
             <li>
@@ -64,7 +64,7 @@ from etalage import conf, model, urls
 
             <li>
                 <img class="legend-icon" src="${conf['markers_url'].rstrip('/')}/misc/redinvalid.png">
-                L'organisme n'est pas commpétent sur le territoire recherché.
+                L'organisme n'est pas compétent sur le territoire recherché.
             </li>
 
             <li>

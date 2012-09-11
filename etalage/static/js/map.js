@@ -127,7 +127,7 @@ etalage.map = (function ($) {
                         leafletMap.fitBounds(L.latLngBounds(
                             L.latLng(bbox[1], bbox[0]),
                             L.latLng(bbox[3], bbox[2])
-                        ));
+                        ).pad(0.1));
                         return false;
                     });
                     $('a.internal', e.target._popup._contentNode).on('click', function () {
@@ -150,7 +150,6 @@ etalage.map = (function ($) {
 
     function createMap(mapDiv, bbox) {
         leafletMap = L.map(mapDiv, {
-            maxZoom: 18,
             scrollWheelZoom: false
         });
 
@@ -219,7 +218,7 @@ etalage.map = (function ($) {
             leafletMap.fitBounds(L.latLngBounds(
                 L.latLng(bbox[1], bbox[0]),
                 L.latLng(bbox[3], bbox[2])
-            ));
+            ).pad(0.1));
             fetchPois();
         } else {
             // No POI found.
@@ -271,7 +270,6 @@ etalage.map = (function ($) {
         var latLng, map, marker, tileLayer, tileLayers;
 
         map = L.map(mapDiv, {
-            maxZoom: 18,
             scrollWheelZoom: false
         });
 
