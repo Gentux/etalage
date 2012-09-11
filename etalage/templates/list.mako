@@ -26,7 +26,7 @@
 <%!
 import markupsafe
 
-from etalage import model, urls
+from etalage import conf, conv, model, ramdb, urls
 %>
 
 
@@ -102,6 +102,7 @@ from etalage import model, urls
         <table class="table table-bordered table-condensed table-striped">
             <thead>
                 <tr>
+                    <th>${_('Icon')}</th>
                     <th>${_('Name')}</th>
                     <th>${_('Street Address')}</th>
                     <th>${_('Commune')}</th>
@@ -110,6 +111,21 @@ from etalage import model, urls
             <tbody>
         % for poi in pager.items:
                 <tr>
+                    <td>
+            <%
+            data, errors = conv.inputs_to_pois_list_data(inputs, state = ctx)
+            related_territories_id = ramdb.get_territory_related_territories_id(
+                data['territory']
+                ) if data.get('territory') is not None else None
+            %>
+            % if related_territories_id is None or poi.competence_territories_id is None:
+                <img class="legend-icon" src="${conf['markers_url'].rstrip('/')}/misc/blueblank.png">
+            % elif not related_territories_id.isdisjoint(poi.competence_territories_id):
+                <img class="legend-icon" src="${conf['markers_url'].rstrip('/')}/misc/greenvalid.png">
+            % else:
+                <img class="legend-icon" src="${conf['markers_url'].rstrip('/')}/misc/redinvalid.png">
+            % endif
+                    </td>
                     <td>
                         <a class="internal" href="${urls.get_url(ctx, 'organismes', poi.slug, poi._id)}">${poi.name}</a>
                     </td>
