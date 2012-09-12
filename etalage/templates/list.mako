@@ -102,7 +102,7 @@ from etalage import conf, conv, model, ramdb, urls
         <table class="table table-bordered table-condensed table-striped">
             <thead>
                 <tr>
-                    <th>${_('Icon')}</th>
+                    <th></th>
                     <th>${_('Name')}</th>
                     <th>${_('Street Address')}</th>
                     <th>${_('Commune')}</th>
