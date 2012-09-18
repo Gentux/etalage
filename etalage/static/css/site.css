@@ -7,3 +7,7 @@
     color: #555;
 }
 
+img.loading {
+    height: 30px;
+    width: 30px;
+}

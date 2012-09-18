@@ -83,11 +83,13 @@ from etalage import conf, model, ramdb, urls
 
 <%def name="scripts()" filter="trim">
     <%parent:scripts/>
+    <script src="/js/bind.js"></script>
     <script src="/js/categories.js"></script>
     <script src="/js/territories.js"></script>
     <script>
 var etalage = etalage || {};
 etalage.categories.tags = ${ctx.category_tags_slug | n, js};
+etalage.miscUrl = ${conf['misc_url'] | n, js};
 etalage.territories.autocompleterUrl = ${urlparse.urljoin(conf['territoria_url'],
     '/api/v1/autocomplete-territory') | n, js};
 etalage.territories.kinds = ${conf['territories_kinds'] | n, js};
@@ -97,7 +99,8 @@ etalage.territories.base_territory = ${'{mpd[postal_code]} {mpd[postal_routing]}
 etalage.params = ${inputs | n, js};
 
 $(function () {
-    etalage.categories.bindToggleCategories($("input[name='category'][type='checkbox']"))
+    etalage.bind.loadingGif();
+    etalage.bind.toggleCategories();
     etalage.categories.createAutocompleter($('#category'));
     etalage.territories.createAutocompleter($('#territory'));
 });

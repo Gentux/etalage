@@ -60,17 +60,7 @@ etalage.categories = (function ($) {
         });
     }
 
-    function bindToggleCategories($checkbox) {
-        $checkbox.bind('change', function(event) {
-            var pathname = window.location.pathname;
-            var queryString = $("#search-form").serialize();
-
-            document.location = pathname + "?" + queryString;
-        });
-    }
-
     return {
-        bindToggleCategories: bindToggleCategories,
         createAutocompleter: createAutocompleter
     };
 })(jQuery);
