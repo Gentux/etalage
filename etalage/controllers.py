@@ -984,6 +984,7 @@ def index_map(req):
 def init_base(ctx, params):
     inputs = dict(
         base_category = params.getall('base_category'),
+        base_territory = params.get('base_territory'),
         category_tag = params.getall('category_tag'),
         container_base_url = params.get('container_base_url'),
         distance = params.get('distance'),
@@ -1067,27 +1068,28 @@ def init_base(ctx, params):
     ctx.container_base_url = container_base_url
     ctx.gadget_id = gadget_id
 
-#    base_territory_type = req.urlvars.get('base_territory_type')
-#    base_territory_code = req.urlvars.get('base_territory_code')
-#    if base_territory_type is not None and base_territory_code is not None:
-#        base_territory_kind = urls.territories_kind[base_territory_type]
-#        ctx.base_territory = Territory.kind_to_class(base_territory_kind).get(base_territory_code)
-#        if ctx.base_territory is None:
-#            raise wsgihelpers.not_found(ctx, body = htmlhelpers.modify_html(ctx, templates.render(ctx,
-#                '/error-unknown-territory.mako', territory_code = base_territory_code,
-#                territory_kind = base_territory_kind)))
-#        if ctx.subscriber is not None:
-#            subscriber_territory = ctx.subscriber.territory
-#            if subscriber_territory._id not in ctx.base_territory.ancestors_id:
-#                raise wsgihelpers.not_found(ctx, body = htmlhelpers.modify_html(ctx, templates.render(ctx,
-#                    '/error-invalid-territory.mako', parent_territory = subscriber_territory,
-#                    territory = ctx.base_territory)))
-#    if ctx.base_territory is None and user is not None and user.territory is not None:
-#        ctx.base_territory = Territory.get_variant_class(user.territory['kind']).get(user.territory['code'])
-#        if ctx.base_territory is None:
-#            raise wsgihelpers.not_found(ctx, body = htmlhelpers.modify_html(ctx, templates.render(ctx,
-#                '/error-unknown-territory.mako', territory_code = user.territory['code'],
-#                territory_kind = user.territory['kind'])))
+    ctx.base_territory, error = conv.input_to_postal_distribution_to_geolocated_territory(
+        inputs['base_territory'],
+        state = ctx,
+        )
+    if error is not None:
+        raise wsgihelpers.bad_request(ctx, explanation = ctx._('Base Categories Error: {0}').format(error))
+    if inputs['base_territory'] and ctx.base_territory is None:
+        raise wsgihelpers.not_found(ctx, body = htmlhelpers.modify_html(ctx, templates.render(ctx,
+            '/error-unknown-territory.mako', territory_code = ctx.base_territory.code,
+            territory_kind = base_territory_kind)))
+    if ctx.subscriber is not None:
+        subscriber_territory = ctx.subscriber.territory
+        if subscriber_territory._id not in ctx.base_territory.ancestors_id:
+            raise wsgihelpers.not_found(ctx, body = htmlhelpers.modify_html(ctx, templates.render(ctx,
+                '/error-invalid-territory.mako', parent_territory = subscriber_territory,
+                territory = ctx.base_territory)))
+    if ctx.base_territory is None and user is not None and user.territory is not None:
+        ctx.base_territory = Territory.get_variant_class(user.territory['kind']).get(user.territory['code'])
+        if ctx.base_territory is None:
+            raise wsgihelpers.not_found(ctx, body = htmlhelpers.modify_html(ctx, templates.render(ctx,
+                '/error-unknown-territory.mako', territory_code = user.territory['code'],
+                territory_kind = user.territory['kind'])))
 
     ctx.distance, error = conv.pipe(
         conv.input_to_float,

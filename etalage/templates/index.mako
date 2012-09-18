@@ -91,6 +91,9 @@ etalage.categories.tags = ${ctx.category_tags_slug | n, js};
 etalage.territories.autocompleterUrl = ${urlparse.urljoin(conf['territoria_url'],
     '/api/v1/autocomplete-territory') | n, js};
 etalage.territories.kinds = ${conf['territories_kinds'] | n, js};
+etalage.territories.base_territory = ${'{mpd[postal_code]} {mpd[postal_routing]}'.format(
+    mpd = ctx.base_territory.main_postal_distribution
+    ) | n, js};
 etalage.params = ${inputs | n, js};
 
 $(function () {
