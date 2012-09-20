@@ -39,7 +39,8 @@ application_url = None  # Set to req.application_url as soon as Wenoit applicati
 
 
 def get_base_url(ctx, full = False):
-    base_url = application_url.rstrip('/')
+    assert not(application_url is None and full), "Can't use full URLs when application_url is not inited."
+    base_url = (application_url or u'').rstrip('/')
     if not full:
         # When a full URL is not requested, remove scheme and network location from it.
         base_url = urlparse.urlsplit(base_url).path
