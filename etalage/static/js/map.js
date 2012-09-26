@@ -119,22 +119,7 @@ etalage.map = (function ($) {
                 $popupDiv.append($('<div/>').append($a.append($em)));
             }
 
-            layer
-                .bindPopup($popupDiv.html())
-                .on('click', function (e) {
-                    etalage.map.currentPoiId = properties.id;
-                    $('a.bbox', e.target._popup._contentNode).on('click', function () {
-                        leafletMap.fitBounds(L.latLngBounds(
-                            L.latLng(bbox[1], bbox[0]),
-                            L.latLng(bbox[3], bbox[2])
-                        ));
-                        return false;
-                    });
-                    $('a.internal', e.target._popup._contentNode).on('click', function () {
-                        rpc.requestNavigateTo($(this).attr('href'));
-                        return false;
-                    });
-                });
+            layer.bindPopup($popupDiv.html());
         }
     }
 
@@ -192,6 +177,20 @@ etalage.map = (function ($) {
                 if (e.layer._closeButton) {
                     delete etalage.map.currentPoiId;
                 }
+            })
+            .on('popupopen', function (e) {
+                etalage.map.currentPoiId = properties.id;
+                $('a.bbox', e.popup._contentNode).on('click', function () {
+                    leafletMap.fitBounds(L.latLngBounds(
+                        L.latLng(bbox[1], bbox[0]),
+                        L.latLng(bbox[3], bbox[2])
+                    ));
+                    return false;
+                });
+                $('a.internal', e.popup._contentNode).on('click', function () {
+                    rpc.requestNavigateTo($(this).attr('href'));
+                    return false;
+                });
             })
             .on('zoomend', function (e) {
                 try {
