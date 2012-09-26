@@ -966,6 +966,7 @@ def index_map(req):
         conv.inputs_to_pois_layer_data,
         conv.default_pois_layer_data_bbox,
         )(inputs, state = ctx)
+
     if errors is None:
         bbox = data['bbox']
         territory = data['territory']
@@ -1073,23 +1074,21 @@ def init_base(ctx, params):
         state = ctx,
         )
     if error is not None:
-        raise wsgihelpers.bad_request(ctx, explanation = ctx._('Base Categories Error: {0}').format(error))
-    if inputs['base_territory'] and ctx.base_territory is None:
-        raise wsgihelpers.not_found(ctx, body = htmlhelpers.modify_html(ctx, templates.render(ctx,
-            '/error-unknown-territory.mako', territory_code = ctx.base_territory.code,
-            territory_kind = base_territory_kind)))
+        raise wsgihelpers.bad_request(ctx, explanation = ctx._('Base Territory Error: {0}').format(error))
     if ctx.subscriber is not None:
         subscriber_territory = ctx.subscriber.territory
         if subscriber_territory._id not in ctx.base_territory.ancestors_id:
             raise wsgihelpers.not_found(ctx, body = htmlhelpers.modify_html(ctx, templates.render(ctx,
                 '/error-invalid-territory.mako', parent_territory = subscriber_territory,
                 territory = ctx.base_territory)))
-    if ctx.base_territory is None and user is not None and user.territory is not None:
-        ctx.base_territory = Territory.get_variant_class(user.territory['kind']).get(user.territory['code'])
+    if ctx.base_territory is None and ctx.subscriber is not None and ctx.subscriber.territory is not None:
+        ctx.base_territory = Territory.get_variant_class(
+            ctx.subscriber.territory['kind']).get(ctx.subscriber.territory['code']
+            )
         if ctx.base_territory is None:
             raise wsgihelpers.not_found(ctx, body = htmlhelpers.modify_html(ctx, templates.render(ctx,
-                '/error-unknown-territory.mako', territory_code = user.territory['code'],
-                territory_kind = user.territory['kind'])))
+                '/error-unknown-territory.mako', territory_code = ctx.subscriber.territory['code'],
+                territory_kind = ctx.subscriber.territory['kind'])))
 
     ctx.distance, error = conv.pipe(
         conv.input_to_float,

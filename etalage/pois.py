@@ -42,6 +42,7 @@ from . import conv, ramdb
 __all__ = ['Cluster', 'Field', 'get_first_field', 'iter_fields', 'Poi', 'pop_first_field']
 
 log = logging.getLogger(__name__)
+N_ = lambda message: message
 
 
 class Cluster(representations.UserRepresentable):
@@ -520,15 +521,23 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
 
     @classmethod
     def make_inputs_to_search_data(cls):
-        return conv.struct(
-            dict(
-                categories_slug = conv.uniform_sequence(conv.input_to_category_slug),
-                filter = conv.input_to_filter,
-                term = conv.input_to_slug,
-                territory = conv.input_to_postal_distribution_to_geolocated_territory,
+        return conv.pipe(
+            conv.struct(
+                dict(
+                    base_territory = conv.input_to_postal_distribution_to_geolocated_territory,
+                    categories_slug = conv.uniform_sequence(conv.input_to_category_slug),
+                    filter = conv.input_to_filter,
+                    term = conv.input_to_slug,
+                    territory = conv.input_to_postal_distribution_to_geolocated_territory,
+                    ),
+                default = 'drop',
+                keep_none_values = True,
                 ),
-            default = 'drop',
-            keep_none_values = True,
+            conv.test(
+                lambda struct: not struct.get('base_territory') or \
+                    struct.get('territory') and struct['base_territory']._id in struct['territory'].ancestors_id,
+                error = {'territory': N_(u'Territory not located in base territory')}
+                ),
             )
 
     @property

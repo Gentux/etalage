@@ -155,6 +155,8 @@ def default_pois_layer_data_bbox(data, state = None):
     data = data.copy()
     filter = data['filter']
     territory = data['territory']
+    if data.get('base_territory') not in territory.ancestors_id:
+        territory = data['base_territory']
     poi_by_id = model.Poi.instance_by_id
     if territory is None:
         competence_territories_id = None

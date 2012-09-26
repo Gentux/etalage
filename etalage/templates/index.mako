@@ -93,9 +93,11 @@ etalage.miscUrl = ${conf['misc_url'] | n, js};
 etalage.territories.autocompleterUrl = ${urlparse.urljoin(conf['territoria_url'],
     '/api/v1/autocomplete-territory') | n, js};
 etalage.territories.kinds = ${conf['territories_kinds'] | n, js};
+% if ctx.base_territory is not None:
 etalage.territories.base_territory = ${'{mpd[postal_code]} {mpd[postal_routing]}'.format(
     mpd = ctx.base_territory.main_postal_distribution
     ) | n, js};
+% endif
 etalage.params = ${inputs | n, js};
 
 $(function () {
