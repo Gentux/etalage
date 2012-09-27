@@ -789,6 +789,17 @@ def subscriber_to_bson(subscriber, state = None):
 subscription_to_bson = object_to_clean_dict
 
 
+def test_territory_in_base_territory(data, state = None):
+    if state is None:
+        sate = default_state
+    if not data.get('base_territory') or \
+        data.get('territory') and data['base_territory']._id in data['territory'].ancestors_id:
+        return data, None
+    return data, {'territory': state._(u'Searched territory not located in base territory {0}').format(
+        data['base_territory'].main_postal_distribution['postal_routing']
+        )}
+
+
 user_to_bson = object_to_clean_dict
 
 

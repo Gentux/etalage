@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Etalage 0.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2012-07-12 11:40+0200\n"
+"POT-Creation-Date: 2012-09-27 14:47+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -26,7 +26,7 @@ msgstr ""
 
 #: etalage/controllers.py:180 etalage/controllers.py:214 etalage/controllers.py:563
 #: etalage/controllers.py:597 etalage/controllers.py:625 etalage/controllers.py:628
-#: etalage/controllers.py:1123
+#: etalage/controllers.py:1124
 msgid "Error: {0}"
 msgstr ""
 
@@ -75,95 +75,103 @@ msgstr ""
 msgid "Map page disabled by configuration"
 msgstr ""
 
-#: etalage/controllers.py:1002
+#: etalage/controllers.py:1004
 msgid "Error for \"{0}\" parameter: {1}"
 msgstr ""
 
-#: etalage/controllers.py:1010
+#: etalage/controllers.py:1012
 msgid "Base Categories Error: {0}"
 msgstr ""
 
-#: etalage/controllers.py:1016
+#: etalage/controllers.py:1018
 msgid "Category Tags Error: {0}"
 msgstr ""
 
-#: etalage/controllers.py:1037 etalage/controllers.py:1053
+#: etalage/controllers.py:1039 etalage/controllers.py:1055
 msgid "Connect to "
 msgstr ""
 
-#: etalage/controllers.py:1040 etalage/controllers.py:1056
+#: etalage/controllers.py:1042 etalage/controllers.py:1058
 msgid ", rebuild component and copy the generated JavaScript into your website."
 msgstr ""
 
-#: etalage/controllers.py:1042
+#: etalage/controllers.py:1044
 msgid "The gadget ID \"{0}\" doesn't exist."
 msgstr ""
 
-#: etalage/controllers.py:1042 etalage/controllers.py:1059
+#: etalage/controllers.py:1044 etalage/controllers.py:1061
 msgid "Invalid Gadget ID"
 msgstr ""
 
-#: etalage/controllers.py:1058
+#: etalage/controllers.py:1060
 msgid "The gadget ID \"{0}\" is used by another component."
 msgstr ""
 
-#: etalage/controllers.py:1098
+#: etalage/controllers.py:1077
+msgid "Base Territory Error: {0}"
+msgstr ""
+
+#: etalage/controllers.py:1099
 msgid "Distance Error: {0}"
 msgstr ""
 
-#: etalage/controllers.py:1170 etalage/controllers.py:1247
+#: etalage/controllers.py:1171 etalage/controllers.py:1248
 msgid "Minisite disabled by configuration"
 msgstr ""
 
-#: etalage/controllers.py:1206
+#: etalage/controllers.py:1207
 msgid "Access to organism failed"
 msgstr ""
 
-#: etalage/controllers.py:1230 etalage/controllers.py:1264
+#: etalage/controllers.py:1231 etalage/controllers.py:1265
 msgid "POI ID Error: {0}"
 msgstr ""
 
-#: etalage/controllers.py:1272
+#: etalage/controllers.py:1273
 msgid "Encoding Error: {0}"
 msgstr ""
 
-#: etalage/conv.py:303
+#: etalage/conv.py:305
 msgid "POI {0} doesn't exist"
 msgstr ""
 
-#: etalage/conv.py:321
+#: etalage/conv.py:323
 msgid "Missing required tags for category"
 msgstr ""
 
-#: etalage/conv.py:332
+#: etalage/conv.py:334
 msgid "Invalid category"
 msgstr ""
 
-#: etalage/conv.py:371 etalage/conv.py:411
+#: etalage/conv.py:373 etalage/conv.py:413 etalage/conv.py:425
 msgid "Export is too big. Restrict some search criteria and try again."
 msgstr ""
 
-#: etalage/conv.py:425
+#: etalage/conv.py:440
 msgid "In \"directory\" mode, territory must be a commune"
 msgstr ""
 
-#: etalage/conv.py:426
+#: etalage/conv.py:441
 msgid "In \"directory\" mode, a commune is required"
 msgstr ""
 
-#: etalage/conv.py:479
+#: etalage/conv.py:494
 msgid "POI has no geographical coordinates"
 msgstr ""
 
-#: etalage/conv.py:719 etalage/conv.py:722
+#: etalage/conv.py:734 etalage/conv.py:737
 msgid "Unknown territory"
 msgstr ""
 
-#: etalage/conv.py:786
+#: etalage/conv.py:798
+msgid "Searched territory not located in base territory {0}"
+msgstr ""
+
+#: etalage/conv.py:812
 msgid "Territory has no geographical coordinates"
 msgstr ""
 
-#: etalage/urls.py:111
+#: etalage/urls.py:113
 msgid "Page not found: {0}"
 msgstr ""
 
@@ -244,27 +252,27 @@ msgstr ""
 msgid "Redirection"
 msgstr ""
 
-#: etalage/templates/index.mako:110
+#: etalage/templates/index.mako:119
 msgid "Search"
 msgstr ""
 
-#: etalage/templates/list.mako:105
+#: etalage/templates/list.mako:106
 msgid "Name"
 msgstr ""
 
-#: etalage/templates/list.mako:106
+#: etalage/templates/list.mako:107
 msgid "Street Address"
 msgstr ""
 
-#: etalage/templates/list.mako:107
+#: etalage/templates/list.mako:108
 msgid "Commune"
 msgstr ""
 
-#: etalage/templates/list.mako:126
+#: etalage/templates/list.mako:142
 msgid "List"
 msgstr ""
 
-#: etalage/templates/map.mako:78
+#: etalage/templates/map.mako:108
 msgid "Map"
 msgstr ""
 

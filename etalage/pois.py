@@ -42,7 +42,6 @@ from . import conv, ramdb
 __all__ = ['Cluster', 'Field', 'get_first_field', 'iter_fields', 'Poi', 'pop_first_field']
 
 log = logging.getLogger(__name__)
-N_ = lambda message: message
 
 
 class Cluster(representations.UserRepresentable):
@@ -533,11 +532,7 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
                 default = 'drop',
                 keep_none_values = True,
                 ),
-            conv.test(
-                lambda struct: not struct.get('base_territory') or \
-                    struct.get('territory') and struct['base_territory']._id in struct['territory'].ancestors_id,
-                error = {'territory': N_(u'Territory not located in base territory')}
-                ),
+            conv.test_territory_in_base_territory,
             )
 
     @property
