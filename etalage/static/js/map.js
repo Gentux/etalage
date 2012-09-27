@@ -223,6 +223,11 @@ etalage.map = (function ($) {
             // No POI found.
             if (etalage.map.center !== null) {
                 leafletMap.setView(etalage.map.center, leafletMap.getMaxZoom() - 3);
+            } else {
+                leafletMap.fitBounds(L.latLngBounds(
+                    L.latLng(90, 180),
+                    L.latLng(-90, -180)
+                ));
             }
         }
 
