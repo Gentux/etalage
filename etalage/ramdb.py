@@ -145,10 +145,10 @@ def load():
         for ancestor_id in territory_bson['ancestors_id']:
             territories_id_by_ancestor_id.setdefault(ancestor_id, set()).add(territory_id)
         territory_id_by_kind_code[(territory_bson['kind'], territory_bson['code'])] = territory_id
-        territories_id_by_postal_distribution[conv.check(conv.input_to_postal_distribution("{0} {1}".format(
+        territories_id_by_postal_distribution[(
             main_postal_distribution['postal_code'],
             main_postal_distribution['postal_routing'],
-            )), clear_on_error = True)] = territory_id
+            )] = territory_id
 
     schema_title_by_name.clear()
     for schema in model.db.schemas.find(None, ['name', 'title']):
