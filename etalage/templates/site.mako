@@ -46,12 +46,14 @@ from etalage import conf
 
 <%def name="css()" filter="trim">
     <link rel="stylesheet" href="${conf['bootstrap.css']}">
+    <link rel="stylesheet" href="${conf['bootstrap-responsive.css']}">
     <link rel="stylesheet" href="${conf['jquery-ui.css']}">
     <link rel="stylesheet" href="/css/site.css">
     % if ctx.container_base_url is not None and ctx.gadget_id is not None:
     <link rel="stylesheet" href="/css/gadget.css">
     % else:
     <link rel="stylesheet" href="/css/standalone.css">
+    <link rel="stylesheet" href="/css/responsive.css">
     % endif
 </%def>
 
@@ -102,6 +104,7 @@ from etalage import conf
 
 <%def name="metas()" filter="trim">
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </%def>
 
 
