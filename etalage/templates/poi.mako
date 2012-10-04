@@ -26,6 +26,7 @@
 <%!
 import urlparse
 
+import feedparser
 import markupsafe
 from biryani import strings
 
@@ -206,26 +207,28 @@ from etalage import conf, model, ramdb, urls
 
 <%def name="field_value_feed(field, depth = 0)" filter="trim">
 <%
-    import feedparser
-    d = feedparser.parse(field.value)
+    try:
+        feed = feedparser.parse(field.value)
+    except:
+        feed = None
 %>\
             <div class="field-value offset1">
-    % if d is None or 'status' not in d \
-            or not d.version and d.status != 304 and d.status != 401 \
-            or d.status >= 400:
+    % if feed is None or 'status' not in feed \
+            or not feed.version and feed.status != 304 and feed.status != 401 \
+            or feed.status >= 400:
                 <em class="error">Erreur dans le flux d'actualité <a href="${field.value}" rel="external">${field.value}</a></em>
     % else:
-                <strong>${d.feed.title}</strong>
+                <strong>${feed.feed.title}</strong>
                 <a href="${field.value}" rel="external"><img alt="" src="http://cdn.comarquage.fr/images/misc/feed.png"></a>
                 <ul>
-        % for entry in d.entries[:10]:
+        % for entry in feed.entries[:10]:
                     <li class="feed-entry">${entry.title | n}
             % for content in (entry.get('content') or []):
                         <div>${content.value | n}</div>
             % endfor
                     </li>
         % endfor
-        % if len(d.entries) > 10:
+        % if len(feed.entries) > 10:
                     <li>...</li>
         % endif
                 </ul>
