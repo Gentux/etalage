@@ -469,9 +469,16 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
     def load(cls, poi_bson):
         metadata = poi_bson['metadata']
         last_update = metadata['last-update']
+        if poi_bson.get('geo') is None:
+            geo = None
+        else:
+            geo = poi_bson['geo'][0]
+            if len(geo) > 2 and geo[2] == 0:
+                # Don't use geographical coordinates with a 0 accuracy because their coordinates may be None.
+                geo = None
         self = cls(
             _id = poi_bson['_id'],
-            geo = poi_bson['geo'][0] if poi_bson.get('geo') is not None else None,
+            geo = geo,
             last_update_datetime = last_update['date'],
             last_update_organization = last_update['organization'],
             name = metadata['title'],
