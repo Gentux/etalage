@@ -773,10 +773,10 @@ def index_directory(req):
             )
         directory = {}
         for distance, poi in distance_and_poi_couples:
-            if poi.organism_type_slug is None:
+            if poi.theme_slug is None:
                 continue
-            organism_type_pois = directory.get(poi.organism_type_slug)
-            if organism_type_pois is not None and len(organism_type_pois) >= 3:
+            theme_pois = directory.get(poi.theme_slug)
+            if theme_pois is not None and len(theme_pois) >= 3:
                 continue
             if filter is None:
                 if poi.competence_territories_id is None:
@@ -787,10 +787,10 @@ def index_directory(req):
                 elif related_territories_id.isdisjoint(poi.competence_territories_id):
                     # In directory mode without filter, the incompetent organisms must not be shown.
                     continue
-            if organism_type_pois is None:
-                directory[poi.organism_type_slug] = [poi]
+            if theme_pois is None:
+                directory[poi.theme_slug] = [poi]
             else:
-                organism_type_pois.append(poi)
+                theme_pois.append(poi)
     return templates.render(ctx, '/directory.mako',
         directory = directory,
         errors = errors,

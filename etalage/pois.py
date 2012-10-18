@@ -36,7 +36,7 @@ from biryani import strings
 from suq import monpyjama, representations
 import webob.multidict
 
-from . import conv, ramdb
+from . import conf, conv, ramdb
 
 
 __all__ = ['Cluster', 'Field', 'get_first_field', 'iter_fields', 'Poi', 'pop_first_field']
@@ -270,11 +270,11 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
     last_update_datetime = None
     last_update_organization = None
     name = None
-    organism_type_slug = None
     parent_id = None
     postal_distribution_str = None
     schema_name = None
     street_address = None
+    theme_slug = None
 
     def __init__(self, **attributes):
         if attributes:
@@ -478,6 +478,12 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
             schema_name = metadata['schema-name'],
             )
 
+        if conf['theme_field'] is None:
+            theme_field_id = None
+            theme_field_name = None
+        else:
+            theme_field_id = conf['theme_field']['id']
+            theme_field_name = conf['theme_field'].get('name')
         fields_position = {}
         fields = []
         for field_id in metadata['positions']:
@@ -495,12 +501,22 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
             elif field.id == u'link' and field.relation == u'parent':
                 assert self.parent is None, str(self)
                 self.parent_id = field.value
-            elif field.id == u'organism-type':
-                organism_type_slug = ramdb.category_slug_by_pivot_code.get(field.value)
-                if organism_type_slug is None:
-                    log.warning('Ignoring organism type "{0}" without matching category.'.format(field.value))
+
+            if field_id == theme_field_id and (
+                    theme_field_name is None or theme_field_name == strings.slugify(field.label)):
+                if field.id == u'organism-type':
+                    organism_type_slug = ramdb.category_slug_by_pivot_code.get(field.value)
+                    if organism_type_slug is None:
+                        log.warning('Ignoring organism type "{0}" without matching category.'.format(field.value))
+                    else:
+                        self.theme_slug = organism_type_slug
                 else:
-                    self.organism_type_slug = organism_type_slug
+                    theme_slug = strings.slugify(field.value)
+                    if theme_slug in ramdb.category_by_slug:
+                        self.theme_slug = theme_slug
+                    else:
+                        log.warning('Ignoring theme "{0}" without matching category.'.format(field.value))
+
             fields.append(field)
         if fields:
             self.fields = fields

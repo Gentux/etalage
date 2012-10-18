@@ -164,6 +164,12 @@ def load_environment(global_conf, app_conf):
                     u'UrbanTransportsPerimeterOfFrance',
                     ]),
                 ),
+            'theme_field': conv.pipe(
+                conv.function(lambda line: line.split(None, 1)),
+                conv.uniform_sequence(conv.input_to_slug),
+                conv.function(lambda seq: dict(zip(['id', 'name'], seq))),
+                conv.default(dict(id = 'organism-type')),
+                ),
             'tile_layers': conv.pipe(
                 conv.function(eval),
                 conv.function(strings.deep_decode),
