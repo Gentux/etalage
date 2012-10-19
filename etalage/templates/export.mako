@@ -31,6 +31,22 @@ from etalage import model, urls
 <%inherit file="/index.mako"/>
 
 
+<%def name="export_fields()" filter="trim">
+<%
+    error = errors.get('type_and_format') if errors is not None else None
+%>\
+                <div class="control-group${' error' if error else ''}">
+                    <label class="control-label">${_(u"Export Type")}</label>
+                    <div class="controls">
+                        <%self:types_and_formats_radios/>
+    % if error:
+                        <p class="help-block">${error}</p>
+    % endif
+                    </div>
+                </div>
+</%def>
+
+
 <%def name="types_and_formats_radios()" filter="trim">
                         <label class="radio">
                             <input type="radio" value="annuaire-excel" name="type_and_format">
@@ -87,18 +103,7 @@ from etalage import model, urls
                 <input name="${name}" type="hidden" value="${value or ''}">
         % endif
     % endfor
-<%
-    error = errors.get('type_and_format') if errors is not None else None
-%>\
-                <div class="control-group${' error' if error else ''}">
-                    <label class="control-label">${_(u"Export Type")}</label>
-                    <div class="controls">
-                        <%self:types_and_formats_radios/>
-    % if error:
-                        <p class="help-block">${error}</p>
-    % endif
-                    </div>
-                </div>
+                <%self:export_fields/>
                 <div class="form-actions">
                     <button class="btn btn-primary" name="submit" type="submit" value="select"><i class="icon-ok icon-white"></i> ${_('Select')}</button>
                 </div>
