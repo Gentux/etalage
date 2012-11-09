@@ -258,7 +258,7 @@ etalage.map = (function ($) {
                 context: context
             }, etalage.map.geojsonParams || {}, etalage.map.currentPoiId ? {current: etalage.map.currentPoiId} : {}),
             success: function (data) {
-                if (parseInt(data.properties.context) !== context) {
+                if (parseInt(data.properties.context, 10) !== context) {
                     return;
                 }
                 // setGeoJSONData(data);

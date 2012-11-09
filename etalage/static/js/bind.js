@@ -71,7 +71,7 @@ etalage.bind = (function ($) {
 
     return {
         loadingGif: loadingGif,
-        toggleCategories: toggleCategories,
+        toggleCategories: toggleCategories
     };
 })(jQuery);
 

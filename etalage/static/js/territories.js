@@ -47,9 +47,10 @@ etalage.territories = (function ($) {
                             if (item.main_postal_distribution != item.nearest_postal_distribution) {
                                 label += ' (' + item.nearest_postal_distribution + ')';
                             }
-                            if (item.type_name != 'Arrondissement municipal' && item.type_name != 'Commune'
-                                    && item.type_name != 'Commune associée') {
-                                label += ' (' + item.type_name + ')';
+                            if (item.type_name != 'Arrondissement municipal' && item.type_name != 'Commune') {
+                                if (item.type_name != 'Commune associée') {
+                                    label += ' (' + item.type_name + ')';
+                                }
                             }
                             return {
                                 label: label,

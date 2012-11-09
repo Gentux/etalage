@@ -37,7 +37,6 @@ etalage.categories = (function ($) {
                     url: '/api/v1/categories/autocomplete',
                     dataType: 'json',
                     data: {
-                        tag: etalage.categories.tags || '',
                         tag: $.merge(
                             etalage.categories.tags || [],
                             $('input[name=category][type=checkbox]:checked').map(function() {
