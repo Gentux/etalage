@@ -448,4 +448,3 @@ etalage.map.tileLayersOptions = ${conf['tile_layers'] | n, js};
 <%def name="title_content()" filter="trim">
 ${poi.name} - ${parent.title_content()}
 </%def>
-

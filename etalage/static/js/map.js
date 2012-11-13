@@ -70,6 +70,7 @@ etalage.map = (function ($) {
                 $popupDiv.append(
                     $('<a/>', {
                         'class': 'internal',
+                        'data-poi-id': poi.id,
                         href: '/organismes/' + poi.slug + '/' + poi.id
                     }).append($('<strong/>').text(poi.name))
                 );
@@ -108,6 +109,7 @@ etalage.map = (function ($) {
                 var bbox = feature.bbox;
                 var $a = $('<a/>', {
                     'class': 'bbox',
+                    'data-bbox': "[" + bbox + "]",
                     href: '/carte?' + $.param($.extend({bbox: bbox.join(",")}, etalage.map.geojsonParams || {}), true)
                 });
                 var $em = $('<em/>');
@@ -179,18 +181,22 @@ etalage.map = (function ($) {
                 }
             })
             .on('popupopen', function (e) {
-                etalage.map.currentPoiId = properties.id;
-                $('a.bbox', e.popup._contentNode).on('click', function () {
+                $popupDiv = $(e.popup._content);
+                etalage.map.currentPoiId = $popupDiv.first().data('poiId') || null;
+                var bbox = $popupDiv.find('a.bbox').data('bbox');
+                $('a.bbox').on('click', function (e) {
                     leafletMap.fitBounds(L.latLngBounds(
                         L.latLng(bbox[1], bbox[0]),
                         L.latLng(bbox[3], bbox[2])
                     ));
                     return false;
                 });
-                $('a.internal', e.popup._contentNode).on('click', function () {
-                    rpc.requestNavigateTo($(this).attr('href'));
-                    return false;
-                });
+                if (typeof rpc !== "undefined" && rpc !== null) {
+                    $('a.internal').on('click', function (e) {
+                        rpc.requestNavigateTo($(this).attr('href'));
+                        return false;
+                    });
+                }
             })
             .on('zoomend', function (e) {
                 try {
