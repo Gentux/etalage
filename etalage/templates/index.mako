@@ -83,6 +83,7 @@ from etalage import conf, model, ramdb, urls
 
 <%def name="scripts()" filter="trim">
     <%parent:scripts/>
+    <script src="${conf['bootstrap.js']}"></script>
     <script src="/js/bind.js"></script>
     <script src="/js/categories.js"></script>
     <script src="/js/territories.js"></script>
@@ -105,21 +106,42 @@ $(function () {
     etalage.bind.toggleCategories();
     etalage.categories.createAutocompleter($('#category'));
     etalage.territories.createAutocompleter($('#territory'));
+
+    $(".collapse").collapse();
+    $("button.btn-search-form").on("click", function() {
+        $(this).hide();
+    % if ctx.container_base_url is not None and ctx.gadget_id is not None:
+        adjustFrameHeight(5);
+    % endif
+    });
 });
     </script>
 </%def>
 
 
 <%def name="search_form()" filter="trim">
-        <form action="${urls.get_url(ctx, mode)}" class="form-horizontal internal" id="search-form" method="get">
-            <%self:search_form_hidden/>
-            <fieldset>
-                <%self:search_form_fields/>
-                <div class="form-actions">
-                    <button class="btn btn-primary" type="submit"><i class="icon-search icon-white"></i> ${_('Search')}</button>
-                </div>
-            <fieldset>
-        </form>
+        <p class="toggle-search-form">
+            <button class="btn btn-primary btn-search-form" data-toggle="collapse" data-target="#search-form-collapse">
+                Rechercher
+                <i class="icon-plus-sign icon-white"> </i>
+            </button>
+        </p>
+
+
+        <div class="collapse in" id="search-form-collapse">
+            <form action="${urls.get_url(ctx, mode)}" class="form-horizontal internal" id="search-form" method="get">
+                <%self:search_form_hidden/>
+                <fieldset>
+                    <%self:search_form_fields/>
+                    <div class="form-actions">
+                        <button class="btn btn-primary" type="submit">
+                            <i class="icon-search icon-white"></i>
+                            ${_('Search')}
+                        </button>
+                    </div>
+                <fieldset>
+            </form>
+        </div>
 </%def>
 
 

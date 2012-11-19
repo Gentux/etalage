@@ -11,3 +11,12 @@ img.loading {
     height: 30px;
     width: 30px;
 }
+
+.toggle-search-form {
+    position: relative;
+}
+.btn-search-form {
+    position: absolute;
+    top: 10px;
+    right: 5px;
+}
