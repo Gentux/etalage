@@ -168,13 +168,14 @@ def respond_json(ctx, data, code = None, headers = None, jsonp = None):
     if headers is None:
         headers = []
     if jsonp:
-        headers.append(('Content-Type', 'application/javascript; charset=utf-8'))
+        content_type = 'application/javascript; charset=utf-8'
     else:
-        headers.append(('Content-Type', 'application/json; charset=utf-8'))
+        content_type = 'application/json; charset=utf-8'
     if error:
         code = code or error['code']
         assert isinstance(code, int)
         response = webob.exc.status_map[code](headers = headers)
+        response.content_type = content_type
         if code == 204:  # No content
             return response
         if error.get('code') is None:
@@ -185,6 +186,7 @@ def respond_json(ctx, data, code = None, headers = None, jsonp = None):
             error['message'] = title
     else:
         response = ctx.req.response
+        response.content_type = content_type
         if code is not None:
             response.status = code
         response.headers.update(headers)
