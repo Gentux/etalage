@@ -128,7 +128,9 @@ def load():
             'main_postal_distribution',
             'name',
             ]):
-        main_postal_distribution = territory_bson['main_postal_distribution']
+        main_postal_distribution = territory_bson.get('main_postal_distribution')
+        if main_postal_distribution is None:
+            continue
         territory_class = model.Territory.kind_to_class(territory_bson['kind'])
         assert territory_class is not None, 'Invalid territory type name: {0}'.format(class_name)
         territory_id = territory_bson['_id']
