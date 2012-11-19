@@ -68,7 +68,8 @@ def bad_request(ctx, **kw):
 
 def discard_empty_items(data):
     if isinstance(data, collections.Mapping):
-        data = dict(
+        # Use type(data) to keep OrderedDicts.
+        data = type(data)(
             (name, discard_empty_items(value))
             for name, value in data.iteritems()
             if value is not None
