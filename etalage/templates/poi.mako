@@ -40,6 +40,40 @@ from etalage import conf, model, ramdb, urls
 <%def name="container_content()" filter="trim">
 <%
     fields = poi.generate_all_fields()
+
+    accessibility_fields = []
+    for field in fields[:]:
+        if field.label.endswith(u'[Accessibilité]'):
+            field_attributes = field.__dict__.copy()
+            field_attributes['label'] = field.label[:-len(u'[Accessibilité]')].rstrip()
+            new_field = model.Field(**field_attributes)
+            accessibility_fields.append(new_field)
+            fields.remove(field)
+    if accessibility_fields:
+        theme_field_by_slug = {}
+        for field in accessibility_fields[:]:
+            try:
+                theme, sub_label = field.label.split(u' - ', 1)
+            except:
+                theme  = u'Divers'
+                sub_label = field.label
+            else:
+                theme = theme.rstrip()
+            theme_slug = strings.slugify(theme)
+            theme_field = theme_field_by_slug.get(theme_slug)
+            if theme_field is None:
+                theme_field_by_slug[theme_slug] = theme_field = model.Field(id = u'accessibility-theme', label = theme, value = [])
+                accessibility_fields.insert(accessibility_fields.index(field), theme_field)
+            field_attributes = field.__dict__.copy()
+            field_attributes['label'] = sub_label.lstrip()
+            theme_field.value.append(model.Field(**field_attributes))
+            accessibility_fields.remove(field)
+        accessibility_field = model.Field(id = u'accessibility', value = accessibility_fields)
+        last_update_field = model.get_first_field(fields, 'last-update')
+        if last_update_field is None:
+            fields.append(accessibility_field)
+        else:
+            fields.insert(fields.index(last_update_field), accessibility_field)
 %>\
         <%self:poi_header fields="${fields}" poi="${poi}"/>
         <%self:fields fields="${fields}" poi="${poi}"/>
@@ -62,6 +96,35 @@ from etalage import conf, model, ramdb, urls
         return ''
 %>\
         ${getattr(self, 'field_{0}'.format(field.id.replace('-', '_')), field_default)(field, depth = depth)}
+</%def>
+
+
+<%def name="field_accessibility(field, depth = 0)" filter="trim">
+        <div>
+            <p>
+                <button class="btn btn-mini btn-primary btn-jaccede" data-toggle="collapse" data-target="#accessibilite">
+                    Accessibilité
+                    <i class="icon-plus-sign icon-white"> </i>
+                </button>
+                en partenariat avec
+                <a href="http://www.jaccede.com/" rel="external"><img alt="Jaccede.com" src="/images/logo-jaccede-2.gif" style="height: 20px; vertical-align: text-bottom"></a>
+            </p>
+        </div>
+        <div class="collapse in" id="accessibilite">
+            <div class="well">
+    % for sub_field in field.value:
+            <%self:field depth="${depth + 1}" field="${sub_field}"/>
+    % endfor
+            </div>
+        </div>
+</%def>
+
+
+<%def name="field_accessibility_theme(field, depth = 0)" filter="trim">
+        <p class="jaccede-field-label"><strong>${field.label}</strong></p>
+    % for sub_field in field.value:
+        <%self:field depth="${depth + 1}" field="${sub_field}"/>
+    % endfor
 </%def>
 
 
@@ -441,6 +504,27 @@ etalage.map.singleMarkerMap("map-poi", ${field.value[0]}, ${field.value[1]});
 var etalage = etalage || {};
 etalage.map.markersUrl = ${conf['markers_url'].rstrip('/') | n, js};
 etalage.map.tileLayersOptions = ${conf['tile_layers'] | n, js};
+$(function () {
+    $(".collapse").collapse();
+    $("button.btn-jaccede").on("click", function() {
+        var $i = $(this).find("i");
+        if ($i.hasClass("icon-plus-sign")) {
+            $i.removeClass("icon-plus-sign");
+            $i.addClass("icon-minus-sign");
+        } else {
+            $i.removeClass("icon-minus-sign");
+            $i.addClass("icon-plus-sign");
+        }
+    });
+    % if ctx.container_base_url is not None and ctx.gadget_id is not None:
+    $('#accessibilite').on('hidden', function () {
+        adjustFrameHeight(5);
+    });
+    $('#accessibilite').on('shown', function () {
+        adjustFrameHeight(5);
+    });
+    % endif
+});
     </script>
 </%def>
 
