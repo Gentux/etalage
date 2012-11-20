@@ -83,7 +83,6 @@ from etalage import conf, model, ramdb, urls
 
 <%def name="scripts()" filter="trim">
     <%parent:scripts/>
-    <script src="${conf['bootstrap.js']}"></script>
     <script src="/js/bind.js"></script>
     <script src="/js/categories.js"></script>
     <script src="/js/territories.js"></script>

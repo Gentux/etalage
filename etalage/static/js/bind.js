@@ -60,12 +60,20 @@ etalage.bind = (function ($) {
         }
 
         $("#search-form input[name='category'][type='checkbox']").bind('change', function(event) {
-            var pathname = window.location.pathname;
-            var queryString = $("#search-form").serialize();
+            var action = $("#search-form").attr('action');
+            var queryString = $("#search-form").serializeArray().concat({
+                name: 'submit',
+                value: 'Submit'
+            });
 
             $('#search-form .form-actions').last().append($loadingGif);
 
-            document.location = pathname + "?" + queryString;
+            if (typeof rpc !== "undefined" && rpc !== null) {
+                rpc.requestNavigateTo(action, queryString);
+                return false;
+            } else {
+                document.location = action + "?" + queryString;
+            }
         });
     }
 

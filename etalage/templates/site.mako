@@ -114,6 +114,7 @@ from etalage import conf
 <![endif]-->
     <script src="${conf['jquery.js']}"></script>
     <script src="${conf['jquery-ui.js']}"></script>
+    <script src="${conf['bootstrap.js']}"></script>
     % if ctx.container_base_url is not None and ctx.gadget_id is not None:
     <script src="${conf['easyxdm.js']}"></script>
     <script>
