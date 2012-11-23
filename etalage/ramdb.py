@@ -187,7 +187,7 @@ def ramdb_based(controller):
         for data_update in model.db[conf['data_updates_collection']].find(dict(
                 collection_name = {'$in': ['categories', 'pois', 'organism_types']},
                 timestamp = {'$gt': last_timestamp},
-                )).sort('timestamp'):
+                )).sort('timestamp').limit(5):
             if data_update['collection_name'] == 'categories':
                 slug = data_update['document_id']
                 category_bson = model.db[conf['categories_collection']].find_one(dict(code = slug),
