@@ -111,6 +111,7 @@ def load_environment(global_conf, app_conf):
             'hide_map': conv.pipe(conv.guess_bool, conv.default(False)),
             'hide_minisite': conv.pipe(conv.guess_bool, conv.default(False)),
             'i18n_dir': conv.default(os.path.join(app_dir, 'i18n')),
+            'i18n_dir_by_plugin_name': conv.set_value(None),  # set by plugins below
             'ignored_fields': conv.pipe(
                 conv.function(lambda lines: lines.split(u'\n')),
                 conv.uniform_sequence(conv.pipe(
@@ -222,11 +223,17 @@ def load_environment(global_conf, app_conf):
     if conf['plugins_conf_file'] is not None:
         plugins_conf = SafeConfigParser(dict(here = os.path.dirname(conf['plugins_conf_file'])))
         plugins_conf.read(conf['plugins_conf_file'])
+        conf['i18n_dir_by_plugin_name'] = {}
         for section in plugins_conf.sections():
             plugin_accessor = plugins_conf.get(section, 'use')
             plugin_constructor = pkg_resources.EntryPoint.parse('constructor = {0}'.format(plugin_accessor)).load(
                 require = False)
             plugin_constructor(plugins_conf, section)
+            plugin_package_name = plugins_conf.get(section, 'package_name')
+            if plugin_package_name is not None:
+                plugin_i18n_dir = plugins_conf.get(section, 'i18n_dir')
+                if plugin_i18n_dir is not None:
+                    conf['i18n_dir_by_plugin_name'][plugin_package_name] = plugin_i18n_dir
 
     # Initialize ramdb database from MongoDB.
     ramdb.load()

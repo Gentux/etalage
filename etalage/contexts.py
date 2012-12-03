@@ -197,14 +197,23 @@ class Ctx(object):
                 return gettext.NullTranslations()
             if not isinstance(languages, list):
                 languages = [languages]
-            biryani_translator = gettext.translation('biryani', conf['biryani_i18n_dir'],
-                fallback = True, languages = languages)
-            translator = gettext.translation(conf['package_name'], conf['i18n_dir'], fallback = True,
-                languages = languages)
-            translator.add_fallback(biryani_translator)
+            translator = gettext.NullTranslations()
+            for name, i18n_dir in [
+                    ('biryani', conf['biryani_i18n_dir']),
+                    (conf['package_name'], conf['i18n_dir']),
+                    ] + sorted(conf['i18n_dir_by_plugin_name'] or {}).iteritems()):
+                if name is not None and i18n_dir is not None:
+                    translator = new_translator(name, i18n_dir, languages, fallback = translator)
             self._translator = translator
         return self._translator
 
 
 null_ctx = Ctx()
 null_ctx.lang = ['fr-FR', 'fr']
+
+
+def new_translator(domain, localedir, languages, fallback = None):
+    new = gettext.translation(domain, localedir, fallback = True, languages = languages)
+    if fallback is not None:
+        new.add_fallback(fallback)
+    return new

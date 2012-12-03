@@ -34,9 +34,10 @@ from paste.cascade import Cascade
 from paste.urlparser import StaticURLParser
 from weberror.errormiddleware import ErrorMiddleware
 
-from . import conf, controllers, environment, urls, wsgihelpers
+from . import conf, contexts, controllers, environment, urls, wsgihelpers
 
 
+lang_re = re.compile('^/(?P<lang>en|fr)(?=/|$)')
 percent_encoding_re = re.compile('%[\dA-Fa-f]{2}')
 
 
@@ -44,6 +45,24 @@ percent_encoding_re = re.compile('%[\dA-Fa-f]{2}')
 def environment_setter(req, app):
     """WSGI middleware that sets request-dependant environment."""
     urls.application_url = req.application_url
+    return req.get_response(app)
+
+
+@wsgihelpers.wsgify.middleware
+def language_detector(req, app):
+    """WSGI middleware that detect language symbol in requested URL or otherwise in Accept-Language header."""
+    ctx = contexts.Ctx(req)
+    match = lang_re.match(req.path_info)
+    if match is None:
+        ctx.lang = [
+#            req.accept_language.best_match([('en-US', 1), ('en', 1), ('fr-FR', 1), ('fr', 1)],
+#                default_match = 'en').split('-', 1)[0],
+            'fr',
+            ]
+    else:
+        ctx.lang = [match.group('lang')]
+        req.script_name += req.path_info[:match.end()]
+        req.path_info = req.path_info[match.end():]
     return req.get_response(app)
 
 
@@ -70,6 +89,7 @@ def make_app(global_conf, **app_conf):
 
     # Init request-dependant environment
     app = environment_setter(app)
+    app = language_detector(app)
 
     # Repair badly encoded query in request URL.
     app = request_query_encoding_fixer(app)
