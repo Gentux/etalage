@@ -201,7 +201,7 @@ class Ctx(object):
             for name, i18n_dir in [
                     ('biryani', conf['biryani_i18n_dir']),
                     (conf['package_name'], conf['i18n_dir']),
-                    ] + sorted(conf['i18n_dir_by_plugin_name'] or {}).iteritems()):
+                    ] + sorted(conf['i18n_dir_by_plugin_name'].iteritems()):
                 if name is not None and i18n_dir is not None:
                     translator = new_translator(name, i18n_dir, languages, fallback = translator)
             self._translator = translator
