@@ -45,13 +45,22 @@ etalage.bind = (function ($) {
             preloadLoadingGif();
         }
 
-        $('a.internal').bind('click', function(event) {
-            $('#search-form .form-actions').last().append($loadingGif);
-        });
+        $('a.internal').on('click', appendLoadingGif);
+        $('#search-form').on('submit', appendLoadingGif);
+    }
 
-        $('#search-form').bind('submit', function(event) {
-            $('#search-form .form-actions').last().append($loadingGif);
-        });
+    function appendLoadingGif(event) {
+        $('#search-form .form-actions').last().append($loadingGif);
+        $loadingGif.data('activeUrl', document.location);
+
+        setTimeout(function () {
+            if (typeof($loadingGif) !== "undefined" &&
+                    $loadingGif !== null &&
+                    document.location == $loadingGif.data('activeUrl')) {
+                $loadingGif.detach();
+                clearTimeout();
+            }
+        }, 300);
     }
 
     function toggleCategories() {
