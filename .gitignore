@@ -2,6 +2,7 @@ build
 cache
 data
 development-*local*.ini
+plugins-*local*.ini
 dist
 *.egg-info
 *.mo
