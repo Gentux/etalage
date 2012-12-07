@@ -119,11 +119,11 @@ from etalage import conf, conv, model, ramdb, urls
                 ) if data.get('territory') is not None else None
             %>
             % if related_territories_id is None or poi.competence_territories_id is None:
-                <img class="legend-icon" src="${conf['markers_url'].rstrip('/')}/misc/blueblank.png">
+                <img class="legend-icon" src="${conf['images.markers.url'].rstrip('/')}/misc/blueblank.png">
             % elif not related_territories_id.isdisjoint(poi.competence_territories_id):
-                <img class="legend-icon" src="${conf['markers_url'].rstrip('/')}/misc/greenvalid.png">
+                <img class="legend-icon" src="${conf['images.markers.url'].rstrip('/')}/misc/greenvalid.png">
             % else:
-                <img class="legend-icon" src="${conf['markers_url'].rstrip('/')}/misc/redinvalid.png">
+                <img class="legend-icon" src="${conf['images.markers.url'].rstrip('/')}/misc/redinvalid.png">
             % endif
                     </td>
                     <td>

@@ -89,7 +89,7 @@ from etalage import conf, model, ramdb, urls
     <script>
 var etalage = etalage || {};
 etalage.categories.tags = ${ctx.category_tags_slug | n, js};
-etalage.miscUrl = ${conf['misc_url'] | n, js};
+etalage.miscUrl = ${conf['images.misc.url'] | n, js};
 etalage.territories.autocompleterUrl = ${urlparse.urljoin(conf['territoria_url'],
     '/api/v1/autocomplete-territory') | n, js};
 etalage.territories.kinds = ${conf['autocompleter_territories_kinds'] | n, js};

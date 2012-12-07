@@ -502,7 +502,7 @@ etalage.map.singleMarkerMap("map-poi", ${field.value[0]}, ${field.value[1]});
     <script src="/js/map.js"></script>
     <script>
 var etalage = etalage || {};
-etalage.map.markersUrl = ${conf['markers_url'].rstrip('/') | n, js};
+etalage.map.markersUrl = ${conf['images.markers.url'].rstrip('/') | n, js};
 etalage.map.tileLayersOptions = ${conf['tile_layers'] | n, js};
 $(function () {
     $(".collapse").collapse();

@@ -46,7 +46,7 @@ from etalage import conf
     if ($.browser.msie && $.browser.version.substr(0, 1) <= 8) {
         $head.append($('<link/>', {rel: 'stylesheet', href: ${conf['leaflet.ie.css'] | n, js}}));
     }
-    etalage.map.markersUrl = ${conf['markers_url'].rstrip('/') | n, js};
+    etalage.map.markersUrl = ${conf['images.markers.url'].rstrip('/') | n, js};
     etalage.map.tileLayersOptions = ${conf['tile_layers'] | n, js};
 })(jQuery);
         </script>

@@ -48,27 +48,28 @@ from etalage import conf, model, urls
         <p><strong>Légende</strong> :</p>
         <ul class="unstyled">
             <li>
-                <img class="legend-icon" src="${conf['markers_url'].rstrip('/')}/misc/blueblank.png">
+                <img class="legend-icon" src="${conf['images.markers.url'].rstrip('/')}/misc/blueblank.png">
                 L'organisme a une compétence géographique sur le territoire recherché (compétent par nature).
             </li>
 
             <li>
-                <img class="legend-icon" src="${conf['markers_url'].rstrip('/')}/misc/greenvalid.png">
+                <img class="legend-icon" src="${conf['images.markers.url'].rstrip('/')}/misc/greenvalid.png">
                 L'organisme a une compétence administrative sur le territoire recherché.
             </li>
 
             <li>
-                <img class="legend-icon" src="${conf['markers_url'].rstrip('/')}/misc/bluemultiple.png">
+                <img class="legend-icon" src="${conf['images.markers.url'].rstrip('/')}/misc/bluemultiple.png">
                 Plusieurs organismes sont présents à cet endroit (idem pour vert et rouge).
             </li>
 
             <li>
-                <img class="legend-icon" src="${conf['markers_url'].rstrip('/')}/misc/redinvalid.png">
+                <img class="legend-icon" src="${conf['images.markers.url'].rstrip('/')}/misc/redinvalid.png">
                 L'organisme n'est pas compétent sur le territoire recherché.
             </li>
 
             <li>
-                <img class="legend-icon" src="${conf['markers_url'].rstrip('/')}/map-icons-collection-2.0/icons/home.png">
+                <img class="legend-icon" \
+src="${conf['images.markers.url'].rstrip('/')}/map-icons-collection-2.0/icons/home.png">
                 Centre du territoire recherché.
             </li>
         </ul>
@@ -93,7 +94,7 @@ etalage.map.geojsonParams = ${dict(
     if name not in ('bbox', 'context', 'jsonp') and value is not None
     )| n, js};
 etalage.map.geojsonUrl = '/api/v1/annuaire/geojson';
-etalage.map.markersUrl = ${conf['markers_url'].rstrip('/') | n, js};
+etalage.map.markersUrl = ${conf['images.markers.url'].rstrip('/') | n, js};
 etalage.map.tileLayersOptions = ${conf['tile_layers'] | n, js};
 
 
