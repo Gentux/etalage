@@ -130,11 +130,12 @@ $(function () {
                 <%self:search_form_hidden/>
                 <fieldset>
                     <%self:search_form_fields/>
-                    <div class="form-actions">
-                        <button class="btn btn-primary" type="submit">
-                            <i class="icon-search icon-white"></i>
-                            ${_('Search')}
-                        </button>
+                    <div class="control-group">
+                        <div class="controls">
+                            <button class="btn btn-primary" type="submit">
+                                <i class="icon-search icon-white"></i> ${_('Search')}
+                            </button>
+                        </div>
                     </div>
                 <fieldset>
             </form>
