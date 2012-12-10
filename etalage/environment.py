@@ -30,6 +30,7 @@ from ConfigParser import SafeConfigParser
 import logging
 import os
 import sys
+import urlparse
 
 from biryani import strings
 import mako.lookup
@@ -87,6 +88,7 @@ def load_environment(global_conf, app_conf):
             'brand_url': conv.default(u'http://www.comarquage.fr/'),
             'cache_dir': conv.default(os.path.join(os.path.dirname(app_dir), 'cache')),
             'categories_collection': conv.default('categories'),
+            'cdn_url': conv.default('http://localhost:7000'),
             'custom_static_files_dir': conv.default(None),
             'custom_templates_dir': conv.default(None),
             'data_updates_collection': conv.default('data_updates'),
@@ -104,6 +106,7 @@ def load_environment(global_conf, app_conf):
                 conv.test_in(['carte', 'liste']),
                 conv.default('carte'),
                 ),
+            'gadget-integration.js': conv.default(urlparse.urljoin('http://localhost:7002/', 'integration.js')),
             'global_conf': conv.set_value(global_conf),
             'hide_directory': conv.pipe(conv.guess_bool, conv.default(False)),
             'hide_export': conv.pipe(conv.guess_bool, conv.default(False)),
@@ -201,6 +204,33 @@ def load_environment(global_conf, app_conf):
             },
         default = 'drop',
         keep_none_values = True,
+        ))(conf))
+
+    # CDN configuration
+    conf.update(conv.check(conv.struct(
+        {
+            'bootstrap.css': conv.default(urlparse.urljoin(conf['cdn_url'], '/bootstrap/2.2.1/css/bootstrap.min.css')),
+            'bootstrap.js': conv.default(urlparse.urljoin(conf['cdn_url'], '/bootstrap/2.2.1/js/bootstrap.min.js')),
+            'bootstrap-responsive.css': conv.default(
+                urlparse.urljoin(conf['cdn_url'], '/bootstrap/2.2.1/css/bootstrap-responsive.min.css')
+                ),
+            'easyxdm.js': conv.default(urlparse.urljoin(conf['cdn_url'], '/easyxdm/2.4.15/easyXDM.min.js')),
+            'easyxdm.swf': conv.default(urlparse.urljoin(conf['cdn_url'], '/easyxdm/2.4.15/easyxdm.swf')),
+            'jquery.js': conv.default(urlparse.urljoin(conf['cdn_url'], '/jquery/jquery-1.7.1.min.js')),
+            'jquery-ui.css': conv.default(
+                urlparse.urljoin(conf['cdn_url'], '/jquery-ui/1.8.16/themes/smoothness/jquery-ui.css')
+                ),
+            'jquery-ui.js': conv.default(urlparse.urljoin(conf['cdn_url'], '/jquery-ui/1.8.16/jquery-ui.min.js')),
+            'json2.js': conv.default(urlparse.urljoin(conf['cdn_url'], '/easyxdm/2.4.15/json2.js')),
+            'leaflet.css': conv.default(urlparse.urljoin(conf['cdn_url'], '/leaflet/git-v0.4.5-0-165e50f/leaflet.css')),
+            'leaflet.ie.css': conv.default(urlparse.urljoin(conf['cdn_url'], '/leaflet/git-v0.4.5-0-165e50f/leaflet.ie.css')),
+            'leaflet.js': conv.default(urlparse.urljoin(conf['cdn_url'], '/leaflet/git-v0.4.5-0-165e50f/leaflet.js')),
+            'pie.js': conv.default(urlparse.urljoin(conf['cdn_url'], '/css3pie/1.0beta5/PIE.js')),
+            'prettify.js': conv.default(urlparse.urljoin(conf['cdn_url'], '/google-code-prettify/187/prettify.js')),
+            'images.markers.url': conv.default(urlparse.urljoin(conf['cdn_url'], '/images/markers/')),
+            'images.misc.url': conv.default(urlparse.urljoin(conf['cdn_url'], '/images/misc/')),
+            },
+        default = conv.noop,
         ))(conf))
 
     # Configure logging.
