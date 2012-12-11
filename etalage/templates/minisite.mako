@@ -118,11 +118,11 @@ from etalage import conf, urls
     <%parent:scripts/>
     <script src="${conf['bootstrap.js']}"></script>
     <script src="${conf['prettify.js']}"></script>
-    <script>
-$(function () {
+</%def>
+
+
+<%def name="scripts_domready_content()" filter="trim">
     prettyPrint();
-});
-    </script>
 </%def>
 
 

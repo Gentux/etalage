@@ -117,59 +117,26 @@ from etalage import conf
     <script src="${conf['bootstrap.js']}"></script>
     % if ctx.container_base_url is not None and ctx.gadget_id is not None:
     <script src="${conf['easyxdm.js']}"></script>
+    <script src="/js/gadget.js"></script>
+    % endif
+</%def>
+
+
+<%def name="scripts_domready()" filter="trim">
     <script>
-easyXDM.DomHelper.requiresJSON('${conf['json2.js']}');
-var rpc = new easyXDM.Rpc({
-    swf: '${conf['easyxdm.swf']}'
-},
-{
-    remote: {
-        adjustHeight: {},
-        requestNavigateTo: {}
-    }
-});
-
-
-var adjustFrameHeightCount = 0;
-var frameHeight = null;
-
-function adjustFrameHeight(seconds) {
-    if (seconds) {
-        ## Adjust frame height for a few seconds ("* 5" is because of 200 ms timeout).
-        adjustFrameHeightCount = seconds * 5;
-    }
-    var frameNewHeight = $('body', document).height();
-    if (frameNewHeight != frameHeight) {
-        rpc.adjustHeight(frameNewHeight);
-        frameHeight = frameNewHeight;
-    }
-    if (adjustFrameHeightCount-- >= 0) {
-        setTimeout(adjustFrameHeight, 200);
-    }
-}
-
-
 $(function () {
-    adjustFrameHeight(5);
-
-    $('form.internal').on('submit', function (event) {
-        rpc.requestNavigateTo($(this).attr('action'), $(this).serializeArray().concat({
-            name: 'submit',
-            value: 'Submit'
-        }));
-        return false;
-    });
-
-    $('a.internal').on('click', function () {
-        rpc.requestNavigateTo($(this).attr('href'));
-        return false;
-    });
-
-    $('a[href][rel=bookmark]').attr('target', '_blank');
-    $('a[href][rel=mobile]').attr('target', '_blank');
-    $('a[href][rel=external]').attr('target', '_blank');
+    <%self:scripts_domready_content/>
 });
     </script>
+</%def>
+
+
+<%def name="scripts_domready_content()" filter="trim">
+    % if ctx.container_base_url is not None and ctx.gadget_id is not None:
+    initGadget({
+        json2Url: "${conf['json2.js']}",
+        swfUrl: "${conf['easyxdm.swf']}"
+    });
     % endif
 </%def>
 
@@ -208,10 +175,11 @@ $(function () {
     <%self:metas/>
     <title>${self.title_content()}</title>
     <%self:css/>
-    <%self:scripts/>
 </head>
 <body>
     <%self:body_content/>
+    <%self:scripts/>
+    <%self:scripts_domready/>
     <%self:trackers/>
 </body>
 </html>

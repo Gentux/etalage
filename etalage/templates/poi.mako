@@ -504,7 +504,12 @@ etalage.map.singleMarkerMap("map-poi", ${field.value[0]}, ${field.value[1]});
 var etalage = etalage || {};
 etalage.map.markersUrl = ${conf['images.markers.url'].rstrip('/') | n, js};
 etalage.map.tileLayersOptions = ${conf['tile_layers'] | n, js};
-$(function () {
+    </script>
+</%def>
+
+
+<%def name="scripts_domready_content()" filter="trim">
+    <%parent:scripts_domready_content/>
     $(".collapse").collapse();
     $("button.btn-jaccede").on("click", function() {
         var $i = $(this).find("i");
@@ -524,8 +529,6 @@ $(function () {
         adjustFrameHeight(5);
     });
     % endif
-});
-    </script>
 </%def>
 
 

@@ -96,12 +96,13 @@ etalage.map.geojsonParams = ${dict(
 etalage.map.geojsonUrl = '/api/v1/annuaire/geojson';
 etalage.map.markersUrl = ${conf['images.markers.url'].rstrip('/') | n, js};
 etalage.map.tileLayersOptions = ${conf['tile_layers'] | n, js};
-
-
-$(function () {
-    etalage.map.createMap('map', ${bbox | n, js});
-});
     </script>
+</%def>
+
+
+<%def name="scripts_domready_content()" filter="trim">
+    <%parent:scripts_domready_content/>
+    etalage.map.createMap('map', ${bbox | n, js});
 </%def>
 
 

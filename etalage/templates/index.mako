@@ -85,6 +85,7 @@ from etalage import conf, model, ramdb, urls
     <%parent:scripts/>
     <script src="/js/bind.js"></script>
     <script src="/js/categories.js"></script>
+    <script src="/js/form.js"></script>
     <script src="/js/territories.js"></script>
     <script>
 var etalage = etalage || {};
@@ -97,22 +98,20 @@ etalage.territories.kinds = ${conf['autocompleter_territories_kinds'] | n, js};
 etalage.territories.base_territory = ${ctx.base_territory.main_postal_distribution_str | n, js};
     % endif
 etalage.params = ${inputs | n, js};
+    </script>
+</%def>
 
-$(function () {
+
+<%def name="scripts_domready_content()" filter="trim">
+    <%parent:scripts_domready_content/>
     etalage.bind.loadingGif();
     etalage.bind.toggleCategories();
     etalage.categories.createAutocompleter($('#category'));
     etalage.territories.createAutocompleter($('#territory'));
-
-    $(".collapse").collapse();
-    $("button.btn-search-form").on("click", function() {
-        $(this).hide();
-    % if ctx.container_base_url is not None and ctx.gadget_id is not None:
-        adjustFrameHeight(5);
-    % endif
+    etalage.form.initSearchForm({
+        error: ${errors is not None | n, js},
+        isGadget: ${ctx.container_base_url is not None and ctx.gadget_id is not None | n, js}
     });
-});
-    </script>
 </%def>
 
 
@@ -137,7 +136,7 @@ $(function () {
                             </button>
                         </div>
                     </div>
-                <fieldset>
+                </fieldset>
             </form>
         </div>
 </%def>

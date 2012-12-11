@@ -49,11 +49,9 @@ from etalage import urls
 </%def>
 
 
-<%def name="scripts()" filter="trim">
-        <%parent:scripts/>
-        <script type="text/javascript">
-rpc.requestNavigateTo(${urls.get_url(ctx, *url_args, **url_kwargs) | n, js});
-        </script>
+<%def name="scripts_domready_content()" filter="trim">
+    <%parent:scripts_domready_content/>
+    etalage.rpc.requestNavigateTo(${urls.get_url(ctx, *url_args, **url_kwargs) | n, js});
 </%def>
 
 

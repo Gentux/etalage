@@ -107,16 +107,12 @@ textarea {
 </%def>
 
 
-<%def name="scripts()" filter="trim">
-    <%parent:scripts/>
-    <script>
-$(function () {
+<%def name="scripts_domready_content()" filter="trim">
+    <%parent:scripts_domready_content/>
     $('#select-text-button').click(function () {
         $('textarea').select();
         return false;
     });
-});
-    </script>
 </%def>
 
 
