@@ -223,7 +223,9 @@ def load_environment(global_conf, app_conf):
             'jquery-ui.js': conv.default(urlparse.urljoin(conf['cdn_url'], '/jquery-ui/1.8.16/jquery-ui.min.js')),
             'json2.js': conv.default(urlparse.urljoin(conf['cdn_url'], '/easyxdm/2.4.15/json2.js')),
             'leaflet.css': conv.default(urlparse.urljoin(conf['cdn_url'], '/leaflet/git-v0.4.5-0-165e50f/leaflet.css')),
-            'leaflet.ie.css': conv.default(urlparse.urljoin(conf['cdn_url'], '/leaflet/git-v0.4.5-0-165e50f/leaflet.ie.css')),
+            'leaflet.ie.css': conv.default(
+                urlparse.urljoin(conf['cdn_url'], '/leaflet/git-v0.4.5-0-165e50f/leaflet.ie.css')
+                ),
             'leaflet.js': conv.default(urlparse.urljoin(conf['cdn_url'], '/leaflet/git-v0.4.5-0-165e50f/leaflet.js')),
             'pie.js': conv.default(urlparse.urljoin(conf['cdn_url'], '/css3pie/1.0beta5/PIE.js')),
             'prettify.js': conv.default(urlparse.urljoin(conf['cdn_url'], '/google-code-prettify/187/prettify.js')),
