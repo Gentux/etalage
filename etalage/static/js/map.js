@@ -191,9 +191,9 @@ etalage.map = (function ($) {
                     ));
                     return false;
                 });
-                if (typeof rpc !== "undefined" && rpc !== null) {
+                if (typeof etalage.rpc !== "undefined" && etalage.rpc !== null) {
                     $('a.internal').on('click', function (e) {
-                        rpc.requestNavigateTo($(this).attr('href'));
+                        etalage.rpc.requestNavigateTo($(this).attr('href'));
                         return false;
                     });
                 }
@@ -242,6 +242,7 @@ etalage.map = (function ($) {
             metric: true,
             imperial: false
         }).addTo(leafletMap);
+        console.log('ready');
     }
 
     function fetchPois() {
