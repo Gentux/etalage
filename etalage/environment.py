@@ -53,9 +53,9 @@ def load_environment(global_conf, app_conf):
     conf.update(strings.deep_decode(app_conf))
     conf.update(conv.check(conv.struct(
         {
-            'app_conf': conv.set_value(app_conf),
-            'app_dir': conv.set_value(app_dir),
-            'autocompleter_territories_kinds': conv.pipe(
+            u'app_conf': conv.set_value(app_conf),
+            u'app_dir': conv.set_value(app_dir),
+            u'autocompleter_territories_kinds': conv.pipe(
                 conv.function(lambda kinds: kinds.split()),
                 conv.uniform_sequence(
                     conv.test_in(model.Territory.public_kinds),
@@ -84,38 +84,38 @@ def load_environment(global_conf, app_conf):
                     u'UrbanTransportsPerimeterOfFrance',
                     ]),
                 ),
-            'brand_name': conv.default(u'Comarquage.fr'),
-            'brand_url': conv.default(u'http://www.comarquage.fr/'),
-            'cache_dir': conv.default(os.path.join(os.path.dirname(app_dir), 'cache')),
-            'categories_collection': conv.default('categories'),
-            'cdn_url': conv.default('http://localhost:7000'),
-            'custom_static_files_dir': conv.default(None),
-            'custom_templates_dir': conv.default(None),
-            'data_updates_collection': conv.default('data_updates'),
-            'data_email': conv.pipe(
+            u'brand_name': conv.default(u'Comarquage.fr'),
+            u'brand_url': conv.default(u'http://www.comarquage.fr/'),
+            u'cache_dir': conv.default(os.path.join(os.path.dirname(app_dir), 'cache')),
+            u'categories_collection': conv.default('categories'),
+            u'cdn_url': conv.default('http://localhost:7000'),
+            u'custom_static_files_dir': conv.default(None),
+            u'custom_templates_dir': conv.default(None),
+            u'data_updates_collection': conv.default('data_updates'),
+            u'data_email': conv.pipe(
                 conv.function(lambda lines: lines.split(u',')),
                 conv.uniform_sequence(
                         conv.input_to_email,
                     ),
                 ),
-            'database': conv.default('souk'),
-            'debug': conv.pipe(conv.guess_bool, conv.default(False)),
-            'default_filter': conv.input_to_filter,
-            'default_tab': conv.pipe(
+            u'database': conv.default('souk'),
+            u'debug': conv.pipe(conv.guess_bool, conv.default(False)),
+            u'default_filter': conv.input_to_filter,
+            u'default_tab': conv.pipe(
                 conv.cleanup_line,
                 conv.test_in(['carte', 'liste']),
                 conv.default('carte'),
                 ),
-            'gadget-integration.js': conv.default(urlparse.urljoin('http://localhost:7002/', 'integration.js')),
-            'global_conf': conv.set_value(global_conf),
-            'hide_directory': conv.pipe(conv.guess_bool, conv.default(False)),
-            'hide_export': conv.pipe(conv.guess_bool, conv.default(False)),
-            'hide_gadget': conv.pipe(conv.guess_bool, conv.default(False)),
-            'hide_map': conv.pipe(conv.guess_bool, conv.default(False)),
-            'hide_minisite': conv.pipe(conv.guess_bool, conv.default(False)),
-            'i18n_dir': conv.default(os.path.join(app_dir, 'i18n')),
-            'i18n_dir_by_plugin_name': conv.set_value(None),  # set by plugins below
-            'ignored_fields': conv.pipe(
+            u'gadget-integration.js': conv.default(urlparse.urljoin('http://localhost:7002/', 'integration.js')),
+            u'global_conf': conv.set_value(global_conf),
+            u'hide_directory': conv.pipe(conv.guess_bool, conv.default(False)),
+            u'hide_export': conv.pipe(conv.guess_bool, conv.default(False)),
+            u'hide_gadget': conv.pipe(conv.guess_bool, conv.default(False)),
+            u'hide_map': conv.pipe(conv.guess_bool, conv.default(False)),
+            u'hide_minisite': conv.pipe(conv.guess_bool, conv.default(False)),
+            u'i18n_dir': conv.default(os.path.join(app_dir, 'i18n')),
+            u'i18n_dir_by_plugin_name': conv.set_value(None),  # set by plugins below
+            u'ignored_fields': conv.pipe(
                 conv.function(lambda lines: lines.split(u'\n')),
                 conv.uniform_sequence(conv.pipe(
                     conv.function(lambda line: line.split(None, 1)),
@@ -124,22 +124,22 @@ def load_environment(global_conf, app_conf):
                     )),
                 conv.id_name_dict_list_to_ignored_fields,
                 ),
-            'log_level': conv.pipe(
+            u'log_level': conv.pipe(
                 conv.default('WARNING'),
                 conv.function(lambda log_level: getattr(logging, log_level.upper())),
                 ),
-            'organism_types_collection': conv.default('organism_types'),
-            'package_name': conv.default('etalage'),
-            'pois_collection': conv.default('pois'),
-            'plugins_conf_file': conv.default(None),
-            'realm': conv.default(u'Etalage'),
-            'require_subscription': conv.pipe(conv.guess_bool, conv.default(False)),
-            'reset_on_poi_update': conv.pipe(conv.guess_bool, conv.default(False)),
+            u'organism_types_collection': conv.default('organism_types'),
+            u'package_name': conv.default('etalage'),
+            u'pois_collection': conv.default('pois'),
+            u'plugins_conf_file': conv.default(None),
+            u'realm': conv.default(u'Etalage'),
+            u'require_subscription': conv.pipe(conv.guess_bool, conv.default(False)),
+            u'reset_on_poi_update': conv.pipe(conv.guess_bool, conv.default(False)),
             # Whether this application serves its own static files.
-            'static_files': conv.pipe(conv.guess_bool, conv.default(True)),
-            'static_files_dir': conv.default(os.path.join(app_dir, 'static')),
-            'territories_collection': conv.default('territories'),
-            'territories_kinds': conv.pipe(
+            u'static_files': conv.pipe(conv.guess_bool, conv.default(True)),
+            u'static_files_dir': conv.default(os.path.join(app_dir, 'static')),
+            u'territories_collection': conv.default('territories'),
+            u'territories_kinds': conv.pipe(
                 conv.function(lambda kinds: kinds.split()),
                 conv.uniform_sequence(
                     conv.test_in(model.Territory.public_kinds),
@@ -168,13 +168,13 @@ def load_environment(global_conf, app_conf):
                     u'UrbanTransportsPerimeterOfFrance',
                     ]),
                 ),
-            'theme_field': conv.pipe(
+            u'theme_field': conv.pipe(
                 conv.function(lambda line: line.split(None, 1)),
                 conv.uniform_sequence(conv.input_to_slug),
                 conv.function(lambda seq: dict(zip(['id', 'name'], seq))),
                 conv.default(dict(id = 'organism-type')),
                 ),
-            'tile_layers': conv.pipe(
+            u'tile_layers': conv.pipe(
                 conv.function(eval),
                 conv.function(strings.deep_decode),
                 conv.test_isinstance(list),
@@ -209,28 +209,28 @@ def load_environment(global_conf, app_conf):
     # CDN configuration
     conf.update(conv.check(conv.struct(
         {
-            'bootstrap.css': conv.default(urlparse.urljoin(conf['cdn_url'], '/bootstrap/2.2.1/css/bootstrap.min.css')),
-            'bootstrap.js': conv.default(urlparse.urljoin(conf['cdn_url'], '/bootstrap/2.2.1/js/bootstrap.min.js')),
-            'bootstrap-responsive.css': conv.default(
+            u'bootstrap.css': conv.default(urlparse.urljoin(conf['cdn_url'], '/bootstrap/2.2.1/css/bootstrap.min.css')),
+            u'bootstrap.js': conv.default(urlparse.urljoin(conf['cdn_url'], '/bootstrap/2.2.1/js/bootstrap.min.js')),
+            u'bootstrap-responsive.css': conv.default(
                 urlparse.urljoin(conf['cdn_url'], '/bootstrap/2.2.1/css/bootstrap-responsive.min.css')
                 ),
-            'easyxdm.js': conv.default(urlparse.urljoin(conf['cdn_url'], '/easyxdm/2.4.15/easyXDM.min.js')),
-            'easyxdm.swf': conv.default(urlparse.urljoin(conf['cdn_url'], '/easyxdm/2.4.15/easyxdm.swf')),
-            'jquery.js': conv.default(urlparse.urljoin(conf['cdn_url'], '/jquery/jquery-1.7.1.min.js')),
-            'jquery-ui.css': conv.default(
+            u'easyxdm.js': conv.default(urlparse.urljoin(conf['cdn_url'], '/easyxdm/2.4.15/easyXDM.min.js')),
+            u'easyxdm.swf': conv.default(urlparse.urljoin(conf['cdn_url'], '/easyxdm/2.4.15/easyxdm.swf')),
+            u'jquery.js': conv.default(urlparse.urljoin(conf['cdn_url'], '/jquery/jquery-1.7.1.min.js')),
+            u'jquery-ui.css': conv.default(
                 urlparse.urljoin(conf['cdn_url'], '/jquery-ui/1.8.16/themes/smoothness/jquery-ui.css')
                 ),
-            'jquery-ui.js': conv.default(urlparse.urljoin(conf['cdn_url'], '/jquery-ui/1.8.16/jquery-ui.min.js')),
-            'json2.js': conv.default(urlparse.urljoin(conf['cdn_url'], '/easyxdm/2.4.15/json2.js')),
-            'leaflet.css': conv.default(urlparse.urljoin(conf['cdn_url'], '/leaflet/git-v0.4.5-0-165e50f/leaflet.css')),
-            'leaflet.ie.css': conv.default(
+            u'jquery-ui.js': conv.default(urlparse.urljoin(conf['cdn_url'], '/jquery-ui/1.8.16/jquery-ui.min.js')),
+            u'json2.js': conv.default(urlparse.urljoin(conf['cdn_url'], '/easyxdm/2.4.15/json2.js')),
+            u'leaflet.css': conv.default(urlparse.urljoin(conf['cdn_url'], '/leaflet/git-v0.4.5-0-165e50f/leaflet.css')),
+            u'leaflet.ie.css': conv.default(
                 urlparse.urljoin(conf['cdn_url'], '/leaflet/git-v0.4.5-0-165e50f/leaflet.ie.css')
                 ),
-            'leaflet.js': conv.default(urlparse.urljoin(conf['cdn_url'], '/leaflet/git-v0.4.5-0-165e50f/leaflet.js')),
-            'pie.js': conv.default(urlparse.urljoin(conf['cdn_url'], '/css3pie/1.0beta5/PIE.js')),
-            'prettify.js': conv.default(urlparse.urljoin(conf['cdn_url'], '/google-code-prettify/187/prettify.js')),
-            'images.markers.url': conv.default(urlparse.urljoin(conf['cdn_url'], '/images/markers/')),
-            'images.misc.url': conv.default(urlparse.urljoin(conf['cdn_url'], '/images/misc/')),
+            u'leaflet.js': conv.default(urlparse.urljoin(conf['cdn_url'], '/leaflet/git-v0.4.5-0-165e50f/leaflet.js')),
+            u'pie.js': conv.default(urlparse.urljoin(conf['cdn_url'], '/css3pie/1.0beta5/PIE.js')),
+            u'prettify.js': conv.default(urlparse.urljoin(conf['cdn_url'], '/google-code-prettify/187/prettify.js')),
+            u'images.markers.url': conv.default(urlparse.urljoin(conf['cdn_url'], '/images/markers/')),
+            u'images.misc.url': conv.default(urlparse.urljoin(conf['cdn_url'], '/images/misc/')),
             },
         default = conv.noop,
         ))(conf))
@@ -238,7 +238,7 @@ def load_environment(global_conf, app_conf):
     # Configure logging.
     logging.basicConfig(level = conf['log_level'], stream = sys.stdout)
 
-    errorware = conf.setdefault('errorware', {})
+    errorware = conf.setdefault(u'errorware', {})
     errorware['debug'] = conf['debug']
     if not errorware['debug']:
         errorware['error_email'] = conf['email_to']
