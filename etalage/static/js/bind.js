@@ -68,7 +68,7 @@ etalage.bind = (function ($) {
             preloadLoadingGif();
         }
 
-        $("#search-form input[name='category'][type='checkbox']").bind('change', function(event) {
+        $("#search-form input[name='category'][type='checkbox']").on('change', function(event) {
             var action = $("#search-form").attr('action');
             var queryString = $("#search-form").serialize();
 
