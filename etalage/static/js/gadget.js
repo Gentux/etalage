@@ -68,7 +68,7 @@ function initGadget(options) {
     adjustFrameHeight();
 
     $("form.internal").on("submit", function (event) {
-        etalage.rpc.requestNavigateTo($(this).attr("action"), $(this).serialize());
+        etalage.rpc.requestNavigateTo($(this).attr("action") + '?' + $(this).serialize());
         return false;
     });
 
