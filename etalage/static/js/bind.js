@@ -34,7 +34,7 @@ etalage.bind = (function ($) {
         image.src = etalage.miscUrl + 'please-wait.gif';
         image.alt = 'Chargement...';
 
-        $loadingGif = $(image);
+        $loadingGif = $("<span>", {class: "loading"}).append($(image));
         $loadingGif.addClass('loading');
 
         isLoaded = true;
@@ -50,7 +50,7 @@ etalage.bind = (function ($) {
     }
 
     function appendLoadingGif(event) {
-        $('#search-form .form-actions').last().append($loadingGif);
+        $('#search-form .control-group .controls').last().append($loadingGif);
         $loadingGif.data('activeUrl', document.location);
 
         setTimeout(function () {
