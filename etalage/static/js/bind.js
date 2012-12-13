@@ -34,7 +34,7 @@ etalage.bind = (function ($) {
         image.src = etalage.miscUrl + 'please-wait.gif';
         image.alt = 'Chargement...';
 
-        $loadingGif = $("<span>", {class: "loading"}).append($(image));
+        $loadingGif = $("<span>", {"class": "loading"}).append($(image));
         $loadingGif.addClass('loading');
 
         isLoaded = true;
