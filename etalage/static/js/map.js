@@ -242,7 +242,6 @@ etalage.map = (function ($) {
             metric: true,
             imperial: false
         }).addTo(leafletMap);
-        console.log('ready');
     }
 
     function fetchPois() {
