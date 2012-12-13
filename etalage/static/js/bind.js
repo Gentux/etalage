@@ -74,8 +74,8 @@ etalage.bind = (function ($) {
 
             $('#search-form .form-actions').last().append($loadingGif);
 
-            if (typeof rpc !== "undefined" && rpc !== null) {
-                rpc.requestNavigateTo(action, queryString);
+            if (typeof etalage.rpc !== "undefined" && etalage.rpc !== null) {
+                etalage.rpc.requestNavigateTo(action + '?' + queryString);
                 return false;
             } else {
                 document.location = action + "?" + queryString;
