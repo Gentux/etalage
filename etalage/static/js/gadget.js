@@ -67,9 +67,11 @@ function initGadget(options) {
 
     adjustFrameHeight();
 
-    $("form.internal").on("submit", function (event) {
-        etalage.rpc.requestNavigateTo($(this).attr("action") + '?' + $(this).serialize());
-        return false;
+    $("form.internal").bind("submit", function (event) {
+        etalage.rpc.requestNavigateTo($(this).attr("action"), $(this).serializeArray().concat({
+            name: "submit",
+            value: "Submit"
+        }));
     });
 
     $("a.internal").on("click", function () {

@@ -70,12 +70,11 @@ etalage.bind = (function ($) {
 
         $("#search-form input[name='category'][type='checkbox']").on('change', function(event) {
             var action = $("#search-form").attr('action');
-            var queryString = $("#search-form").serialize();
+            var queryString = $("#search-form").serializeArray().concat({ name: "submit", value: "Submit" });
 
             $('#search-form .form-actions').last().append($loadingGif);
-
             if (typeof etalage.rpc !== "undefined" && etalage.rpc !== null) {
-                etalage.rpc.requestNavigateTo(action + '?' + queryString);
+                etalage.rpc.requestNavigateTo(action, queryString);
                 return false;
             } else {
                 document.location = action + "?" + queryString;
