@@ -99,6 +99,12 @@ from etalage import conf, conv, model, ramdb, urls
 
 
 <%def name="results_table()" filter="trim">
+<%
+        data, errors = conv.inputs_to_pois_list_data(inputs, state = ctx)
+        related_territories_id = ramdb.get_territory_related_territories_id(
+            data['territory']
+            ) if data.get('territory') is not None else None
+%>
         <table class="table table-bordered table-condensed table-striped">
             <thead>
                 <tr>
@@ -112,12 +118,6 @@ from etalage import conf, conv, model, ramdb, urls
         % for poi in pager.items:
                 <tr>
                     <td>
-            <%
-            data, errors = conv.inputs_to_pois_list_data(inputs, state = ctx)
-            related_territories_id = ramdb.get_territory_related_territories_id(
-                data['territory']
-                ) if data.get('territory') is not None else None
-            %>
             % if related_territories_id is None or poi.competence_territories_id is None:
                 <img class="legend-icon" src="${conf['images.markers.url'].rstrip('/')}/misc/blueblank.png">
             % elif not related_territories_id.isdisjoint(poi.competence_territories_id):
