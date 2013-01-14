@@ -166,8 +166,11 @@ etalage.map = (function ($) {
         $('.leaflet-control-zoom-in').attr('title', 'Zoomer');
         $('.leaflet-control-zoom-out').attr('title', 'Dézoomer');
 
+        if (typeof etalage.map.addFeature == "undefined" || etalage.map.addFeature == null) {
+            etalage.map.addFeature = addFeature;
+        }
         var geojsonLayer = L.geoJson(null, {
-            onEachFeature: addFeature
+            onEachFeature: etalage.map.addFeature
         }).addTo(leafletMap);
         etalage.map.geojsonLayer = geojsonLayer;
 
