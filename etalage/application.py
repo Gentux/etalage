@@ -45,7 +45,7 @@ percent_encoding_re = re.compile('%[\dA-Fa-f]{2}')
 def environment_setter(req, app):
     """WSGI middleware that sets request-dependant environment."""
     urls.application_url = req.application_url
-    return req.get_response(app)
+    return app
 
 
 @wsgihelpers.wsgify.middleware
