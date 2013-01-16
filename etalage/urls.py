@@ -95,7 +95,11 @@ def make_router(*routings):
     def router(req):
         """Dispatch request to controllers."""
         split_path_info = req.path_info.split('/')
-        assert not split_path_info[0], split_path_info
+        if split_path_info[0]:
+            # When path_info doesn't start with a "/" this is an error or a attack => Reject request.
+            # An example of an URL with such a invalid path_info: http://127.0.0.1http%3A//127.0.0.1%3A80/result?...
+            return wsgihelpers.bad_request(ctx, explanation = ctx._(u"Invalid path: {0}").format(
+                req.path_info.decode('utf-8')))
         for methods, regex, app, vars in routes:
             if methods is None or req.method in methods:
                 match = regex.match(req.path_info)
