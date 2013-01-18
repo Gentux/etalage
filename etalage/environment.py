@@ -138,6 +138,7 @@ def load_environment(global_conf, app_conf):
             # Whether this application serves its own static files.
             u'static_files': conv.pipe(conv.guess_bool, conv.default(True)),
             u'static_files_dir': conv.default(os.path.join(app_dir, 'static')),
+            u'territories_database': conv.default('souk'),
             u'territories_collection': conv.default('territories'),
             u'territories_kinds': conv.pipe(
                 conv.function(lambda kinds: kinds.split()),

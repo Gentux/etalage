@@ -119,15 +119,17 @@ def load():
         )
     territory_by_id.clear()
     territory_id_by_kind_code.clear()
-    for territory_bson in model.db[conf['territories_collection']].find(territories_query, [
-            'ancestors_id',
-            'code',
-            'geo',
-            'hinge_type',
-            'kind',
-            'main_postal_distribution',
-            'name',
-            ]):
+    territories_collection = model.db.connection[conf['territories_database']][conf['territories_collection']]
+    territories_fields_list = [
+        'ancestors_id',
+        'code',
+        'geo',
+        'hinge_type',
+        'kind',
+        'main_postal_distribution',
+        'name'
+        ]
+    for territory_bson in territories_collection.find(territories_query, territories_fields_list):
         main_postal_distribution = territory_bson.get('main_postal_distribution')
         if main_postal_distribution is None:
             continue
