@@ -259,13 +259,18 @@ etalage.map = (function ($) {
         // highestX = lowestX + 2 * (zeroX - lowestX) = 2 * zeroX - lowestX
         var east = 2 * zeroX - lowestX > leafletMap.getSize().x ?  northEast.lng : 180;
         var west = lowestX < 0 ? southWest.lng : -180;
+        var geojsonParams = $.extend({
+                bbox: [west, southWest.lat, east, northEast.lat].join(","),
+                context: context
+            },
+            etalage.map.geojsonParams || {},
+            etalage.map.currentPoiId ? {current: etalage.map.currentPoiId} : {},
+            leafletMap.getZoom() === leafletMap.getMaxZoom() ? {enable_cluster: false} : {}
+        )
         $.ajax({
             url: etalage.map.geojsonUrl,
             dataType: 'json',
-            data: $.extend({
-                bbox: [west, southWest.lat, east, northEast.lat].join(","),
-                context: context
-            }, etalage.map.geojsonParams || {}, etalage.map.currentPoiId ? {current: etalage.map.currentPoiId} : {}),
+            data: geojsonParams,
             success: function (data) {
                 if (parseInt(data.properties.context, 10) !== context) {
                     return;

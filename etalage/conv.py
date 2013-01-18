@@ -491,6 +491,10 @@ def inputs_to_pois_layer_data(inputs, state = None):
                         id_to_poi,
                         test(lambda poi: poi.geo is not None, error = N_('POI has no geographical coordinates')),
                         ),
+                    enable_cluster = pipe(
+                        guess_bool,
+                        default(True),
+                        ),
                     ),
                 default = 'drop',
                 keep_none_values = True,
