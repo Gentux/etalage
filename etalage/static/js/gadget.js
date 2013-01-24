@@ -26,7 +26,7 @@ var etalage = etalage || {};
 
 
 function adjustFrameHeight(seconds) {
-    var frameNewHeight = $("html").height();
+    var frameNewHeight = $(document).height();
     if (seconds) {
         // Adjust frame height for a few seconds ("* 5" is because of 200 ms timeout).
         adjustFrameHeightCount = seconds * 5;
