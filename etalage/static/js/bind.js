@@ -58,7 +58,7 @@ etalage.bind = (function ($) {
                     $loadingGif !== null &&
                     document.location == $loadingGif.data('activeUrl')) {
                 $loadingGif.detach();
-                clearTimeout();
+                // clearTimeout();
             }
         }, 300);
     }
