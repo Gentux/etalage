@@ -24,6 +24,10 @@
 
 var etalage = etalage || {};
 
+// Adjust frame height for 5 seconds.
+etalage.adjustFrameHeightCount = 5 * 5;
+etalage.frameHeight = null;
+
 
 function adjustFrameHeight(seconds) {
     var frameNewHeight = $(document).height();
@@ -31,8 +35,6 @@ function adjustFrameHeight(seconds) {
         // Adjust frame height for a few seconds ("* 5" is because of 200 ms timeout).
         etalage.adjustFrameHeightCount = seconds * 5;
     }
-
-
     if (frameNewHeight != etalage.frameHeight) {
         etalage.rpc.adjustHeight(frameNewHeight);
         etalage.frameHeight = frameNewHeight;
@@ -45,26 +47,7 @@ function adjustFrameHeight(seconds) {
 }
 
 
-function initGadget(options) {
-    // Adjust frame height for 5 seconds.
-    etalage.adjustFrameHeightCount = 5 * 5;
-    etalage.frameHeight = null;
-
-    if (!etalage.easyXDM) {
-        etalage.easyXDM = easyXDM.noConflict("etalage");
-        etalage.easyXDM.DomHelper.requiresJSON(options.json2Url);
-    }
-
-    etalage.rpc = new etalage.easyXDM.Rpc({
-        swf: options.swfUrl
-    },
-    {
-        remote: {
-            adjustHeight: {},
-            requestNavigateTo: {}
-        }
-    });
-
+function initGadget() {
     adjustFrameHeight();
 
     $("form.internal").bind("submit", function (event) {
