@@ -218,14 +218,14 @@ def load_environment(global_conf, app_conf):
             u'bootstrap-responsive.css': conv.default(
                 urlparse.urljoin(conf['cdn_url'], '/bootstrap/2.2.1/css/bootstrap-responsive.min.css')
                 ),
-            u'easyxdm.js': conv.default(urlparse.urljoin(conf['cdn_url'], '/easyxdm/2.4.15/easyXDM.min.js')),
-            u'easyxdm.swf': conv.default(urlparse.urljoin(conf['cdn_url'], '/easyxdm/2.4.15/easyxdm.swf')),
+            u'easyxdm.js': conv.default(urlparse.urljoin(conf['cdn_url'], '/easyxdm/latest/easyXDM.min.js')),
+            u'easyxdm.swf': conv.default(urlparse.urljoin(conf['cdn_url'], '/easyxdm/latest/easyxdm.swf')),
             u'jquery.js': conv.default(urlparse.urljoin(conf['cdn_url'], '/jquery/jquery-1.7.1.min.js')),
             u'jquery-ui.css': conv.default(
                 urlparse.urljoin(conf['cdn_url'], '/jquery-ui/1.8.16/themes/smoothness/jquery-ui.css')
                 ),
             u'jquery-ui.js': conv.default(urlparse.urljoin(conf['cdn_url'], '/jquery-ui/1.8.16/jquery-ui.min.js')),
-            u'json2.js': conv.default(urlparse.urljoin(conf['cdn_url'], '/easyxdm/2.4.15/json2.js')),
+            u'json2.js': conv.default(urlparse.urljoin(conf['cdn_url'], '/easyxdm/latest/json2.js')),
             u'leaflet.css': conv.default(
                 urlparse.urljoin(conf['cdn_url'], '/leaflet/git-v0.4.5-0-165e50f/leaflet.css')
                 ),
