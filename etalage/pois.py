@@ -26,6 +26,7 @@
 """Objects for POIs"""
 
 
+from copy import copy
 import itertools
 import logging
 import math
@@ -292,9 +293,9 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
 
     @classmethod
     def extract_non_territorial_search_data(cls, ctx, data):
-        categories_slug = set(ctx.base_categories_slug or [])
+        categories_slug = copy(ctx.base_categories_slug or [])
         if data['categories_slug'] is not None:
-            categories_slug.update(data['categories_slug'])
+            categories_slug.extend(data['categories_slug'])
         return dict(
             categories_slug = categories_slug,
             term = data['term'],
