@@ -75,7 +75,7 @@ from etalage import conf
                 Logiciel :
                 <a href="http://gitorious.org/infos-pratiques/etalage" rel="external">Etalage</a>
                 &mdash;
-                <span>Copyright © 2011, 2012 <a href="http://www.easter-eggs.com/" rel="external"
+                <span>Copyright © 2011, 2012, 2013 <a href="http://www.easter-eggs.com/" rel="external"
                         title="Easter-eggs, société de services en logiciels libres">Easter-eggs</a></span>
                 &mdash;
                 Licence libre
