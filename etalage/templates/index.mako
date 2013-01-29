@@ -105,7 +105,6 @@ etalage.params = ${inputs | n, js};
 <%def name="scripts_domready_content()" filter="trim">
     <%parent:scripts_domready_content/>
     etalage.bind.loadingGif();
-    etalage.bind.toggleCategories();
     etalage.categories.createAutocompleter($('#category'));
     etalage.territories.createAutocompleter($('#territory'));
     etalage.form.initSearchForm({
