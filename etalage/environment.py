@@ -197,7 +197,7 @@ def load_environment(global_conf, app_conf):
                             subdomains = conv.test_isinstance(basestring),
                             url = conv.pipe(
                                 conv.test_isinstance(basestring),
-                                conv.make_input_to_url(full = True),
+                                conv.make_input_to_url(),
                                 conv.not_none,
                                 ),
                             )),
