@@ -166,7 +166,7 @@ etalage.map = (function ($) {
         $('.leaflet-control-zoom-in').attr('title', 'Zoomer');
         $('.leaflet-control-zoom-out').attr('title', 'Dézoomer');
 
-        if (typeof etalage.map.addFeature == "undefined" || etalage.map.addFeature == null) {
+        if (typeof etalage.map.addFeature == "undefined" || etalage.map.addFeature === null) {
             etalage.map.addFeature = addFeature;
         }
         var geojsonLayer = L.geoJson(null, {
@@ -266,7 +266,7 @@ etalage.map = (function ($) {
             etalage.map.geojsonParams || {},
             etalage.map.currentPoiId ? {current: etalage.map.currentPoiId} : {},
             leafletMap.getZoom() === leafletMap.getMaxZoom() ? {enable_cluster: false} : {}
-        )
+        );
         $.ajax({
             url: etalage.map.geojsonUrl,
             dataType: 'json',

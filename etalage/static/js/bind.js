@@ -64,7 +64,7 @@ etalage.bind = (function ($) {
     }
 
     return {
-        loadingGif: loadingGif,
+        loadingGif: loadingGif
     };
 })(jQuery);
 
