@@ -90,10 +90,10 @@ from etalage import conf, conv, model, ramdb, urls
         <div>
             Organismes ${pager.first_item_number} à ${pager.last_item_number} sur ${pager.item_count}
         </div>
-        % endif
         <%self:pagination/>
         <%self:results_table/>
         <%self:pagination/>
+        % endif
     % endif
 </%def>
 

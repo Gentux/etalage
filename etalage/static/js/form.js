@@ -35,7 +35,6 @@ etalage.form = (function ($) {
                     adjustFrameHeight(5);
                 }
             });
-            adjustFrameHeight();
         } else {
             $("button.btn-search-form").hide();
         }
