@@ -57,6 +57,10 @@ etalage.categories = (function ($) {
                 });
             }
         });
+
+        $("#search-form input[name='category'][type='checkbox']").on('change', function(event) {
+            $(this).closest('label').hide();
+        });
     }
 
     return {
