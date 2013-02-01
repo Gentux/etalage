@@ -242,9 +242,9 @@ from etalage import conf, model, ramdb, urls
 <%def name="field_value_date_range(field, depth = 0)" filter="trim">
 <%
     begin_field = field.get_first_field('date-range-begin')
-    begin = begin_field.value if field is not None else None
+    begin = begin_field.value if begin_field is not None else None
     end_field = field.get_first_field('date-range-end')
-    end = end_field.value if field is not None else None
+    end = end_field.value if end_field is not None else None
 %>\
     % if begin is None:
             <span class="field-value">Jusqu'au ${end.strftime('%d/%m/%Y')}</span>
