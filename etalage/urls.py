@@ -100,7 +100,7 @@ def make_router(*routings):
             # An example of an URL with such a invalid path_info: http://127.0.0.1http%3A//127.0.0.1%3A80/result?...
             ctx = contexts.Ctx(req)
             return wsgihelpers.bad_request(ctx, explanation = ctx._(u"Invalid path: {0}").format(
-                req.path_info.decode('utf-8')))
+                req.path_info.decode('utf-8', errors = 'ignore')))
         for methods, regex, app, vars in routes:
             if methods is None or req.method in methods:
                 match = regex.match(req.path_info)
@@ -108,7 +108,7 @@ def make_router(*routings):
                     if getattr(req, 'urlvars', None) is None:
                         req.urlvars = {}
                     req.urlvars.update(dict(
-                        (name, value.decode('utf-8') if value is not None else None)
+                        (name, value.decode('utf-8', errors = 'ignore') if value is not None else None)
                         for name, value in match.groupdict().iteritems()
                         ))
                     req.urlvars.update(vars)
@@ -117,6 +117,6 @@ def make_router(*routings):
                     return req.get_response(app)
         ctx = contexts.Ctx(req)
         return wsgihelpers.not_found(ctx, explanation = ctx._(u"Page not found: {0}").format(
-            req.path_info.decode('utf-8')))
+            req.path_info.decode('utf-8', errors = 'ignore')))
 
     return router
