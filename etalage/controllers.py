@@ -991,6 +991,7 @@ def init_base(ctx, params):
         distance = params.get('distance'),
         gadget = params.get('gadget'),
         hide_directory = params.get('hide_directory'),
+        territories_kinds = params.getall('territories_kinds'),
         )
 
     for name in model.Poi.get_search_params_name(ctx):
@@ -1097,6 +1098,12 @@ def init_base(ctx, params):
         )(inputs['distance'], state = ctx)
     if error is not None:
         raise wsgihelpers.bad_request(ctx, explanation = ctx._('Distance Error: {0}').format(error))
+
+    ctx.autocompleter_territories_kinds, error = conv.uniform_sequence(conv.test_in(
+        conf['autocompleter_territories_kinds'],
+        ))(inputs['territories_kinds'], state = ctx)
+    if error is not None:
+        ctx.autocompleter_territories_kinds = conf['autocompleter_territories_kinds']
 
     return inputs
 
