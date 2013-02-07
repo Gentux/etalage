@@ -701,7 +701,7 @@ def index(req):
     init_base(ctx, params)
 
     # Redirect to another page.
-    url_args = (conf['default_tab'],)
+    url_args = (conf['default_tab'] if conf['default_tab'] == 'liste' or not ctx.hide_map else 'liste',)
     url_kwargs = dict(params)
     if ctx.container_base_url is None or ctx.gadget_id is None:
         raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, *url_args, **url_kwargs))
@@ -990,7 +990,11 @@ def init_base(ctx, params):
         container_base_url = params.get('container_base_url'),
         distance = params.get('distance'),
         gadget = params.get('gadget'),
+        hide_export = params.get('hide_export'),
         hide_directory = params.get('hide_directory'),
+        hide_gadget = params.get('hide_gadget'),
+        hide_map = params.get('hide_map'),
+        hide_minisite = params.get('hide_minisite'),
         territories_kinds = params.getall('territories_kinds'),
         )
 
@@ -1104,6 +1108,12 @@ def init_base(ctx, params):
         ))(inputs['territories_kinds'], state = ctx)
     if error is not None:
         ctx.autocompleter_territories_kinds = conf['autocompleter_territories_kinds']
+
+    for hidden_field_key in ['hide_directory', 'hide_export', 'hide_gadget', 'hide_map', 'hide_minisite']:
+        hidden_field, error = conv.pipe(conv.guess_bool, conv.default(False))(inputs[hidden_field_key], state = ctx)
+        if error is not None:
+            raise wsgihelpers.bad_request(ctx, explanation = ctx._('{0} Error: {1}').format(hidden_field_key, error))
+        setattr(ctx, hidden_field_key, conf[hidden_field_key] or hidden_field)
 
     return inputs
 

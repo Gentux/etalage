@@ -56,11 +56,11 @@ from etalage import conf, model, ramdb, urls
         <ul class="nav nav-tabs">
 <%
     modes_infos = (
-        (u'carte', u'Carte', conf['hide_map']),
+        (u'carte', u'Carte', ctx.hide_map),
         (u'liste', u'Liste', False),
-        (u'annuaire', u'Annuaire', conf['hide_directory'] or ctx.hide_directory),
-        (u'gadget', u'Partage', conf['hide_gadget']),
-        (u'export', u'Export', conf['hide_export']),
+        (u'annuaire', u'Annuaire', ctx.hide_directory),
+        (u'gadget', u'Partage', ctx.hide_gadget),
+        (u'export', u'Export', ctx.hide_export),
         )
     url_args = dict(
         (model.Poi.rename_input_to_param(name), value)
