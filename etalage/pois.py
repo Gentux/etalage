@@ -125,6 +125,12 @@ class Field(representations.UserRepresentable):
                 same_label_index = counts_by_label.get(field.label, 0)
                 yield (parent_ref or []) + [field.label, same_label_index], field
                 counts_by_label[field.label] = same_label_index + 1
+            elif self.id == 'poi-last-update':
+                last_update_field = copy(self)
+                last_update_field.value = last_update_field.value.strftime('%d/%m/%Y')
+                last_update_label_index = counts_by_label.get(self.label, 0)
+                yield (parent_ref or []) + [self.label, last_update_label_index], last_update_field
+                counts_by_label[self.label] = last_update_label_index + 1
             elif self.id == 'postal-distribution':
                 postal_code, postal_routing = conv.check(conv.split_postal_distribution)(self.value, state = ctx)
                 for field in (
@@ -410,6 +416,14 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
 
         id_field = Field(id = 'poi-id', value = self._id, label = u'Identifiant')
         for subfield_ref, subfield in id_field.iter_csv_fields(ctx, counts_by_label):
+            yield subfield_ref, subfield
+
+        last_update_field = Field(
+            id = 'poi-last-update',
+            value = self.last_update_datetime,
+            label = u'Date de dernière modification'
+            )
+        for subfield_ref, subfield in last_update_field.iter_csv_fields(ctx, counts_by_label):
             yield subfield_ref, subfield
 
         if self.fields is not None:
