@@ -621,10 +621,12 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
                         and related_territories_id.isdisjoint(poi.competence_territories_id),
                     # distance
                     6372.8 * math.acos(
-                        math.sin(math.radians(poi.geo[0])) * territory_latitude_sin
-                        + math.cos(math.radians(poi.geo[0])) * territory_latitude_cos
-                            * math.cos(math.radians(poi.geo[1] - territory.geo[1]))
-                        ) if poi.geo is not None else (sys.float_info.max, poi),
+                        round(
+                            math.sin(math.radians(poi.geo[0])) * territory_latitude_sin
+                            + math.cos(math.radians(poi.geo[0])) * territory_latitude_cos
+                                * math.cos(math.radians(poi.geo[1] - territory.geo[1])),
+                            13,
+                        )) if poi.geo is not None else (sys.float_info.max, poi),
                     # POI
                     poi,
                     )
