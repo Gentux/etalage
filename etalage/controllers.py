@@ -1215,15 +1215,17 @@ def minisite(req):
         conv.rename_item('poi_id', 'poi'),
         )(inputs, state = ctx)
 
-    if not errors:
-        data['url'] = url = urls.get_full_url(ctx, 'fragment', 'organismes', data['poi'].slug, data['poi']._id,
-            encoding = data['encoding'])
-        try:
-            fragment = urllib2.urlopen(url).read().decode(data['encoding'] or 'utf-8')
-        except:
-            errors = dict(fragment = ctx._('Access to organism failed'))
-        else:
-            data['fragment'] = fragment
+    if errors is not None and errors.get('poi_id'):
+        return wsgihelpers.bad_request(ctx, explanation = ctx._('Error: {0}').format(errors['poi_id']))
+
+    data['url'] = url = urls.get_full_url(ctx, 'fragment', 'organismes', data['poi'].slug, data['poi']._id,
+        encoding = data['encoding'])
+    try:
+        fragment = urllib2.urlopen(url).read().decode(data['encoding'] or 'utf-8')
+    except:
+        errors = dict(fragment = ctx._('Access to organism failed'))
+    else:
+        data['fragment'] = fragment
     return templates.render(ctx, '/minisite.mako', errors = errors, inputs = inputs, **data)
 
 
