@@ -53,21 +53,23 @@ from etalage import conf, model, ramdb, urls
 
 
 <%def name="index_tabs()" filter="trim">
-        <ul class="nav nav-tabs">
 <%
     modes_infos = (
         (u'carte', u'Carte', ctx.hide_map),
-        (u'liste', u'Liste', False),
+        (u'liste', u'Liste', ctx.hide_list),
         (u'annuaire', u'Annuaire', ctx.hide_directory),
         (u'gadget', u'Partage', ctx.hide_gadget),
         (u'export', u'Export', ctx.hide_export),
         )
+    if len([mode_info[2] for mode_info in modes_infos if mode_info[2] is False]) <= 1:
+        return ''
     url_args = dict(
         (model.Poi.rename_input_to_param(name), value)
         for name, value in inputs.iteritems()
         if name != 'page' and value is not None
         )
 %>\
+        <ul class="nav nav-tabs">
     % for tab_mode, tab_name, tab_hidden in modes_infos:
 <%
         if tab_hidden:
@@ -154,22 +156,23 @@ etalage.params = ${inputs | n, js};
                 <div class="control-group${' error' if error else ''}">
                     <label class="control-label" for="category">Catégorie</label>
                     <div class="controls">
-    % if categories_slug:
-        % for category_index, category_slug in enumerate(categories_slug, -len(ctx.base_categories_slug or [])):
-            % if error is None or category_index not in error:
+        % if categories_slug:
+            % for category_index, category_slug in enumerate(categories_slug, -len(ctx.base_categories_slug or [])):
+                % if error is None or category_index not in error:
 <%
-                # Note: ``category_slug`` may be a category (and not a slug) when an error has occurred during
-                # categories_slug verification.
-                category = ramdb.category_by_slug[category_slug] if isinstance(category_slug, basestring) else category_slug
-                if category.slug in (ctx.base_categories_slug or []):
-                    continue
+                    # Note: ``category_slug`` may be a category (and not a slug) when an error has occurred during
+                    # categories_slug verification.
+                    category = ramdb.category_by_slug[category_slug] \
+                        if isinstance(category_slug, basestring) else category_slug
+                    if category.slug in (ctx.base_categories_slug or []):
+                        continue
 %>\
                         <label class="checkbox"><input checked name="category" type="checkbox" value="${category.name}">
                             <span class="label label-success"><i class="icon-tag icon-white"></i>
                             ${category.name}</span></label>
-            % endif
-        % endfor
-    % endif
+                % endif
+            % endfor
+        % endif
                         <input class="input-xlarge" id="category" name="category" type="text" value="${inputs['categories_slug'][error_index] \
                                 if error_index is not None else ''}">
         % if error_message:
