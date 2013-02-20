@@ -729,6 +729,8 @@ def index_directory(req):
     if errors is not None:
         directory = None
         territory = None
+        if errors.get('territory') and errors['territory'] == ctx._(u'In "directory" mode, a commune is required'):
+            del errors['territory']
     else:
         territory = data['territory']
         related_territories_id = ramdb.get_territory_related_territories_id(territory)
