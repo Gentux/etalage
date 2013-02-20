@@ -701,7 +701,20 @@ def index(req):
     init_base(ctx, params)
 
     # Redirect to another page.
-    url_args = (conf['default_tab'] if conf['default_tab'] == 'liste' or not ctx.hide_map else 'liste',)
+    enabled_tabs = [
+        tab_name
+        for tab_key, tab_name in (
+            (u'map', u'carte'),
+            (u'list', u'liste'),
+            (u'directory', u'annuaire'),
+            (u'gadget', u'partage'),
+            (u'export', u'export'),
+            )
+        if not getattr(ctx, "hide_{0}".format(tab_key))
+        ]
+    if not len(enabled_tabs):
+        enabled_tabs = [u'carte']  # Ensure there is at least one visible tab
+    url_args = (conf['default_tab'] if conf['default_tab'] in enabled_tabs else enabled_tabs[0],)
     url_kwargs = dict(params)
     if ctx.container_base_url is None or ctx.gadget_id is None:
         raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, *url_args, **url_kwargs))
