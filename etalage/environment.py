@@ -111,8 +111,13 @@ def load_environment(global_conf, app_conf):
             u'hide_directory': conv.pipe(conv.guess_bool, conv.default(False)),
             u'hide_export': conv.pipe(conv.guess_bool, conv.default(False)),
             u'hide_gadget': conv.pipe(conv.guess_bool, conv.default(False)),
+            u'hide_list': conv.pipe(conv.guess_bool, conv.default(False)),
             u'hide_map': conv.pipe(conv.guess_bool, conv.default(False)),
             u'hide_minisite': conv.pipe(conv.guess_bool, conv.default(False)),
+
+            u'hide_category': conv.pipe(conv.guess_bool, conv.default(False)),
+            u'hide_territory': conv.pipe(conv.guess_bool, conv.default(False)),
+            u'hide_term': conv.pipe(conv.guess_bool, conv.default(False)),
             u'i18n_dir': conv.default(os.path.join(app_dir, 'i18n')),
             u'i18n_dir_by_plugin_name': conv.set_value(None),  # set by plugins below
             u'ignored_fields': conv.pipe(
