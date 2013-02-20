@@ -992,21 +992,16 @@ def init_base(ctx, params):
         container_base_url = params.get('container_base_url'),
         distance = params.get('distance'),
         gadget = params.get('gadget'),
-        hide_export = params.get('hide_export'),
-        hide_directory = params.get('hide_directory'),
-        hide_gadget = params.get('hide_gadget'),
-        hide_map = params.get('hide_map'),
-        hide_minisite = params.get('hide_minisite'),
         territories_kinds = params.getall('territories_kinds'),
         )
 
     for name in model.Poi.get_search_params_name(ctx):
         param_visibility_name = model.Poi.get_search_param_visibility_name(ctx, name)
-        inputs[param_visibility_name] = param_input = params.get(param_visibility_name)
+        inputs[param_visibility_name] = conf.get(param_visibility_name) or params.get(param_visibility_name)
         param_visibility, error = conv.pipe(
             conv.guess_bool,
             conv.default(False),
-            )(param_input, state = ctx)
+            )(inputs[param_visibility_name], state = ctx)
         if error is not None:
             raise wsgihelpers.bad_request(ctx, explanation = ctx._('Error for "{0}" parameter: {1}').format(
                 param_visibility_name, error))
@@ -1111,12 +1106,11 @@ def init_base(ctx, params):
     if error is not None:
         ctx.autocompleter_territories_kinds = conf['autocompleter_territories_kinds']
 
-    for hidden_field_key in ['hide_directory', 'hide_export', 'hide_gadget', 'hide_map', 'hide_minisite']:
-        hidden_field, error = conv.pipe(conv.guess_bool, conv.default(False))(inputs[hidden_field_key], state = ctx)
+    for hidden_tab_key in ['hide_directory', 'hide_export', 'hide_gadget', 'hide_list', 'hide_map', 'hide_minisite']:
+        hidden_tab, error = conv.pipe(conv.guess_bool, conv.default(False))(params.get(hidden_tab_key), state = ctx)
         if error is not None:
-            raise wsgihelpers.bad_request(ctx, explanation = ctx._('{0} Error: {1}').format(hidden_field_key, error))
-        setattr(ctx, hidden_field_key, conf[hidden_field_key] or hidden_field)
-
+            raise wsgihelpers.bad_request(ctx, explanation = ctx._('{0} Error: {1}').format(hidden_tab_key, error))
+        setattr(ctx, hidden_tab_key, conf[hidden_tab_key] or hidden_tab)
     return inputs
 
 
