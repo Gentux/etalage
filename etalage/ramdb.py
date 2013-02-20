@@ -33,7 +33,7 @@ import sys
 from biryani import strings
 import threading2
 
-from . import conf, conv
+from . import conf
 from .ramindexes import *
 
 
