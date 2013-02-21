@@ -266,6 +266,8 @@ etalage.params = ${inputs | n, js};
         name = model.Poi.rename_input_to_param(name)
         if name in search_params_name and model.Poi.is_search_param_visible(ctx, name):
             continue
+        if name.startswith('hide_') or name.startswith('show_'):
+            continue
         if name in ('bbox', 'page'):
             continue
         if value is None or value == u'':
