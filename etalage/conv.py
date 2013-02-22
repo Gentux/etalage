@@ -571,10 +571,12 @@ def layer_data_to_clusters(data, state = None):
             (
                 # distance from center of map
                 6372.8 * math.acos(
-                    math.sin(math.radians(poi.geo[0])) * center_latitude_sin
-                    + math.cos(math.radians(poi.geo[0])) * center_latitude_cos
-                        * math.cos(math.radians(poi.geo[1] - center_longitude))
-                    ),
+                    round(
+                        math.sin(math.radians(poi.geo[0])) * center_latitude_sin
+                        + math.cos(math.radians(poi.geo[0])) * center_latitude_cos
+                            * math.cos(math.radians(poi.geo[1] - center_longitude)),
+                        13,
+                    )) if poi.geo is not None else (sys.float_info.max, poi),
                 # POI
                 poi,
                 )
