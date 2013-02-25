@@ -1122,7 +1122,7 @@ def init_base(ctx, params):
     if error is not None:
         ctx.autocompleter_territories_kinds = conf['autocompleter_territories_kinds']
 
-    for hidden_tab_key in ['hide_directory', 'hide_export', 'hide_gadget', 'hide_list', 'hide_map', 'hide_minisite']:
+    for hidden_tab_key in ['hide_directory', 'hide_checkboxes', 'hide_export', 'hide_gadget', 'hide_list', 'hide_map', 'hide_minisite']:
         hidden_tab, error = conv.pipe(conv.guess_bool, conv.default(False))(params.get(hidden_tab_key), state = ctx)
         if error is not None:
             raise wsgihelpers.bad_request(ctx, explanation = ctx._('{0} Error: {1}').format(hidden_tab_key, error))

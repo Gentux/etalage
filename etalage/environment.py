@@ -116,6 +116,7 @@ def load_environment(global_conf, app_conf):
             u'hide_minisite': conv.pipe(conv.guess_bool, conv.default(False)),
 
             u'hide_category': conv.pipe(conv.guess_bool, conv.default(False)),
+            u'hide_checkboxes': conv.pipe(conv.guess_bool, conv.default(False)),
             u'hide_territory': conv.pipe(conv.guess_bool, conv.default(False)),
             u'hide_term': conv.pipe(conv.guess_bool, conv.default(False)),
             u'i18n_dir': conv.default(os.path.join(app_dir, 'i18n')),

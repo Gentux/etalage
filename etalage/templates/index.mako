@@ -156,7 +156,7 @@ etalage.params = ${inputs | n, js};
                 <div class="control-group${' error' if error else ''}">
                     <label class="control-label" for="category">Catégorie</label>
                     <div class="controls">
-        % if categories_slug:
+        % if categories_slug and not ctx.hide_checkboxes:
             % for category_index, category_slug in enumerate(categories_slug, -len(ctx.base_categories_slug or [])):
                 % if error is None or category_index not in error:
 <%
@@ -172,9 +172,14 @@ etalage.params = ${inputs | n, js};
                             ${category.name}</span></label>
                 % endif
             % endfor
+                        <input class="input-xlarge" id="category" name="category" type="text"\
+value="${inputs['categories_slug'][error_index] if error_index is not None else ''}">
+        % elif categories_slug:
+                        <input class="input-xlarge" id="category" name="category" type="text"\
+value="${inputs['categories_slug'][0] if len(inputs['categories_slug']) > 0 else ''}">
+        % else:
+                        <input class="input-xlarge" id="category" name="category" type="text" value="">
         % endif
-                        <input class="input-xlarge" id="category" name="category" type="text" value="${inputs['categories_slug'][error_index] \
-                                if error_index is not None else ''}">
         % if error_message:
                         <span class="help-inline">${error_message}</span>
         % endif
