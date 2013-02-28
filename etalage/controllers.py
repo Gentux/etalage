@@ -920,6 +920,7 @@ def index_list(req):
     inputs.update(model.Poi.extract_search_inputs_from_params(ctx, params))
     inputs.update(dict(
         page = params.get('page'),
+        sort_key = params.get('sort_key'),
         ))
     mode = u'liste'
 
@@ -954,8 +955,15 @@ def index_list(req):
             if poi is not None
             )
         pager = pagers.Pager(item_count = len(poi_by_id), page_number = data['page_number'])
-        pager.items = model.Poi.sort_and_paginate_pois_list(ctx, pager, poi_by_id,
-            related_territories_id = related_territories_id, territory = territory, **non_territorial_search_data)
+        pager.items = model.Poi.sort_and_paginate_pois_list(
+            ctx,
+            pager,
+            poi_by_id,
+            related_territories_id = related_territories_id,
+            territory = territory,
+            sort_key = data['sort_key'],
+            **non_territorial_search_data
+            )
     return templates.render(ctx, '/list.mako',
         errors = errors,
         inputs = inputs,

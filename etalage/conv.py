@@ -518,6 +518,10 @@ def inputs_to_pois_list_data(inputs, state = None):
                         test_greater_or_equal(1),
                         default(1),
                         ),
+                    sort_key = pipe(
+                        cleanup_line,
+                        test_in(['name', 'schema_name']),
+                        ),
                     ),
                 default = 'drop',
                 keep_none_values = True,

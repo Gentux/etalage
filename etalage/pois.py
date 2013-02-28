@@ -604,7 +604,7 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
 
     @classmethod
     def sort_and_paginate_pois_list(cls, ctx, pager, poi_by_id, related_territories_id = None, territory = None,
-            **other_search_data):
+            sort_key = None, **other_search_data):
         if territory is None:
             pois = sorted(poi_by_id.itervalues(), key = lambda poi: poi.name)  # TODO: Use slug instead of name.
             return [
@@ -613,6 +613,13 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
                 ]
         territory_latitude_cos = math.cos(math.radians(territory.geo[0]))
         territory_latitude_sin = math.sin(math.radians(territory.geo[0]))
+        if sort_key is None:
+            key = lambda incompetence_distance_and_poi_triple: incompetence_distance_and_poi_triple[:2]
+        else:
+            key = lambda incompetence_distance_and_poi_triple: (
+                getattr(incompetence_distance_and_poi_triple[2], sort_key, None),
+                incompetence_distance_and_poi_triple[1],
+                )
         incompetence_distance_and_poi_triples = sorted(
             (
                 (
@@ -632,7 +639,7 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
                     )
                 for poi in poi_by_id.itervalues()
                 ),
-            key = lambda incompetence_distance_and_poi_triple: incompetence_distance_and_poi_triple[:2],
+            key = key,
             )
         return [
             poi
