@@ -66,7 +66,7 @@ from etalage import conf, model, ramdb, urls
     url_args = dict(
         (model.Poi.rename_input_to_param(name), value)
         for name, value in inputs.iteritems()
-        if name != 'page' and value is not None
+        if name != 'page' and name not in model.Poi.get_visibility_params_names(ctx) and value is not None
         )
 %>\
         <ul class="nav nav-tabs">
@@ -271,7 +271,7 @@ value="${inputs['categories_slug'][0] if len(inputs['categories_slug']) > 0 else
         name = model.Poi.rename_input_to_param(name)
         if name in search_params_name and model.Poi.is_search_param_visible(ctx, name):
             continue
-        if name.startswith('hide_') or name.startswith('show_'):
+        if name in model.Poi.get_visibility_params_names(ctx):
             continue
         if name in ('bbox', 'page'):
             continue

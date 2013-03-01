@@ -47,7 +47,7 @@ from etalage import conf, conv, model, ramdb, urls
         url_args = dict(
             (model.Poi.rename_input_to_param(name), value)
             for name, value in inputs.iteritems()
-            if name != 'page' and value is not None
+            if name != 'page' and name not in model.Poi.get_visibility_params_names(ctx) and value is not None
             )
 %>\
                     <li class="prev${' disabled' if pager.page_number <= 1 else ''}">

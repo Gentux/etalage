@@ -26,7 +26,7 @@
 <%!
 import markupsafe
 
-from etalage import ramdb, urls
+from etalage import model, ramdb, urls
 %>
 
 
@@ -55,7 +55,8 @@ from etalage import ramdb, urls
                     url_args = dict(
                         (name, value)
                         for name, value in inputs.iteritems()
-                        if name != 'categories' and value is not None
+                        if name != 'categories' and name not in model.Poi.get_visibility_params_names(ctx) and\
+                            value is not None
                         )
                     url_args['category'] = category.name
 %>\
