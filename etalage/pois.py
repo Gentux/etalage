@@ -358,6 +358,15 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
             for name in cls.extract_search_inputs_from_params(ctx, webob.multidict.MultiDict()).iterkeys()
             )
 
+    @classmethod
+    def get_visibility_params_names(cls, ctx):
+        visibility_params = list(cls.get_search_params_name(ctx))
+        visibility_params.extend(['checkboxes', 'directory', 'export', 'gadget', 'list', 'map', 'minisite'])
+        return [
+            cls.get_search_param_visibility_name(ctx, visibility_param)
+            for visibility_param in visibility_params
+            ]
+
     def index(self, indexed_poi_id):
         poi_bson = self.bson
         metadata = poi_bson['metadata']

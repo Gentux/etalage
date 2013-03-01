@@ -1019,8 +1019,7 @@ def init_base(ctx, params):
         territories_kinds = params.getall('territories_kinds'),
         )
 
-    for name in model.Poi.get_search_params_name(ctx):
-        param_visibility_name = model.Poi.get_search_param_visibility_name(ctx, name)
+    for param_visibility_name in model.Poi.get_visibility_params_names(ctx):
         inputs[param_visibility_name] = conf.get(param_visibility_name) or params.get(param_visibility_name)
         param_visibility, error = conv.pipe(
             conv.guess_bool,
@@ -1129,12 +1128,6 @@ def init_base(ctx, params):
         ))(inputs['territories_kinds'], state = ctx)
     if error is not None:
         ctx.autocompleter_territories_kinds = conf['autocompleter_territories_kinds']
-
-    for hidden_tab_key in ['hide_directory', 'hide_checkboxes', 'hide_export', 'hide_gadget', 'hide_list', 'hide_map', 'hide_minisite']:
-        hidden_tab, error = conv.pipe(conv.guess_bool, conv.default(False))(params.get(hidden_tab_key), state = ctx)
-        if error is not None:
-            raise wsgihelpers.bad_request(ctx, explanation = ctx._('{0} Error: {1}').format(hidden_tab_key, error))
-        setattr(ctx, hidden_tab_key, conf[hidden_tab_key] or hidden_tab)
     return inputs
 
 
