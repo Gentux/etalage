@@ -748,6 +748,8 @@ def index_directory(req):
         territory = data['territory']
         related_territories_id = ramdb.get_territory_related_territories_id(territory)
         filter = data['filter']
+        if territory.__class__.__name__ not in model.communes_kinds:
+            filter = 'presence'
         if filter == 'competence':
             competence_territories_id = related_territories_id
             presence_territory = None

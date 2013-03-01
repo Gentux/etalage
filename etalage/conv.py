@@ -434,8 +434,8 @@ def inputs_to_pois_directory_data(inputs, state = None):
         struct(
             dict(
                 territory = pipe(
-                    test(lambda territory: territory.__class__.__name__ in model.communes_kinds,
-                        error = N_(u'In "directory" mode, territory must be a commune')),
+#                    test(lambda territory: territory.__class__.__name__ in model.communes_kinds,
+#                        error = N_(u'In "directory" mode, territory must be a commune')),
                     test_not_none(error = N_(u'In "directory" mode, a commune is required')),
                     ),
                 ),
