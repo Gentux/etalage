@@ -144,6 +144,18 @@ etalage.params = ${inputs | n, js};
 
 
 <%def name="search_form_field_categories_slug()" filter="trim">
+<%
+    child_category = False
+    for category_slug in (categories_slug or []):
+        for poi_id in model.Poi.ids_by_category_slug[category_slug]:
+            if poi_id in model.Poi.ids_by_category_slug.get(category_slug, []):
+                child_category = True
+                break
+        if child_category:
+            break
+    else:
+        ctx.hide_category = True
+%>
     % if model.Poi.is_search_param_visible(ctx, 'category'):
 <%
         error = errors.get('categories_slug') if errors is not None else None
