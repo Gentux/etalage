@@ -37,7 +37,7 @@ from etalage import model, ramdb, urls
     % if errors is not None:
         % if territory is None:
         <div class="alert alert-info">
-            Pour accéder à l'annuaire, vous devez <strong>préciser une commune</strong> dans le formulaire ci-dessus.
+            Pour accéder à l'annuaire, vous devez <strong>préciser un territoire</strong> dans le formulaire ci-dessus.
         </div>
         % endif
     % else:
