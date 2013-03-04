@@ -24,3 +24,12 @@ span.loading img{
     text-decoration: underline;
     padding-top: 20px;
 }
+
+th a {
+    color: black;
+}
+
+th a:hover {
+    color: #0088CC;
+    text-decoration: none;
+}

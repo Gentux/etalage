@@ -108,10 +108,46 @@ from etalage import conf, conv, model, ramdb, urls
         <table class="table table-bordered table-condensed table-striped">
             <thead>
                 <tr>
-                    <th></th>
-                    <th>${_('Name')}</th>
-                    <th>${_('Street Address')}</th>
-                    <th>${_('Commune')}</th>
+<%
+        url_args = dict(
+            (model.Poi.rename_input_to_param(name), value)
+            for name, value in inputs.iteritems()
+            if name != 'page' and name not in model.Poi.get_visibility_params_names(ctx) and value is not None
+            )
+        url_args['sort_key'] = ''
+%>\
+                    <th>
+                        <a class="internal" href="${urls.get_url(ctx, mode, page = pager.page_number, **url_args)}">
+                            <i class="icon icon-chevron-down"> </i>
+                        </a>
+                    </th>
+                    <th>
+<%
+        url_args['sort_key'] = 'name'
+%>\
+                        <a class="internal" href="${urls.get_url(ctx, mode, page = pager.page_number, **url_args)}">
+                            ${_('Name')}
+                            <i class="icon icon-chevron-down"> </i>
+                        </a>
+                    </th>
+                    <th>
+<%
+        url_args['sort_key'] = ''
+%>\
+                        <a class="internal" href="${urls.get_url(ctx, mode, page = pager.page_number, **url_args)}">
+                            ${_('Street Address')}
+                            <i class="icon icon-chevron-down"> </i>
+                        </a>
+                    </th>
+                    <th>
+<%
+        url_args['sort_key'] = ''
+%>\
+                        <a class="internal" href="${urls.get_url(ctx, mode, page = pager.page_number, **url_args)}">
+                            ${_('Commune')}
+                            <i class="icon icon-chevron-down"> </i>
+                        </a>
+                    </th>
                 </tr>
             </thead>
             <tbody>
