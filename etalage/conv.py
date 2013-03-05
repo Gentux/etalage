@@ -520,7 +520,7 @@ def inputs_to_pois_list_data(inputs, state = None):
                         ),
                     sort_key = pipe(
                         cleanup_line,
-                        test_in(['name', 'schema_name']),
+                        test_in(['name', 'postal_distribution_str', 'schema_name', 'street_address']),
                         ),
                     ),
                 default = 'drop',

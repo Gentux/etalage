@@ -115,37 +115,41 @@ from etalage import conf, conv, model, ramdb, urls
             if name != 'page' and name not in model.Poi.get_visibility_params_names(ctx) and value is not None
             )
         url_args['sort_key'] = ''
+        icon_class = 'icon-list' if inputs['sort_key'] is not None else 'icon-chevron-down'
 %>\
                     <th>
                         <a class="internal" href="${urls.get_url(ctx, mode, page = pager.page_number, **url_args)}">
-                            <i class="icon icon-chevron-down"> </i>
+                            <i class="icon ${icon_class}"> </i>
                         </a>
                     </th>
                     <th>
 <%
         url_args['sort_key'] = 'name'
+        icon_class = 'icon-list' if inputs['sort_key'] != 'name' else 'icon-chevron-down'
 %>\
                         <a class="internal" href="${urls.get_url(ctx, mode, page = pager.page_number, **url_args)}">
+                            <i class="icon ${icon_class}"> </i>
                             ${_('Name')}
-                            <i class="icon icon-chevron-down"> </i>
                         </a>
                     </th>
                     <th>
 <%
-        url_args['sort_key'] = ''
+        url_args['sort_key'] = 'street_address'
+        icon_class = 'icon-list' if inputs['sort_key'] != 'street_address' else 'icon-chevron-down'
 %>\
                         <a class="internal" href="${urls.get_url(ctx, mode, page = pager.page_number, **url_args)}">
+                            <i class="icon ${icon_class}"> </i>
                             ${_('Street Address')}
-                            <i class="icon icon-chevron-down"> </i>
                         </a>
                     </th>
                     <th>
 <%
-        url_args['sort_key'] = ''
+        url_args['sort_key'] = 'postal_distribution_str'
+        icon_class = 'icon-list' if inputs['sort_key'] != 'postal_distribution_str' else 'icon-chevron-down'
 %>\
                         <a class="internal" href="${urls.get_url(ctx, mode, page = pager.page_number, **url_args)}">
+                            <i class="icon ${icon_class}"> </i>
                             ${_('Commune')}
-                            <i class="icon icon-chevron-down"> </i>
                         </a>
                     </th>
                 </tr>
