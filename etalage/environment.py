@@ -232,13 +232,9 @@ def load_environment(global_conf, app_conf):
                 ),
             u'jquery-ui.js': conv.default(urlparse.urljoin(conf['cdn_url'], '/jquery-ui/1.8.16/jquery-ui.min.js')),
             u'json2.js': conv.default(urlparse.urljoin(conf['cdn_url'], '/easyxdm/latest/json2.js')),
-            u'leaflet.css': conv.default(
-                urlparse.urljoin(conf['cdn_url'], '/leaflet/git-v0.5.0-0-e6f8e4b/leaflet.css')
-                ),
-            u'leaflet.ie.css': conv.default(
-                urlparse.urljoin(conf['cdn_url'], '/leaflet/git-v0.5.0-0-e6f8e4b/leaflet.ie.css')
-                ),
-            u'leaflet.js': conv.default(urlparse.urljoin(conf['cdn_url'], '/leaflet/git-v0.5.0-0-e6f8e4b/leaflet.js')),
+            u'leaflet.css': conv.default(urlparse.urljoin(conf['cdn_url'], '/leaflet/leaflet-0.5.1/leaflet.css')),
+            u'leaflet.ie.css': conv.default(urlparse.urljoin(conf['cdn_url'], '/leaflet/leaflet-0.5.1/leaflet.ie.css')),
+            u'leaflet.js': conv.default(urlparse.urljoin(conf['cdn_url'], '/leaflet/leaflet-0.5.1/leaflet.js')),
             u'pie.js': conv.default(urlparse.urljoin(conf['cdn_url'], '/css3pie/1.0beta5/PIE.js')),
             u'prettify.js': conv.default(urlparse.urljoin(conf['cdn_url'], '/google-code-prettify/187/prettify.js')),
             u'images.markers.url': conv.default(urlparse.urljoin(conf['cdn_url'], '/images/markers/')),
