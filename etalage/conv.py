@@ -318,7 +318,7 @@ def input_to_category_slug(value, state = None):
         input_to_tag_slug,
         function(lambda slug: ramdb.category_by_slug[slug]),
         test(lambda category: (category.tags_slug or set()).issuperset(state.category_tags_slug or []),
-            error = N_(u'Missing required tags for category')),
+            error = N_(u'Invalid category')),
         function(lambda category: category.slug),
         )(value, state = state)
 
