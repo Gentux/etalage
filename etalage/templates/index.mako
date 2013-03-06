@@ -92,14 +92,15 @@ from etalage import conf, model, ramdb, urls
 <%
 ## Note: ``category_slug`` may be a category (and not a slug) when an error has occurred during
 ## categories_slug verification.
-categories_tag_slugs = [
+category_tags_slug_set = set([
     category_slug if isinstance(category_slug, basestring) else category_slug.slug
     for category_slug in categories_slug
-    ]
+    ])
+category_tags_slug = list(category_tags_slug_set.union(set(ctx.category_tags_slug)))
 %>
     <script>
 var etalage = etalage || {};
-etalage.categories.tags = ${categories_tag_slugs | n, js};
+etalage.categories.tags = ${category_tags_slug | n, js};
 etalage.miscUrl = ${conf['images.misc.url'] | n, js};
 etalage.territories.autocompleterUrl = ${urlparse.urljoin(conf['territoria_url'],
     '/api/v1/autocomplete-territory') | n, js};
@@ -155,7 +156,7 @@ etalage.params = ${inputs | n, js};
 <%
     child_category = False
     for category_slug in (categories_slug or []):
-        for poi_id in model.Poi.ids_by_category_slug[category_slug]:
+        for poi_id in model.Poi.ids_by_category_slug.get(category_slug, []):
             if poi_id in model.Poi.ids_by_category_slug.get(category_slug, []):
                 child_category = True
                 break
