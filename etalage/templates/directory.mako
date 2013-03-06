@@ -41,7 +41,7 @@ from etalage import model, ramdb, urls
         </div>
         % endif
     % else:
-        <h2>Annuaire ${territory.name_with_hinge}</h2>
+        <h2>Annuaire ${getattr(territory, 'name_with_hinge', 'du territoire "{0}"'.format(territory.name))}</h2>
         % if not directory:
         <div>
             <em>Aucun organisme trouvé.</em>
