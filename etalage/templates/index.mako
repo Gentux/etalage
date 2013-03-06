@@ -89,9 +89,17 @@ from etalage import conf, model, ramdb, urls
     <script src="/js/categories.js"></script>
     <script src="/js/form.js"></script>
     <script src="/js/territories.js"></script>
+<%
+## Note: ``category_slug`` may be a category (and not a slug) when an error has occurred during
+## categories_slug verification.
+categories_tag_slugs = [
+    category_slug if isinstance(category_slug, basestring) else category_slug.slug
+    for category_slug in categories_slug
+    ]
+%>
     <script>
 var etalage = etalage || {};
-etalage.categories.tags = ${categories_slug | n, js};
+etalage.categories.tags = ${categories_tag_slugs | n, js};
 etalage.miscUrl = ${conf['images.misc.url'] | n, js};
 etalage.territories.autocompleterUrl = ${urlparse.urljoin(conf['territoria_url'],
     '/api/v1/autocomplete-territory') | n, js};
