@@ -96,7 +96,7 @@ category_tags_slug_set = set([
     category_slug if isinstance(category_slug, basestring) else category_slug.slug
     for category_slug in categories_slug
     ])
-category_tags_slug = list(category_tags_slug_set.union(set(ctx.category_tags_slug)))
+category_tags_slug = list(category_tags_slug_set.union(ctx.category_tags_slug or []))
 %>
     <script>
 var etalage = etalage || {};
