@@ -27,6 +27,30 @@
 import urlparse
 
 from etalage import conf, model, ramdb, urls
+
+
+def is_category_autocompleter_empty(categories):
+    is_empty = False
+    possible_pois_id = ramdb.intersection_set(
+        model.Poi.ids_by_category_slug[category_slug]
+        for category_slug in categories
+        )
+    if possible_pois_id is not None:
+        categories_infos = sorted(
+            (-count, category_slug)
+            for count, category_slug in (
+                (
+                    len(set(model.Poi.ids_by_category_slug.get(category_slug, [])).intersection(possible_pois_id)),
+                    category_slug,
+                    )
+                for category_slug in ramdb.iter_categories_slug(tags_slug = categories)
+                if category_slug not in categories
+                )
+            if count > 0
+            )
+        if not categories_infos:
+            is_empty = True
+    return is_empty
 %>
 
 
@@ -154,27 +178,8 @@ etalage.params = ${inputs | n, js};
 
 <%def name="search_form_field_categories_slug()" filter="trim">
 <%
-    hide_category = False
     if ctx.hide_checkboxes == True:
-        possible_pois_id = ramdb.intersection_set(
-            model.Poi.ids_by_category_slug[category_slug]
-            for category_slug in (categories_slug or [])
-            )
-        if possible_pois_id is not None:
-            categories_infos = sorted(
-                (-count, category_slug)
-                for count, category_slug in (
-                    (
-                        len(set(model.Poi.ids_by_category_slug.get(category_slug, [])).intersection(possible_pois_id)),
-                        category_slug,
-                        )
-                    for category_slug in ramdb.iter_categories_slug(tags_slug = (categories_slug or []))
-                    if category_slug not in (categories_slug or [])
-                    )
-                if count > 0
-                )
-            if not categories_infos:
-                hide_category = True
+        hide_category = is_category_autocompleter_empty(ctx.base_categories_slug or [])
     else:
         hide_category = False
 %>
@@ -206,8 +211,9 @@ etalage.params = ${inputs | n, js};
                             ${category.name}</span></label>
                 % endif
             % endfor
-                        <input class="input-xlarge" id="category" name="category" type="text"\
-value="${inputs['categories_slug'][error_index] if error_index is not None else ''}">
+                        <input class="input-xlarge" id="category" name="category" type="text" \
+value="${inputs['categories_slug'][error_index] if error_index is not None else ''}" \
+${'disabled' if is_category_autocompleter_empty(categories_slug or []) else ''}>
         % elif categories_slug:
                         <input class="input-xlarge" id="category" name="category" type="text"\
 value="${inputs['categories_slug'][0] if len(inputs['categories_slug']) > 0 else ''}">
