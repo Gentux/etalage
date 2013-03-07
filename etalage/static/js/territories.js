@@ -68,4 +68,3 @@ etalage.territories = (function ($) {
         createAutocompleter: createAutocompleter
     };
 })(jQuery);
-
