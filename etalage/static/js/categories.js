@@ -60,6 +60,8 @@ etalage.categories = (function ($) {
 
         $("#search-form input[name='category'][type='checkbox']").on('change', function(event) {
             $(this).closest('label').hide();
+
+            etalage.categories.tags.splice($.inArray($(this).val(), etalage.categories.tags), 1)
         });
     }
 
