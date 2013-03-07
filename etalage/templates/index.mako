@@ -154,18 +154,31 @@ etalage.params = ${inputs | n, js};
 
 <%def name="search_form_field_categories_slug()" filter="trim">
 <%
-    child_category = False
-    for category_slug in (categories_slug or []):
-        for poi_id in model.Poi.ids_by_category_slug.get(category_slug, []):
-            if poi_id in model.Poi.ids_by_category_slug.get(category_slug, []):
-                child_category = True
-                break
-        if child_category:
-            break
+    hide_category = False
+    if ctx.hide_checkboxes == True:
+        possible_pois_id = ramdb.intersection_set(
+            model.Poi.ids_by_category_slug[category_slug]
+            for category_slug in (categories_slug or [])
+            )
+        if possible_pois_id is not None:
+            categories_infos = sorted(
+                (-count, category_slug)
+                for count, category_slug in (
+                    (
+                        len(set(model.Poi.ids_by_category_slug.get(category_slug, [])).intersection(possible_pois_id)),
+                        category_slug,
+                        )
+                    for category_slug in ramdb.iter_categories_slug(tags_slug = (categories_slug or []))
+                    if category_slug not in (categories_slug or [])
+                    )
+                if count > 0
+                )
+            if not categories_infos:
+                hide_category = True
     else:
-        ctx.hide_category = True
+        hide_category = False
 %>
-    % if model.Poi.is_search_param_visible(ctx, 'category'):
+    % if model.Poi.is_search_param_visible(ctx, 'category') and not hide_category:
 <%
         error = errors.get('categories_slug') if errors is not None else None
         if error and isinstance(error, dict):
