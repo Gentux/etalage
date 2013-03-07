@@ -1018,7 +1018,7 @@ def init_base(ctx, params):
         container_base_url = params.get('container_base_url'),
         distance = params.get('distance'),
         gadget = params.get('gadget'),
-        territories_kinds = params.getall('territories_kinds'),
+        territory_kind = params.getall('territory_kind'),
         )
 
     for param_visibility_name in model.Poi.get_visibility_params_names(ctx):
@@ -1127,7 +1127,7 @@ def init_base(ctx, params):
 
     ctx.autocompleter_territories_kinds, error = conv.uniform_sequence(conv.test_in(
         conf['autocompleter_territories_kinds'],
-        ))(inputs['territories_kinds'], state = ctx)
+        ))(inputs['territory_kind'], state = ctx)
     if error is not None:
         ctx.autocompleter_territories_kinds = conf['autocompleter_territories_kinds']
     return inputs
