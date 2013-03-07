@@ -124,7 +124,7 @@ category_tags_slug = list(category_tags_slug_set.union(ctx.category_tags_slug or
 %>
     <script>
 var etalage = etalage || {};
-etalage.categories.tags = ${category_tags_slug | n, js};
+etalage.categories.tags = ${category_tags_slug if not ctx.hide_checkboxes else ctx.base_categories_slug| n, js};
 etalage.miscUrl = ${conf['images.misc.url'] | n, js};
 etalage.territories.autocompleterUrl = ${urlparse.urljoin(conf['territoria_url'],
     '/api/v1/autocomplete-territory') | n, js};
