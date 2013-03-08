@@ -32,8 +32,9 @@ from etalage import conf, model, ramdb, urls
 def is_category_autocompleter_empty(categories):
     is_empty = False
     possible_pois_id = ramdb.intersection_set(
-        model.Poi.ids_by_category_slug[category_slug]
+        model.Poi.ids_by_category_slug.get(category_slug)
         for category_slug in categories
+        if model.Poi.ids_by_category_slug.get(category_slug)
         )
     if possible_pois_id is not None:
         categories_infos = sorted(
