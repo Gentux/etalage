@@ -129,7 +129,7 @@ def autocomplete_category(req):
                 for category_slug in ramdb.iter_categories_slug(tags_slug = data['tags_slug'], term = data['term'])
                 if category_slug not in (data['tags_slug'] or [])
                 )
-            if count > 0
+            if count > 0 and count != len(possible_pois_id)
             )
     pager = pagers.Pager(item_count = len(categories_infos), page_number = data['page_number'])
     pager.items = [

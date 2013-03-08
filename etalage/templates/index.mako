@@ -47,7 +47,7 @@ def is_category_autocompleter_empty(categories):
                 for category_slug in ramdb.iter_categories_slug(tags_slug = categories)
                 if category_slug not in categories
                 )
-            if count > 0
+            if count > 0 and count != len(possible_pois_id)
             )
         if not categories_infos:
             is_empty = True
