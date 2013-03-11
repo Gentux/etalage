@@ -1,12 +1,13 @@
-.PHONY: check pep8 pyflakes
+.PHONY: check flake8 jshint
 
-all: check
+all: clean flake8 jshint
 
-check: pep8 pyflakes
+clean:
+	find -name "*.pyc" | xargs rm -f
+	rm -rf cache/*
 
-pep8:
-	pep8 --exclude=.git,cache,docs --ignore=E251 --max-line-length  120 .
+flake8:
+	flake8 --max-line-length=120 --ignore=E123,E128,E251 etalage
 
-pyflakes:
-	rm -Rf cache/templates*/
-	pyflakes .
+jshint:
+	jshint etalage/static/js/*.js
