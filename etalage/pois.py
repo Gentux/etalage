@@ -629,7 +629,7 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
         elif sort_key == 'organism-type':
             key = lambda incompetence_distance_and_poi_triple: (
                 ([
-                    ramdb.category_by_slug.get(ramdb.category_slug_by_pivot_code.get(pivot_code)) or pivot_code
+                    ramdb.category_by_slug.get(ramdb.category_slug_by_pivot_code.get(field.value)) or field.value
                     for field in incompetence_distance_and_poi_triple[2].fields
                     if field.id == 'organism-type'
                     ] or [''])[0],
