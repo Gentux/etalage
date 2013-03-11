@@ -626,6 +626,15 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
 
         if sort_key is None:
             key = lambda incompetence_distance_and_poi_triple: incompetence_distance_and_poi_triple[:2]
+        elif sort_key == 'organism-type':
+            key = lambda incompetence_distance_and_poi_triple: (
+                ([
+                    ramdb.category_by_slug.get(ramdb.category_slug_by_pivot_code.get(pivot_code)) or pivot_code
+                    for field in incompetence_distance_and_poi_triple[2].fields
+                    if field.id == 'organism-type'
+                    ] or [''])[0],
+                incompetence_distance_and_poi_triple[1],
+                )
         else:
             key = lambda incompetence_distance_and_poi_triple: (
                 getattr(incompetence_distance_and_poi_triple[2], sort_key, None),
