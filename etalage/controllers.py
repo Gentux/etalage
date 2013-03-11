@@ -796,7 +796,7 @@ def index_directory(req):
             if poi.theme_slug is None:
                 continue
             theme_pois = directory.get(poi.theme_slug)
-            if theme_pois is not None and len(theme_pois) >= 3:
+            if theme_pois is not None and len(theme_pois) >= 3 and territory.__class__.__name__ in model.communes_kinds:
                 continue
             if filter is None:
                 if poi.competence_territories_id is None:
