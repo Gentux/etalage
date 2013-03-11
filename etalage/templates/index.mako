@@ -115,13 +115,16 @@ def is_category_autocompleter_empty(categories):
     <script src="/js/form.js"></script>
     <script src="/js/territories.js"></script>
 <%
-## Note: ``category_slug`` may be a category (and not a slug) when an error has occurred during
-## categories_slug verification.
-category_tags_slug_set = set([
-    category_slug if isinstance(category_slug, basestring) else category_slug.slug
-    for category_slug in categories_slug
-    ])
-category_tags_slug = list(category_tags_slug_set.union(ctx.category_tags_slug or []))
+if errors is not None and errors.get('categories_slug'):
+    category_tags_slug = ctx.category_tags_slug
+else:
+    ## Note: ``category_slug`` may be a category (and not a slug) when an error has occurred during
+    ## categories_slug verification.
+    category_tags_slug_set = set([
+        category_slug if isinstance(category_slug, basestring) else category_slug.slug
+        for category_slug in categories_slug
+        ])
+    category_tags_slug = list(category_tags_slug_set.union(ctx.category_tags_slug or []))
 %>
     <script>
 var etalage = etalage || {};
