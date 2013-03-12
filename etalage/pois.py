@@ -388,6 +388,8 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
             for territory_id in self.competence_territories_id:
                 self.ids_by_competence_territory_id.setdefault(territory_id, set()).add(indexed_poi_id)
             break
+        if not self.competence_territories_id:
+            self.ids_by_competence_territory_id.setdefault(None, set()).add(indexed_poi_id)
 
         poi_territories_id = set(
             territory_id
@@ -446,10 +448,12 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
         intersected_sets = []
 
         if competence_territories_id is not None:
-            territory_competent_pois_id = ramdb.union_set(
+            competence_territories_sets = [
                 cls.ids_by_competence_territory_id.get(competence_territory_id)
                 for competence_territory_id in competence_territories_id
-                )
+                ]
+            competence_territories_sets.append(cls.ids_by_competence_territory_id.get(None))
+            territory_competent_pois_id = ramdb.union_set(competence_territories_sets)
             if not territory_competent_pois_id:
                 return set()
             intersected_sets.append(territory_competent_pois_id)
