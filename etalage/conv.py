@@ -641,13 +641,17 @@ def layer_data_to_clusters(data, state = None):
             cluster.center_pois = [poi]
             clusters.append(cluster)
         if cluster.competent is False:
-            if related_territories_id is None or poi.competence_territories_id is None:
+            competence_territories_id = related_territories_id or (
+                ramdb.get_territory_related_territories_id(data['base_territory'])
+                if data.get('base_territory') is not None else None
+                )
+            if competence_territories_id is None or poi.competence_territories_id is None:
                 cluster.competent = None
-            elif not related_territories_id.isdisjoint(poi.competence_territories_id):
+            elif not competence_territories_id.isdisjoint(poi.competence_territories_id):
                 cluster.competent = True
-        elif cluster.competent is None and related_territories_id is not None \
+        elif cluster.competent is None and competence_territories_id is not None \
                 and poi.competence_territories_id is not None \
-                and not related_territories_id.isdisjoint(poi.competence_territories_id):
+                and not competence_territories_id.isdisjoint(poi.competence_territories_id):
             cluster.competent = True
     return clusters, None
 
