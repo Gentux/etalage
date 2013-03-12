@@ -760,7 +760,9 @@ def index_directory(req):
             competence_territories_id = None
             presence_territory = None
         pois_id_iter = model.Poi.iter_ids(ctx,
-            competence_territories_id = competence_territories_id,
+            competence_territories_id = competence_territories_id or (ramdb.get_territory_related_territories_id(
+                data['base_territory'],
+                ) if data.get('base_territory') is not None else None),
             presence_territory = presence_territory,
             **model.Poi.extract_non_territorial_search_data(ctx, data))
         pois = set(
@@ -945,7 +947,9 @@ def index_list(req):
             competence_territories_id = None
             presence_territory = None
         pois_id_iter = model.Poi.iter_ids(ctx,
-            competence_territories_id = competence_territories_id,
+            competence_territories_id = competence_territories_id or (ramdb.get_territory_related_territories_id(
+                data['base_territory'],
+                ) if data.get('base_territory') is not None else None),
             presence_territory = presence_territory,
             **non_territorial_search_data)
         poi_by_id = dict(
