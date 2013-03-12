@@ -241,8 +241,9 @@ def default_pois_layer_data_bbox(data, state = None):
                 presence_territory = None
                 pois_id_iter = model.Poi.iter_ids(state,
                     competence_territories_id = competence_territories_id or (
-                        ramdb.get_territory_related_territories_id(data['base_territory'])\
-                                if data.get('base_territory') is not None else None),
+                        ramdb.get_territory_related_territories_id(data['base_territory'])
+                        if data.get('base_territory') is not None else None
+                        ),
                     presence_territory = presence_territory,
                     **model.Poi.extract_non_territorial_search_data(state, data))
                 pois = [

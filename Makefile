@@ -7,7 +7,7 @@ clean:
 	rm -rf cache/*
 
 flake8:
-	flake8 --max-line-length=120 --ignore=E123,E128,E251 etalage
+	flake8 --max-line-length=120 --ignore=E123,E124,E128,E251 etalage
 
 jshint:
 	jshint etalage/static/js/*.js
