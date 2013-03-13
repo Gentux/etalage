@@ -41,7 +41,7 @@ from etalage import model, ramdb, urls
         </div>
         % endif
     % else:
-        <h2>Annuaire ${getattr(territory, 'name_with_hinge', u'du territoire "{0}"'.format(territory.name))}</h2>
+        <h4>Annuaire ${getattr(territory, 'name_with_hinge', u'du territoire "{0}"'.format(territory.name))}</h4>
         % if not directory:
         <div>
             <em>Aucun organisme trouvé.</em>
@@ -60,11 +60,11 @@ from etalage import model, ramdb, urls
                         )
                     url_args['category'] = category.name
 %>\
-            <h3>
+            <h5>
                 ${category.name}
                 <small>(<a class="internal" href="${urls.get_url(ctx, 'carte', **url_args)}">carte</a>,
                 <a class="internal" href="${urls.get_url(ctx, 'liste', **url_args)}">liste</a>)</small>
-            </h3>
+            </h5>
             <ul>
                     % for poi in pois:
                 <li>
