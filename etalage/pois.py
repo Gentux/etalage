@@ -619,7 +619,16 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
     def sort_and_paginate_pois_list(cls, ctx, pager, poi_by_id, related_territories_id = None, territory = None,
             sort_key = None, **other_search_data):
         if territory is None:
-            key = lambda poi: strings.slugify(getattr(poi, sort_key, poi.name) if sort_key is not None else poi.name)
+            if sort_key is not None and sort_key == 'organism-type':
+                key = lambda poi: ([
+                    ramdb.category_by_slug.get(ramdb.category_slug_by_pivot_code.get(field.value)) or field.value
+                    for field in poi.fields
+                    if field.id == 'organism-type'
+                    ] or [''])[0]
+            else:
+                key = lambda poi: strings.slugify(
+                    getattr(poi, sort_key, poi.name) if sort_key is not None else poi.name
+                    )
             pois = sorted(poi_by_id.itervalues(), key = key)
             return [
                 poi

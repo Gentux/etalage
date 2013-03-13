@@ -965,8 +965,10 @@ def index_list(req):
             ctx,
             pager,
             poi_by_id,
-            related_territories_id = related_territories_id,
-            territory = territory,
+            related_territories_id = related_territories_id or (
+                ramdb.get_territory_related_territories_id(data['base_territory'])
+                if data.get('base_territory') else None),
+            territory = territory or data.get('base_territory'),
             sort_key = data['sort_key'],
             **non_territorial_search_data
             )
