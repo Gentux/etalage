@@ -1022,6 +1022,7 @@ def init_base(ctx, params):
         base_territory = params.get('base_territory'),
         category_tag = params.getall('category_tag'),
         container_base_url = params.get('container_base_url'),
+        custom_css_url = params.get('custom_css'),
         distance = params.get('distance'),
         gadget = params.get('gadget'),
         territory_kind = params.getall('territory_kind'),
@@ -1122,6 +1123,14 @@ def init_base(ctx, params):
             raise wsgihelpers.not_found(ctx, body = htmlhelpers.modify_html(ctx, templates.render(ctx,
                 '/error-unknown-territory.mako', territory_code = ctx.subscriber.territory['code'],
                 territory_kind = ctx.subscriber.territory['kind'])))
+
+    ctx.custom_css_url, error = conv.pipe(
+        conv.cleanup_line,
+        conv.empty_to_none,
+        conv.make_input_to_url(),
+        )(inputs['custom_css_url'], state = ctx)
+    if error is not None:
+        ctx.custom_css_url = None
 
     ctx.distance, error = conv.pipe(
         conv.input_to_float,

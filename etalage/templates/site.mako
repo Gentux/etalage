@@ -55,6 +55,9 @@ from etalage import conf
     <link rel="stylesheet" href="/css/standalone.css">
     <link rel="stylesheet" href="/css/responsive.css">
     % endif
+    % if getattr(ctx, 'custom_css_url', None):
+    <link rel="stylesheet" href="${ctx.custom_css_url}">
+    % endif
 </%def>
 
 
