@@ -43,7 +43,7 @@ from etalage import conf, model, urls
 
 <%def name="results()" filter="trim">
     <div class="well" id="map" style="height: 400px;"></div>
-
+    % if not getattr(ctx, 'hide_legend', False):
     <div class="legend-text well">
         <p><strong>Légende</strong> :</p>
         <ul class="unstyled">
@@ -74,6 +74,7 @@ src="${conf['images.markers.url'].rstrip('/')}/map-icons-collection-2.0/icons/ho
             </li>
         </ul>
     </div>
+    % endif
 </%def>
 
 
