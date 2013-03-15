@@ -1112,17 +1112,13 @@ def init_base(ctx, params):
     if ctx.subscriber is not None:
         subscriber_territory = ctx.subscriber.territory
         if subscriber_territory._id not in ctx.base_territory.ancestors_id:
-            raise wsgihelpers.not_found(ctx, body = htmlhelpers.modify_html(ctx, templates.render(ctx,
-                '/error-invalid-territory.mako', parent_territory = subscriber_territory,
-                territory = ctx.base_territory)))
+            return wsgihelpers.not_found(ctx, explanation = ctx._(u'Unknown territory'))
     if ctx.base_territory is None and ctx.subscriber is not None and ctx.subscriber.territory is not None:
-        ctx.base_territory = Territory.get_variant_class(
+        ctx.base_territory = model.Territory.get_variant_class(
             ctx.subscriber.territory['kind']).get(ctx.subscriber.territory['code']
             )
         if ctx.base_territory is None:
-            raise wsgihelpers.not_found(ctx, body = htmlhelpers.modify_html(ctx, templates.render(ctx,
-                '/error-unknown-territory.mako', territory_code = ctx.subscriber.territory['code'],
-                territory_kind = ctx.subscriber.territory['kind'])))
+            return wsgihelpers.not_found(ctx, explanation = ctx._(u'Unknown territory'))
 
     ctx.custom_css_url, error = conv.pipe(
         conv.cleanup_line,

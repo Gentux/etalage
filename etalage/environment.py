@@ -95,7 +95,7 @@ def load_environment(global_conf, app_conf):
             u'data_email': conv.pipe(
                 conv.function(lambda lines: lines.split(u',')),
                 conv.uniform_sequence(
-                        conv.input_to_email,
+                    conv.input_to_email,
                     ),
                 ),
             u'database': conv.default('souk'),
