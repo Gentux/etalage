@@ -240,6 +240,9 @@ def ramdb_based(controller):
                         existing = {}
                         find_existing(model.Poi, 'ids_by_category_slug', 'dict_of_sets', id, existing)
                         find_existing(model.Poi, 'ids_by_competence_territory_id', 'dict_of_sets', id, existing)
+                        find_existing(model.Poi, 'ids_by_begin_datetime', 'dict_of_sets', id, existing)
+                        find_existing(model.Poi, 'ids_by_end_datetime', 'dict_of_sets', id, existing)
+                        find_existing(model.Poi, 'ids_by_last_update_datetime', 'dict_of_sets', id, existing)
                         find_existing(model.Poi, 'ids_by_parent_id', 'dict_of_sets', id, existing)
                         find_existing(model.Poi, 'ids_by_presence_territory_id', 'dict_of_sets', id, existing)
                         find_existing(model.Poi, 'ids_by_word', 'dict_of_sets', id, existing)

@@ -27,6 +27,7 @@
 
 
 from copy import copy
+import datetime
 import itertools
 import logging
 import math
@@ -269,6 +270,9 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
     geo = None
     ids_by_category_slug = {}
     ids_by_competence_territory_id = {}
+    ids_by_begin_datetime = []
+    ids_by_end_datetime = []
+    ids_by_last_update_datetime = []
     ids_by_parent_id = {}  # class attribute
     ids_by_presence_territory_id = {}
     ids_by_word = {}
@@ -374,6 +378,20 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
         for category_slug in (metadata.get('categories-index') or set()):
             self.ids_by_category_slug.setdefault(category_slug, set()).add(indexed_poi_id)
 
+        if conf['index.date.field']:
+            for date_range_index, date_range_metadata in enumerate(metadata.get('date-range') or []):
+                if date_range_metadata['label'] == conf['index.date.field']:
+                    date_range_values = poi_bson['date-range'][date_range_index]
+                    date_range_begin = date_range_values.get('date-range-begin', [None])[0]
+                    date_range_end = date_range_values.get('date-range-end', [None])[0]
+
+                    self.ids_by_begin_datetime.append((date_range_begin, indexed_poi_id))
+                    self.ids_by_end_datetime.append((date_range_end, indexed_poi_id))
+            if not metadata.get('date-range'):
+                self.ids_by_begin_datetime.append((None, indexed_poi_id))
+                self.ids_by_end_datetime.append((None, indexed_poi_id))
+        self.ids_by_last_update_datetime.append((self.last_update_datetime, indexed_poi_id))
+
         for i, territory_metadata in enumerate(metadata.get('territories') or []):
             # Note: Don't fail when territory doesn't exist, because Etalage can be configured to ignore some kinds
             # of territories (cf conf['territories_kinds']).
@@ -414,6 +432,18 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
             cls.indexed_ids.add(self._id)
             self.index(self._id)
             del self.bson
+        if conf['index.date.field']:
+            cls.ids_by_begin_datetime = sorted(
+                cls.ids_by_begin_datetime,
+                key = lambda t: t[0] or datetime.datetime(datetime.MINYEAR, 1, 1),
+                )
+            cls.ids_by_end_datetime = sorted(
+                cls.ids_by_end_datetime,
+                key = lambda t: t[0] or datetime.datetime(datetime.MAXYEAR, 1, 1),
+                reverse = True
+                )
+
+        cls.ids_by_last_update_datetime = sorted(cls.ids_by_last_update_datetime, key = lambda t: t[0], reverse = True)
 
     @classmethod
     def is_search_param_visible(cls, ctx, name):
@@ -470,6 +500,22 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
                 if not category_pois_id:
                     return set()
                 intersected_sets.append(category_pois_id)
+
+        if conf['index.date.field']:
+            current_datetime = datetime.datetime.utcnow()
+            ids_by_begin_datetime_set = set()
+            for poi_begin_datetime, poi_id in cls.ids_by_begin_datetime:
+                if poi_begin_datetime is None or current_datetime >= poi_begin_datetime:
+                    ids_by_begin_datetime_set.add(poi_id)
+                else:
+                    break
+            ids_by_end_datetime_set = set()
+            for poi_end_datetime, poi_id in cls.ids_by_end_datetime:
+                if poi_end_datetime is None or current_datetime <= poi_end_datetime:
+                    ids_by_end_datetime_set.add(poi_id)
+                else:
+                    break
+            intersected_sets.append(ramdb.intersection_set([ids_by_begin_datetime_set, ids_by_end_datetime_set]))
 
         # We should filter on term *after* having looked for competent organizations. Otherwise, when no organization
         # matching term is found, the nearest organizations will be used even when there are competent organizations
