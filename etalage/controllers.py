@@ -1140,16 +1140,12 @@ def init_base(ctx, params):
     if error is not None:
         raise wsgihelpers.bad_request(ctx, explanation = ctx._('Distance Error: {0}').format(error))
 
-    ctx.autocompleter_territories_kinds, errors = conv.uniform_sequence(
-        conv.test_in(conf['autocompleter_territories_kinds'])
-        )(inputs['territory_kind'], state = ctx)
-    if errors is not None:
-        autocompleter_territories_kinds = [
-            territory_kind
-            for index, territory_kind in enumerate(ctx.autocompleter_territories_kinds)
-            if index not in errors
-            ]
-        ctx.autocompleter_territories_kinds = autocompleter_territories_kinds or conf['autocompleter_territories_kinds']
+    ctx.autocompleter_territories_kinds = [
+        territory_kind
+        for territory_kind in inputs['territory_kind']
+        if territory_kind in conf['autocompleter_territories_kinds']
+        ] or conf['autocompleter_territories_kinds']
+
     return inputs
 
 
