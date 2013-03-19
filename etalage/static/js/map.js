@@ -196,7 +196,12 @@ etalage.map = (function ($) {
                 });
                 if (typeof etalage.rpc !== "undefined" && etalage.rpc !== null) {
                     $('a.internal').on('click', function (e) {
-                        etalage.rpc.requestNavigateTo($(this).attr('href'));
+                        var path = $(this).attr('href');
+                        if (path.search(/\/organismes\//) !== 0) {
+                            relative_path_index = path.search(/\/organismes\//);
+                            path = path.substr(relative_path_index);
+                        }
+                        etalage.rpc.requestNavigateTo(path);
                         return false;
                     });
                 }
