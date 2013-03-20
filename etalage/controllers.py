@@ -850,7 +850,7 @@ def index_directory(req):
                         round(
                             math.sin(math.radians(poi.geo[0])) * territory_latitude_sin
                             + math.cos(math.radians(poi.geo[0])) * territory_latitude_cos
-                                * math.cos(math.radians(poi.geo[1] - territory.geo[1])),
+                            * math.cos(math.radians(poi.geo[1] - territory.geo[1])),
                             13,
                             )
                         ),

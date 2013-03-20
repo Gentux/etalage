@@ -616,7 +616,7 @@ def layer_data_to_clusters(data, state = None):
                     round(
                         math.sin(math.radians(poi.geo[0])) * center_latitude_sin
                         + math.cos(math.radians(poi.geo[0])) * center_latitude_cos
-                            * math.cos(math.radians(poi.geo[1] - center_longitude)),
+                        * math.cos(math.radians(poi.geo[1] - center_longitude)),
                         13,
                     )) if poi.geo is not None else (sys.float_info.max, poi),
                 # POI
@@ -843,7 +843,7 @@ def test_territory_in_base_territory(data, state = None):
     if state is None:
         state = default_state
     if not data.get('base_territory') or \
-        data.get('territory') and data['base_territory']._id in data['territory'].ancestors_id:
+            data.get('territory') and data['base_territory']._id in data['territory'].ancestors_id:
         return data, None
     if not data.get('territory'):
         return data, None
