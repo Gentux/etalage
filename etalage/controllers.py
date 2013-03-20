@@ -545,6 +545,74 @@ def export_geographical_coverage_excel(req):
 
 @wsgihelpers.wsgify
 @ramdb.ramdb_based
+def feed(req):
+    ctx = contexts.Ctx(req)
+
+    params = req.GET
+    inputs = init_base(ctx, params)
+    inputs.update(model.Poi.extract_search_inputs_from_params(ctx, params))
+
+    data, errors = conv.inputs_to_atom_feed_data(inputs, state = ctx)
+    non_territorial_search_data = model.Poi.extract_non_territorial_search_data(ctx, data)
+    if errors is not None:
+        pager = None
+    else:
+        filter = data['filter']
+        territory = data['territory']
+        related_territories_id = ramdb.get_territory_related_territories_id(territory) \
+            if territory is not None else None
+        if filter == 'competence':
+            competence_territories_id = related_territories_id
+            presence_territory = None
+        elif filter == 'presence':
+            competence_territories_id = None
+            presence_territory = territory
+        else:
+            competence_territories_id = None
+            presence_territory = None
+        pois_id_iter = model.Poi.iter_ids(ctx,
+            competence_territories_id = competence_territories_id or (ramdb.get_territory_related_territories_id(
+                data['base_territory'],
+                ) if data.get('base_territory') is not None else None),
+            presence_territory = presence_territory,
+            **non_territorial_search_data)
+        poi_by_id = dict(
+            (poi._id, poi)
+            for poi in (
+                model.Poi.instance_by_id.get(poi_id)
+                for poi_id in pois_id_iter
+                )
+            if poi is not None
+            )
+        pager = pagers.Pager(item_count = len(poi_by_id), page_number = 1)
+        pager.items = model.Poi.sort_and_paginate_pois_list(
+            ctx,
+            pager,
+            poi_by_id,
+            related_territories_id = related_territories_id or (
+                ramdb.get_territory_related_territories_id(data['base_territory'])
+                if data.get('base_territory') else None),
+            territory = territory or data.get('base_territory'),
+            sort_key = 'last_update_datetime',
+            **non_territorial_search_data
+            )
+        data['feed_id'] = urls.get_full_url(ctx, **inputs)
+        data['feed_url'] = data['feed_id']
+        data['feed_updated'] = pager.items[0].last_update_datetime if pager.items else datetime.datetime.utcnow()
+        data['author_name'] = u"Easter-eggs"
+        data['author_email'] = conf['email_to']
+
+    req.response.content_type = 'application/atom+xml; charset=utf-8'
+    return templates.render(ctx, '/feed-atom.mako',
+        data = data,
+        errors = errors,
+        inputs = inputs,
+        pager = pager,
+        **non_territorial_search_data)
+
+
+@wsgihelpers.wsgify
+@ramdb.ramdb_based
 def geographical_coverage_csv(req):
     ctx = contexts.Ctx(req)
 
@@ -1195,6 +1263,7 @@ def make_router():
         ('GET', '^/export/annuaire/kml/?$', export_directory_kml),
         ('GET', '^/export/couverture/csv/?$', export_geographical_coverage_csv),
         ('GET', '^/export/couverture/excel/?$', export_geographical_coverage_excel),
+        ('GET', '^/feed/?$', feed),
         ('GET', '^/fragment/organismes/(?P<poi_id>[a-z0-9]{24})/?$', poi_embedded),
         ('GET', '^/fragment/organismes/(?P<slug>[^/]+)/(?P<poi_id>[a-z0-9]{24})/?$', poi_embedded),
         ('GET', '^/gadget/?$', index_gadget),

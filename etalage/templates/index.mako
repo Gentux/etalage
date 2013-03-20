@@ -148,19 +148,37 @@ etalage.params = ${inputs | n, js};
     etalage.territories.createAutocompleter($('#territory'));
     etalage.form.initSearchForm({
         error: ${errors is not None | n, js},
-        isGadget: ${ctx.container_base_url is not None and ctx.gadget_id is not None | n, js}
+        isGadget: ${ctx.container_base_url is not None and ctx.gadget_id is not None | n, js},
+        searchForm: $('#search-form')
     });
 </%def>
 
 
 <%def name="search_form()" filter="trim">
-        <p class="toggle-search-form">
-            <button class="btn btn-primary btn-search-form" data-toggle="collapse" data-target="#search-form-collapse">
-                Rechercher
-                <i class="icon-plus-sign icon-white"> </i>
-            </button>
-        </p>
 
+        <div class="toolbar">
+            <div class="toggle-search-form">
+                <button class="btn btn-primary btn-search-form" data-toggle="collapse" data-target="#search-form-collapse">
+                    ${_('Search')}
+                    <i class="icon-plus-sign icon-white"> </i>
+                </button>
+<%
+    url_args = dict(
+        (model.Poi.rename_input_to_param(name), value)
+        for name, value in inputs.iteritems()
+        if name != 'page' and name not in model.Poi.get_visibility_params_names(ctx) and value is not None
+        )
+    url_args.update({
+        'container_base_url': ctx.container_base_url,
+        'gadget': ctx.gadget_id,
+        })
+%>\
+                <a class="btn btn-warning btn-search-form" href="${urls.get_url(ctx, 'feed', **url_args)}" rel="external" \
+title="${_('RSS Feed')}">
+                    <i class="icon-feed"></i>
+                </a>
+            </div>
+        </div>
 
         <div class="collapse in" id="search-form-collapse">
             <form action="${urls.get_url(ctx, mode)}" class="form-horizontal internal" id="search-form" method="get">
@@ -172,6 +190,10 @@ etalage.params = ${inputs | n, js};
                             <button class="btn btn-primary" type="submit">
                                 <i class="icon-search icon-white"></i> ${_('Search')}
                             </button>
+                            <a class="btn btn-warning btn-atom-feed" href="${urls.get_url(ctx, 'feed', **url_args)}" \
+rel="external" title="${_('RSS Feed')}">
+                                <i class="icon-feed"></i>
+                            </a>
                         </div>
                     </div>
                 </fieldset>

@@ -60,6 +60,9 @@ from etalage import conf
     % endif
 </%def>
 
+<%def name="feeds()" filter="trim">
+    <link rel="alternate" type="application/atom+xml" href="/feed">
+</%def>
 
 <%def name="footer()" filter="trim">
         <footer class="footer">
@@ -192,6 +195,7 @@ $(function () {
 <head>
     <%self:metas/>
     <title>${self.title_content()}</title>
+    <%self:feeds/>
     <%self:css/>
     <%self:scripts/>
     <%self:scripts_domready/>

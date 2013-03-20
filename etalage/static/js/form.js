@@ -30,13 +30,21 @@ etalage.form = (function ($) {
         if (! options.error) {
             $(".collapse").collapse();
             $("button.btn-search-form").on("click", function() {
-                $(this).hide();
+                $(".btn-search-form").hide();
                 if (options.isGadget) {
                     adjustFrameHeight(5);
                 }
             });
+
+            $("a.btn-atom-feed").on("click", function (event) {
+                $searchForm = options.searchForm || $(this).closest('form');
+                feed_url = $(this).attr("href");
+                if (feed_url.search(/\?/) > 0) {
+                    $(this).attr("href", feed_url.substr(0, feed_url.search(/\?/)) + '?' + $searchForm.serialize());
+                }
+            });
         } else {
-            $("button.btn-search-form").hide();
+            $(".btn-search-form").hide();
         }
     }
 

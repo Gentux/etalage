@@ -341,6 +341,28 @@ def input_to_tag_slug(value, state = None):
         )(value, state = state)
 
 
+def inputs_to_atom_feed_data(inputs, state = None):
+    from . import model
+    if state is None:
+        state = default_state
+    return pipe(
+        merge(
+            model.Poi.make_inputs_to_search_data(),
+            struct(
+                dict(
+                    sort_key = pipe(
+                        cleanup_line,
+                        test_in(['last_update_datetime']),
+                        ),
+                    ),
+                default = 'drop',
+                keep_none_values = True,
+                ),
+            ),
+        set_default_filter,
+        )(inputs, state = state)
+
+
 def inputs_to_geographical_coverage_csv_infos(inputs, state = None):
     from . import model, ramdb
     if state is None:

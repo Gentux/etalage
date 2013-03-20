@@ -12,14 +12,22 @@ span.loading img{
     width: 30px;
 }
 
-.toggle-search-form {
+.toolbar {
     position: relative;
+    margin: 10px 0 0 0;
 }
-.btn-search-form {
+.toggle-search-form {
     position: absolute;
-    top: 10px;
-    right: 5px;
+    margin-left: 10px;
+    text-align: right;
+    right: 0;
 }
+.icon-feed {
+    background: url("../images/feed-icons.png") no-repeat scroll 0 0 transparent;
+    opacity: 0.65;
+    width: 16px;
+}
+
 .jaccede-field-label {
     text-decoration: underline;
     padding-top: 20px;

@@ -32,13 +32,15 @@ import itertools
 import logging
 import math
 import sys
+import urlparse
+import urllib
 
 import bson
 from biryani import strings
 from suq import monpyjama, representations
 import webob.multidict
 
-from . import conf, conv, ramdb
+from . import conf, conv, ramdb, urls
 
 
 __all__ = ['Cluster', 'Field', 'get_first_field', 'iter_fields', 'Poi', 'pop_first_field']
@@ -351,6 +353,24 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
     def get_first_field(self, id, label = None):
         return get_first_field(self.fields, id, label = label)
 
+    def get_full_url(self, ctx, params_prefix = 'cmq_'):
+        if ctx.container_base_url is None:
+            return urls.get_full_url(ctx, 'organismes', self.slug, self._id)
+        else:
+            parsed_container_base_url = urlparse.urlparse(ctx.container_base_url)
+            params = dict([
+                ('{0}path'.format(params_prefix), urls.get_url(ctx, 'organismes', self.slug, self._id))
+                ])
+            params.update(dict(urlparse.parse_qsl(parsed_container_base_url.query)))
+            return urlparse.urljoin(
+                '{0}://{1}{2}'.format(
+                    parsed_container_base_url.scheme,
+                    parsed_container_base_url.netloc,
+                    parsed_container_base_url.path
+                    ),
+                '?{0}#{0}'.format(urllib.urlencode(params)),
+                )
+
     @classmethod
     def get_search_param_visibility_name(cls, ctx, name):
         return 'show_{0}'.format(name) if name == 'filter' else 'hide_{0}'.format(name)
@@ -662,8 +682,8 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
         return strings.slugify(self.name)
 
     @classmethod
-    def sort_and_paginate_pois_list(cls, ctx, pager, poi_by_id, related_territories_id = None, territory = None,
-            sort_key = None, **other_search_data):
+    def sort_and_paginate_pois_list(cls, ctx, pager, poi_by_id, related_territories_id = None, reverse = False,
+            territory = None, sort_key = None, **other_search_data):
         if territory is None:
             if sort_key is not None and sort_key == 'organism-type':
                 key = lambda poi: ([
@@ -671,11 +691,14 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
                     for field in poi.fields
                     if field.id == 'organism-type'
                     ] or [''])[0]
+            elif sort_key is not None and sort_key == 'last_update_datetime':
+                key = lambda poi: getattr(poi, sort_key, poi.name) if sort_key is not None else poi.name
+                reverse = True
             else:
                 key = lambda poi: strings.slugify(
                     getattr(poi, sort_key, poi.name) if sort_key is not None else poi.name
                     )
-            pois = sorted(poi_by_id.itervalues(), key = key)
+            pois = sorted(poi_by_id.itervalues(), key = key, reverse = reverse)
             return [
                 poi
                 for poi in itertools.islice(pois, pager.first_item_index, pager.last_item_number)
@@ -719,6 +742,7 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
                 for poi in poi_by_id.itervalues()
                 ),
             key = key,
+            reverse = reverse,
             )
         return [
             poi
