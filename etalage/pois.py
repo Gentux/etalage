@@ -305,11 +305,8 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
 
     @classmethod
     def extract_non_territorial_search_data(cls, ctx, data):
-        categories_slug = copy(ctx.base_categories_slug or [])
-        if data['categories_slug'] is not None:
-            categories_slug.extend(data['categories_slug'])
         return dict(
-            categories_slug = categories_slug,
+            categories_slug = data['categories_slug'],
             term = data['term'],
             )
 
@@ -513,6 +510,16 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
             if not territory_present_pois_id:
                 return set()
             intersected_sets.append(territory_present_pois_id)
+
+        if ctx.base_categories_slug is not None:
+            base_categories_sets = []
+            base_categories_slug = copy(ctx.base_categories_slug or [])
+            for category_slug in set(base_categories_slug or []):
+                if category_slug is not None:
+                    category_pois_id = cls.ids_by_category_slug.get(category_slug)
+                    if category_pois_id:
+                        base_categories_sets.append(category_pois_id)
+            intersected_sets.append(ramdb.union_set(base_categories_sets))
 
         for category_slug in set(categories_slug or []):
             if category_slug is not None:

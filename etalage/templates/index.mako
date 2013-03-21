@@ -117,7 +117,7 @@ def is_category_autocompleter_empty(categories):
 <%
 if errors is not None and errors.get('categories_slug'):
     category_tags_slug = ctx.category_tags_slug
-else:
+elif categories_slug:
     ## Note: ``category_slug`` may be a category (and not a slug) when an error has occurred during
     ## categories_slug verification.
     category_tags_slug_set = set([
@@ -125,6 +125,8 @@ else:
         for category_slug in categories_slug
         ])
     category_tags_slug = list(category_tags_slug_set.union(ctx.category_tags_slug or []))
+else:
+    category_tags_slug = []
 %>
     <script>
 var etalage = etalage || {};
