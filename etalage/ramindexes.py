@@ -56,7 +56,7 @@ def find_existing(indexes, index_name, index_type, value, existing):
 
 def find_value_in_dict_of_sets(index, value):
     found_keys = []
-    for key, key_values in (index.iteritems() if isinstance(index, dict) else index):
+    for key, key_values in index.iteritems():
         if value in key_values:
             found_keys.append(key)
     return found_keys or None
@@ -65,6 +65,14 @@ def find_value_in_dict_of_sets(index, value):
 def find_value_in_dict_of_values(index, value):
     found_keys = []
     for key, key_value in index.iteritems():
+        if value == key_value:
+            found_keys.append(key)
+    return found_keys or None
+
+
+def find_value_in_list_of_tuples(index, value):
+    found_keys = []
+    for key, key_value in index:
         if value == key_value:
             found_keys.append(key)
     return found_keys or None
@@ -97,4 +105,5 @@ def union_set(iterables):
 find_value_functions = {
     'dict_of_sets': find_value_in_dict_of_sets,
     'dict_of_values': find_value_in_dict_of_values,
+    'list_of_tuples': find_value_in_list_of_tuples,
     }
