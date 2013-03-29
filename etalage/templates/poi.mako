@@ -30,7 +30,7 @@ import feedparser
 import markupsafe
 from biryani import strings
 
-from etalage import conf, model, ramdb, urls
+from etalage import conf, conv, model, ramdb, urls
 %>\
 
 
@@ -43,7 +43,7 @@ from etalage import conf, model, ramdb, urls
 
     accessibility_fields = []
     for field in fields[:]:
-        if field.label.endswith(u'[Accessibilité]'):
+        if conv.check(conv.test_isinstance(basestring))(field.label) and field.label.endswith(u'[Accessibilité]'):
             field_attributes = field.__dict__.copy()
             field_attributes['label'] = field.label[:-len(u'[Accessibilité]')].rstrip()
             new_field = model.Field(**field_attributes)
