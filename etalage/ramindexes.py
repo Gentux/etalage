@@ -56,7 +56,7 @@ def find_existing(indexes, index_name, index_type, value, existing):
 
 def find_value_in_dict_of_sets(index, value):
     found_keys = []
-    for key, key_values in index.iteritems():
+    for key, key_values in (index.iteritems() if isinstance(index, dict) else index):
         if value in key_values:
             found_keys.append(key)
     return found_keys or None
