@@ -43,6 +43,13 @@ def delete_remaining(indexes, remaining):
                 for value, keys in remaining_for_index.iteritems():
                     for key in keys:
                         del index[key]
+        elif index_type == 'list_of_tuples':
+            for index_name, remaining_for_index in remaining_for_type.iteritems():
+                index = getattr(indexes, index_name)
+                for value, keys in remaining_for_index.iteritems():
+                    for key in keys:
+                        key_index = index.index((key, value))
+                        del index[key_index]
         else:
             raise KeyError(index_type)
 
