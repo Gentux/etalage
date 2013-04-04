@@ -555,7 +555,7 @@ def feed(req):
     data, errors = conv.inputs_to_atom_feed_data(inputs, state = ctx)
     non_territorial_search_data = model.Poi.extract_non_territorial_search_data(ctx, data)
     if errors is not None:
-        pager = None
+        return wsgihelpers.bad_request(ctx, explanation = ctx._('Error: {0}').format(errors))
     else:
         filter = data['filter']
         territory = data['territory']
