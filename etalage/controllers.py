@@ -1096,29 +1096,6 @@ def init_base(ctx, params):
         territory_kind = params.getall('territory_kind'),
         )
 
-    for param_visibility_name in model.Poi.get_visibility_params_names(ctx):
-        inputs[param_visibility_name] = conf.get(param_visibility_name) or params.get(param_visibility_name)
-        param_visibility, error = conv.pipe(
-            conv.guess_bool,
-            conv.default(False),
-            )(inputs[param_visibility_name], state = ctx)
-        if error is not None:
-            raise wsgihelpers.bad_request(ctx, explanation = ctx._('Error for "{0}" parameter: {1}').format(
-                param_visibility_name, error))
-        setattr(ctx, param_visibility_name, param_visibility)
-
-    ctx.base_categories_slug, error = conv.uniform_sequence(
-        conv.input_to_tag_slug,
-        )(inputs['base_category'], state = ctx)
-    if error is not None:
-        raise wsgihelpers.bad_request(ctx, explanation = ctx._('Base Categories Error: {0}').format(error))
-
-    ctx.category_tags_slug, error = conv.uniform_sequence(
-        conv.input_to_tag_slug,
-        )(inputs['category_tag'], state = ctx)
-    if error is not None:
-        raise wsgihelpers.bad_request(ctx, explanation = ctx._('Category Tags Error: {0}').format(error))
-
     container_base_url = inputs['container_base_url'] or None
 #    if container_base_url is None:
 #        container_hostname = None
@@ -1170,6 +1147,29 @@ def init_base(ctx, params):
 #             container_hostname = urlparse.urlsplit(container_base_url).hostname or None
     ctx.container_base_url = container_base_url
     ctx.gadget_id = gadget_id
+
+    for param_visibility_name in model.Poi.get_visibility_params_names(ctx):
+        inputs[param_visibility_name] = conf.get(param_visibility_name) or params.get(param_visibility_name)
+        param_visibility, error = conv.pipe(
+            conv.guess_bool,
+            conv.default(False),
+            )(inputs[param_visibility_name], state = ctx)
+        if error is not None:
+            raise wsgihelpers.bad_request(ctx, explanation = ctx._('Error for "{0}" parameter: {1}').format(
+                param_visibility_name, error))
+        setattr(ctx, param_visibility_name, param_visibility)
+
+    ctx.base_categories_slug, error = conv.uniform_sequence(
+        conv.input_to_tag_slug,
+        )(inputs['base_category'], state = ctx)
+    if error is not None:
+        raise wsgihelpers.bad_request(ctx, explanation = ctx._('Base Categories Error: {0}').format(error))
+
+    ctx.category_tags_slug, error = conv.uniform_sequence(
+        conv.input_to_tag_slug,
+        )(inputs['category_tag'], state = ctx)
+    if error is not None:
+        raise wsgihelpers.bad_request(ctx, explanation = ctx._('Category Tags Error: {0}').format(error))
 
     ctx.base_territory, error = conv.input_to_postal_distribution_to_geolocated_territory(
         inputs['base_territory'],
