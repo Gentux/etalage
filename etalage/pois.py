@@ -702,9 +702,7 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
                 key = lambda poi: getattr(poi, sort_key, poi.name) if sort_key is not None else poi.name
                 reverse = True
             else:
-                key = lambda poi: strings.slugify(
-                    getattr(poi, sort_key, poi.name) if sort_key is not None else poi.name
-                    )
+                key = lambda poi: getattr(poi, sort_key, poi.name) if sort_key is not None else poi.name
             pois = sorted(poi_by_id.itervalues(), key = key, reverse = reverse)
             return [
                 poi
