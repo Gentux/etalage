@@ -84,7 +84,7 @@ def is_category_autocompleter_empty(categories):
         (u'liste', u'Liste', ctx.hide_list),
         (u'annuaire', u'Annuaire', ctx.hide_directory),
         (u'gadget', u'Partage', ctx.hide_gadget),
-        (u'export', u'Export', ctx.hide_export),
+        (u'export', u'Téléchargement', ctx.hide_export),
         )
     if len([mode_info[2] for mode_info in modes_infos if mode_info[2] is False]) <= 1:
         return ''
