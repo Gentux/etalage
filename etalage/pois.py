@@ -286,6 +286,7 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
     parent_id = None
     postal_distribution_str = None
     schema_name = None
+    slug_by_id = {}
     street_address = None
     theme_slug = None
 
@@ -302,6 +303,7 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
         cls.ids_by_competence_territory_id.clear()
         cls.ids_by_presence_territory_id.clear()
         cls.ids_by_word.clear()
+        cls.slug_by_id.clear()
 
     @classmethod
     def extract_non_territorial_search_data(cls, ctx, data):
@@ -440,6 +442,7 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
 
         for word in strings.slugify(self.name).split(u'-'):
             self.ids_by_word.setdefault(word, set()).add(indexed_poi_id)
+        self.slug_by_id[indexed_poi_id] = strings.slugify(self.name)
 
     @classmethod
     def index_pois(cls):
@@ -701,8 +704,11 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
             elif sort_key is not None and sort_key == 'last_update_datetime':
                 key = lambda poi: getattr(poi, sort_key, poi.name) if sort_key is not None else poi.name
                 reverse = True
+            elif sort_key == 'name':
+                key = lambda poi: Poi.slug_by_id.get(poi._id)
             else:
-                key = lambda poi: getattr(poi, sort_key, poi.name) if sort_key is not None else poi.name
+                key = lambda poi: getattr(poi, sort_key, Poi.slug_by_id.get(poi._id)) \
+                        if sort_key is not None else Poi.slug_by_id.get(poi._id)
             pois = sorted(poi_by_id.itervalues(), key = key, reverse = reverse)
             return [
                 poi
