@@ -100,62 +100,44 @@ from etalage import conf, conv, model, ramdb, urls
 
 <%def name="results_table()" filter="trim">
 <%
-        data, errors = conv.inputs_to_pois_list_data(inputs, state = ctx)
+    data, errors = conv.inputs_to_pois_list_data(inputs, state = ctx)
+    competence_territories_id = ramdb.get_territory_related_territories_id(
+        data['territory']
+        ) if data.get('territory') is not None else None
+    if competence_territories_id is None:
         competence_territories_id = ramdb.get_territory_related_territories_id(
-            data['territory']
-            ) if data.get('territory') is not None else None
-        if competence_territories_id is None:
-            competence_territories_id = ramdb.get_territory_related_territories_id(
-                data['base_territory'],
-                ) if data.get('base_territory') is not None else None
+            data['base_territory'],
+            ) if data.get('base_territory') is not None else None
 %>
         <table class="table table-bordered table-condensed table-striped">
             <thead>
                 <tr>
 <%
-        url_args = dict(
-            (model.Poi.rename_input_to_param(name), value)
-            for name, value in inputs.iteritems()
-            if name != 'page' and name not in model.Poi.get_visibility_params_names(ctx) and value is not None
-            )
-        url_args['sort_key'] = ''
-        icon_class = 'icon-list' if inputs['sort_key'] is not None else 'icon-chevron-down'
+    url_args = dict(
+        (model.Poi.rename_input_to_param(name), value)
+        for name, value in inputs.iteritems()
+        if name not in model.Poi.get_visibility_params_names(ctx) and value is not None
+        )
+    url_args['page'] = '1'
+    sort_keys_tuples = [
+        (None, ''),
+        ('name', 'Name'),
+        ('street_address', 'Street Address'),
+        ('postal_distribution_str', 'Commune'),
+        ]
 %>\
-                    <th>
-                        <a class="internal" href="${urls.get_url(ctx, mode, page = pager.page_number, **url_args)}">
-                            <i class="icon ${icon_class}"> </i>
-                        </a>
-                    </th>
-                    <th>
+    % for sort_key, sort_key_label in sort_keys_tuples:
 <%
-        url_args['sort_key'] = 'name'
-        icon_class = 'icon-list' if inputs['sort_key'] != 'name' else 'icon-chevron-down'
-%>\
-                        <a class="internal" href="${urls.get_url(ctx, mode, page = pager.page_number, **url_args)}">
-                            <i class="icon ${icon_class}"> </i>
-                            ${_('Name')}
-                        </a>
-                    </th>
+        url_args['sort_key'] = sort_key if sort_key != inputs['sort_key'] else None
+        icon_class = 'icon-list' if sort_key != inputs['sort_key'] else 'icon-chevron-down'
+%>
                     <th>
-<%
-        url_args['sort_key'] = 'street_address'
-        icon_class = 'icon-list' if inputs['sort_key'] != 'street_address' else 'icon-chevron-down'
-%>\
-                        <a class="internal" href="${urls.get_url(ctx, mode, page = pager.page_number, **url_args)}">
+                        <a class="internal" href="${urls.get_url(ctx, mode, **url_args)}">
                             <i class="icon ${icon_class}"> </i>
-                            ${_('Street Address')}
+                            ${_(sort_key_label) if sort_key_label else ''}
                         </a>
                     </th>
-                    <th>
-<%
-        url_args['sort_key'] = 'postal_distribution_str'
-        icon_class = 'icon-list' if inputs['sort_key'] != 'postal_distribution_str' else 'icon-chevron-down'
-%>\
-                        <a class="internal" href="${urls.get_url(ctx, mode, page = pager.page_number, **url_args)}">
-                            <i class="icon ${icon_class}"> </i>
-                            ${_('Commune')}
-                        </a>
-                    </th>
+    % endfor
                 </tr>
             </thead>
             <tbody>
