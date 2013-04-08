@@ -246,11 +246,11 @@ def ramdb_based(controller):
                         find_existing(model.Poi, 'ids_by_parent_id', 'dict_of_sets', id, existing)
                         find_existing(model.Poi, 'ids_by_presence_territory_id', 'dict_of_sets', id, existing)
                         find_existing(model.Poi, 'ids_by_word', 'dict_of_sets', id, existing)
-                        find_existing(model.Poi, 'slug_by_id', 'dict_of_sets', id, existing)
                         # Then update indexes.
                         delete_remaining(model.Poi, existing)
                         if poi_bson is None or poi_bson['metadata'].get('deleted', False):
                             model.Poi.instance_by_id.pop(id, None)
+                            model.Poi.slug_by_id.pop(id, None)
                             model.Poi.indexed_ids.discard(id)
                         else:
                             poi = model.Poi.load(poi_bson)
