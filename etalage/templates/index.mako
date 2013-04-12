@@ -70,8 +70,8 @@ def is_category_autocompleter_empty(categories):
 <%def name="footer_actions()" filter="trim">
     % if conf.get('petitpois_url'):
             <p class="pull-right">
-                <a class="label label-info" href="${urlparse.urljoin(conf['petitpois_url'], '/poi/search'
-        )}" rel="external">Ajouter une fiche</a>
+                <a class="label label-info" href="${urlparse.urljoin(conf['petitpois_url'], '/poi/search')}" \
+rel="external">Ajouter une fiche</a>
             </p>
     % endif
 </%def>
@@ -224,7 +224,7 @@ target="_blank" title="${_('RSS Feed')}">
                     <label class="control-label" for="category">Catégorie</label>
                     <div class="controls">
         % if categories_slug and not ctx.hide_checkboxes:
-            % for category_index, category_slug in enumerate(categories_slug, -len(ctx.base_categories_slug or [])):
+            % for category_index, category_slug in enumerate(categories_slug):
                 % if error is None or category_index not in error:
 <%
                     # Note: ``category_slug`` may be a category (and not a slug) when an error has occurred during
