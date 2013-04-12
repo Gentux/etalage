@@ -57,7 +57,6 @@ def about(req):
 @ramdb.ramdb_based
 def autocomplete_category(req):
     ctx = contexts.Ctx(req)
-    ctx.controller_name = 'autocomplete_category'
 
     headers = []
     params = req.GET
@@ -101,7 +100,7 @@ def autocomplete_category(req):
                         ],
                     # message will be automatically defined.
                     ),
-                method = ctx.controller_name,
+                method = req.script_name,
                 params = inputs,
                 ),
             headers = headers,
@@ -152,7 +151,7 @@ def autocomplete_category(req):
                 totalItems = pager.item_count,
                 totalPages = pager.page_count,
                 ),
-            method = ctx.controller_name,
+            method = req.script_name,
             params = inputs,
             ),
         headers = headers,
