@@ -144,7 +144,6 @@ etalage.params = ${inputs | n, js};
 
 
 <%def name="scripts_domready_content()" filter="trim">
-    <%parent:scripts_domready_content/>
     etalage.bind.loadingGif();
     etalage.categories.createAutocompleter($('#category'));
     etalage.territories.createAutocompleter($('#territory'));
@@ -153,6 +152,7 @@ etalage.params = ${inputs | n, js};
         isGadget: ${ctx.container_base_url is not None and ctx.gadget_id is not None | n, js},
         searchForm: $('#search-form')
     });
+    <%parent:scripts_domready_content/>
 </%def>
 
 
@@ -175,8 +175,8 @@ etalage.params = ${inputs | n, js};
         'gadget': ctx.gadget_id,
         })
 %>\
-                <a class="btn btn-warning btn-search-form" href="${urls.get_url(ctx, 'feed', **url_args)}" rel="external" \
-title="${_('RSS Feed')}">
+                <a class="btn btn-warning btn-search-form" href="${urls.get_url(ctx, 'feed', **url_args)}" \
+target="_blank" title="${_('RSS Feed')}">
                     <i class="icon-feed"></i>
                 </a>
             </div>
@@ -193,7 +193,7 @@ title="${_('RSS Feed')}">
                                 <i class="icon-search icon-white"></i> ${_('Search')}
                             </button>
                             <a class="btn btn-warning btn-atom-feed" href="${urls.get_url(ctx, 'feed', **url_args)}" \
-rel="external" title="${_('RSS Feed')}">
+target="_blank" title="${_('RSS Feed')}">
                                 <i class="icon-feed"></i>
                             </a>
                         </div>
