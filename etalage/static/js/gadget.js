@@ -63,7 +63,7 @@ function initGadget() {
         etalage.rpc.requestNavigateTo($(this).attr("href"));
     });
 
-    $("a[href][rel=bookmark]").attr("target", "_top");
-    $("a[href][rel=mobile]").attr("target", "_top");
-    $("a[href][rel=external]").attr("target", "_top");
+    $("a[href][rel=bookmark]").attr("target", "_blank");
+    $("a[href][rel=mobile]").attr("target", "_blank");
+    $("a[href][rel=external]").attr("target", "_blank");
 }
