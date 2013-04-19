@@ -100,7 +100,6 @@ def load_environment(global_conf, app_conf):
                 ),
             u'database': conv.default('souk'),
             u'debug': conv.pipe(conv.guess_bool, conv.default(False)),
-            u'default_filter': conv.input_to_filter,
             u'default_tab': conv.pipe(
                 conv.cleanup_line,
                 conv.test_in(['carte', 'liste']),

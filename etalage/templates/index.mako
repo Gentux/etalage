@@ -257,35 +257,6 @@ value="${inputs['categories_slug'][0] if len(inputs['categories_slug']) > 0 else
 </%def>
 
 
-<%def name="search_form_field_filter()" filter="trim">
-    % if model.Poi.is_search_param_visible(ctx, 'filter'):
-<%
-        error = errors.get('filter') if errors is not None else None
-%>\
-                <div class="control-group${' error' if error else ''}">
-                    <label class="control-label" for="filter">Afficher</label>
-                    <div class="controls">
-                        <label class="radio">
-                            <input${' checked' if not inputs['filter'] else ''} name="filter" type="radio" value="">
-                            Tous les organismes
-                        </label>
-                        <label class="radio">
-                            <input${' checked' if inputs['filter'] == 'competence' else ''} name="filter" type="radio" value="competence">
-                            Uniquement les organismes compétents pour le territoire
-                        </label>
-                        <label class="radio">
-                            <input${' checked' if inputs['filter'] == 'presence' else ''} name="filter" type="radio" value="presence">
-                            Uniquement les organismes présents sur le territoire
-                        </label>
-        % if error:
-                        <p class="help-block">${error}</p>
-        % endif
-                    </div>
-                </div>
-    % endif
-</%def>
-
-
 <%def name="search_form_field_term()" filter="trim">
     % if model.Poi.is_search_param_visible(ctx, 'term'):
 <%
@@ -326,7 +297,6 @@ value="${inputs['categories_slug'][0] if len(inputs['categories_slug']) > 0 else
                 <%self:search_form_field_categories_slug/>
                 <%self:search_form_field_term/>
                 <%self:search_form_field_territory/>
-                <%self:search_form_field_filter/>
 </%def>
 
 

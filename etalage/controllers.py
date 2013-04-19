@@ -558,23 +558,19 @@ def feed(req):
     if errors is not None:
         return wsgihelpers.bad_request(ctx, explanation = ctx._('Error: {0}').format(errors))
     else:
-        filter = data['filter']
         territory = data['territory']
-        related_territories_id = ramdb.get_territory_related_territories_id(territory) \
-            if territory is not None else None
-        if filter == 'competence':
-            competence_territories_id = related_territories_id
+        if territory is None:
+            related_territories_id = None
             presence_territory = None
-        elif filter == 'presence':
-            competence_territories_id = None
-            presence_territory = territory
         else:
-            competence_territories_id = None
-            presence_territory = None
+            related_territories_id = ramdb.get_territory_related_territories_id(territory)
+            presence_territory = territory if territory.__class__.__name__ not in model.communes_kinds else None
+        competence_territories_id = ramdb.get_territory_related_territories_id(
+            data['base_territory'],
+            ) if data.get('base_territory') is not None else None
+
         pois_id_iter = model.Poi.iter_ids(ctx,
-            competence_territories_id = competence_territories_id or (ramdb.get_territory_related_territories_id(
-                data['base_territory'],
-                ) if data.get('base_territory') is not None else None),
+            competence_territories_id = competence_territories_id,
             presence_territory = presence_territory,
             **non_territorial_search_data)
         poi_by_id = dict(
@@ -816,22 +812,13 @@ def index_directory(req):
     else:
         territory = data['territory']
         related_territories_id = ramdb.get_territory_related_territories_id(territory)
-        filter = data['filter']
-        if territory.__class__.__name__ not in model.communes_kinds:
-            filter = 'presence'
-        if filter == 'competence':
-            competence_territories_id = related_territories_id
-            presence_territory = None
-        elif filter == 'presence':
-            competence_territories_id = None
-            presence_territory = territory
-        else:
-            competence_territories_id = None
-            presence_territory = None
+        presence_territory = territory if territory.__class__.__name__ not in model.communes_kinds else None
+        competence_territories_id = ramdb.get_territory_related_territories_id(
+            data['base_territory'],
+            ) if data.get('base_territory') is not None else None
+
         pois_id_iter = model.Poi.iter_ids(ctx,
-            competence_territories_id = competence_territories_id or (ramdb.get_territory_related_territories_id(
-                data['base_territory'],
-                ) if data.get('base_territory') is not None else None),
+            competence_territories_id = competence_territories_id,
             presence_territory = presence_territory,
             **model.Poi.extract_non_territorial_search_data(ctx, data))
         pois = set(
@@ -869,14 +856,14 @@ def index_directory(req):
             theme_pois = directory.get(poi.theme_slug)
             if theme_pois is not None and len(theme_pois) >= 3 and territory.__class__.__name__ in model.communes_kinds:
                 continue
-            if filter is None:
+            if territory.__class__.__name__ in model.communes_kinds:
                 if poi.competence_territories_id is None:
-                    # When no filter is given, when a POI has no notion of competence territory, only show it when it is
-                    # not too far away from center territory.
+                    # When a POI has no notion of competence territory, only show it when it is not too far away from
+                    # center territory.
                     if distance > ctx.distance:
                         continue
                 elif related_territories_id.isdisjoint(poi.competence_territories_id):
-                    # In directory mode without filter, the incompetent organisms must not be shown.
+                    # In directory mode, the incompetent organisms must not be shown.
                     continue
             if theme_pois is None:
                 directory[poi.theme_slug] = [poi]
@@ -1002,23 +989,19 @@ def index_list(req):
     if errors is not None:
         pager = None
     else:
-        filter = data['filter']
         territory = data['territory']
-        related_territories_id = ramdb.get_territory_related_territories_id(territory) \
-            if territory is not None else None
-        if filter == 'competence':
-            competence_territories_id = related_territories_id
+        if territory is None:
+            related_territories_id = None
             presence_territory = None
-        elif filter == 'presence':
-            competence_territories_id = None
-            presence_territory = territory
         else:
-            competence_territories_id = None
-            presence_territory = None
+            related_territories_id = ramdb.get_territory_related_territories_id(territory)
+            presence_territory = territory if territory.__class__.__name__ not in model.communes_kinds else None
+        competence_territories_id = ramdb.get_territory_related_territories_id(
+            data['base_territory'],
+            ) if data.get('base_territory') is not None else None
+
         pois_id_iter = model.Poi.iter_ids(ctx,
-            competence_territories_id = competence_territories_id or (ramdb.get_territory_related_territories_id(
-                data['base_territory'],
-                ) if data.get('base_territory') is not None else None),
+            competence_territories_id = competence_territories_id,
             presence_territory = presence_territory,
             **non_territorial_search_data)
         poi_by_id = dict(

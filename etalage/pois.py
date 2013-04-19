@@ -316,7 +316,6 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
     def extract_search_inputs_from_params(cls, ctx, params):
         return dict(
             categories_slug = params.getall('category'),
-            filter = params.get('filter'),
             term = params.get('term'),
             territory = params.get('territory'),
             )
@@ -371,10 +370,6 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
                 )
 
     @classmethod
-    def get_search_param_visibility_name(cls, ctx, name):
-        return 'show_{0}'.format(name) if name == 'filter' else 'hide_{0}'.format(name)
-
-    @classmethod
     def get_search_params_name(cls, ctx):
         return set(
             cls.rename_input_to_param(name)
@@ -386,7 +381,7 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
         visibility_params = list(cls.get_search_params_name(ctx))
         visibility_params.extend(['checkboxes', 'directory', 'export', 'gadget', 'legend', 'list', 'map', 'minisite'])
         return [
-            cls.get_search_param_visibility_name(ctx, visibility_param)
+            'hide_{0}'.format(visibility_param)
             for visibility_param in visibility_params
             ]
 
@@ -467,7 +462,7 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
 
     @classmethod
     def is_search_param_visible(cls, ctx, name):
-        param_visibility_name = cls.get_search_param_visibility_name(ctx, name)
+        param_visibility_name = 'hide_{0}'.format(name)
         return getattr(ctx, param_visibility_name, False) \
             if param_visibility_name.startswith('show_') \
             else not getattr(ctx, param_visibility_name, False)
@@ -652,7 +647,6 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
                 dict(
                     base_territory = conv.input_to_postal_distribution_to_geolocated_territory,
                     categories_slug = conv.uniform_sequence(conv.input_to_category_slug),
-                    filter = conv.input_to_filter,
                     term = conv.input_to_slug,
                     territory = conv.input_to_postal_distribution_to_geolocated_territory,
                     ),

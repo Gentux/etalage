@@ -153,7 +153,7 @@ def default_pois_layer_data_bbox(data, state = None):
     if data['bbox'] is not None:
         return data, None
     data = data.copy()
-    filter = data['filter']
+
     territory = data['territory']
     poi_by_id = model.Poi.instance_by_id
     if territory is None:
@@ -184,30 +184,14 @@ def default_pois_layer_data_bbox(data, state = None):
         left = center_longitude
         right = center_longitude
         top = center_latitude
-        if filter == 'competence':
-            competence_territories_id = ramdb.get_territory_related_territories_id(territory)
-            presence_territory = None
-            pois_id_iter = model.Poi.iter_ids(state,
-                competence_territories_id = competence_territories_id or (ramdb.get_territory_related_territories_id(
-                    data['base_territory'],
-                    ) if data.get('base_territory') is not None else None),
-                presence_territory = presence_territory,
-                **model.Poi.extract_non_territorial_search_data(state, data))
-            pois = [
-                poi
-                for poi in (
-                    poi_by_id[poi_id]
-                    for poi_id in pois_id_iter
-                    )
-                if poi.geo is not None
-                ]
-        elif filter == 'presence':
+
+        if territory.__class__.__name__ not in model.communes_kinds:
             presence_territory = territory
             pois_id_iter = model.Poi.iter_ids(state,
                 competence_territories_id = ramdb.get_territory_related_territories_id(
                     data['base_territory'],
                     ) if data.get('base_territory') is not None else None,
-                presence_territory = presence_territory,
+                presence_territory = territory,
                 **model.Poi.extract_non_territorial_search_data(state, data))
             pois = [
                 poi
@@ -218,8 +202,7 @@ def default_pois_layer_data_bbox(data, state = None):
                 if poi.geo is not None
                 ]
         else:
-            # When no filter is given, use the bounding box of the territory (ie the bounding box enclosing every POI
-            # present in the territory).
+            # Use the bounding box of the territory (ie the bounding box enclosing every POI present in the territory).
             presence_territory = territory
             pois_id_iter = model.Poi.iter_ids(state,
                 competence_territories_id = ramdb.get_territory_related_territories_id(
@@ -312,12 +295,6 @@ def id_to_poi(poi_id, state = None):
     return poi, None
 
 
-input_to_filter = pipe(
-    input_to_slug,
-    test_in(['competence', 'presence']),
-    )
-
-
 def input_to_category_slug(value, state = None):
     from . import ramdb
     if state is None:
@@ -345,21 +322,18 @@ def inputs_to_atom_feed_data(inputs, state = None):
     from . import model
     if state is None:
         state = default_state
-    return pipe(
-        merge(
-            model.Poi.make_inputs_to_search_data(),
-            struct(
-                dict(
-                    sort_key = pipe(
-                        cleanup_line,
-                        test_in(['last_update_datetime']),
-                        ),
+    return merge(
+        model.Poi.make_inputs_to_search_data(),
+        struct(
+            dict(
+                sort_key = pipe(
+                    cleanup_line,
+                    test_in(['last_update_datetime']),
                     ),
-                default = 'drop',
-                keep_none_values = True,
                 ),
+            default = 'drop',
+            keep_none_values = True,
             ),
-        set_default_filter,
         )(inputs, state = state)
 
 
@@ -407,41 +381,26 @@ def inputs_to_geographical_coverage_csv_infos(inputs, state = None):
 
 
 def inputs_to_pois_csv_infos(inputs, state = None):
-    from . import conf, model, ramdb
+    from . import model, ramdb
     if state is None:
         state = default_state
-    data, errors = pipe(
-        model.Poi.make_inputs_to_search_data(),
-        struct(
-            dict(
-                # By default, when no default_filter is given, export only POIs present on given territory.
-                filter = default(conf['default_filter'] or 'presence'),
-                ),
-            default = noop,
-            keep_none_values = True,
-            ),
-        )(inputs, state = state)
+    # Export only POIs present on given territory.
+    data, errors = model.Poi.make_inputs_to_search_data()(inputs, state = state)
     if errors is not None:
         return data, errors
 
-    filter = data['filter']
     territory = data['territory']
-    related_territories_id = ramdb.get_territory_related_territories_id(territory) if territory is not None else None
-    if filter == 'competence':
-        competence_territories_id = related_territories_id
-        presence_territory = None
-    elif filter == 'presence':
-        competence_territories_id = None
-        presence_territory = territory
-    else:
-        competence_territories_id = None
-        presence_territory = None
-    pois_id = set(model.Poi.iter_ids(state,
-        competence_territories_id = competence_territories_id or (ramdb.get_territory_related_territories_id(
-            data['base_territory'],
-            ) if data.get('base_territory') is not None else None),
+    presence_territory = territory
+    competence_territories_id = ramdb.get_territory_related_territories_id(
+        data['base_territory'],
+        ) if data.get('base_territory') is not None else None
+    pois_id = set(model.Poi.iter_ids(
+        state,
+        competence_territories_id = competence_territories_id,
         presence_territory = presence_territory,
-        **model.Poi.extract_non_territorial_search_data(state, data)))
+        **model.Poi.extract_non_territorial_search_data(state, data)
+        ))
+
     if len(pois_id) > 65535:
         # Excel doesn't support sheets with more than 65535 rows.
         return None, state._(u'Export is too big. Restrict some search criteria and try again.')
@@ -478,7 +437,6 @@ def inputs_to_pois_directory_data(inputs, state = None):
             default = noop,
             keep_none_values = True,
             ),
-        set_default_filter,
         )(inputs, state = state)
 
 
@@ -486,57 +444,54 @@ def inputs_to_pois_layer_data(inputs, state = None):
     from . import model
     if state is None:
         state = default_state
-    return pipe(
-        merge(
-            model.Poi.make_inputs_to_search_data(),
-            struct(
-                dict(
-                    bbox = pipe(
-                        function(lambda bbox: bbox.split(u',')),
-                        struct(
-                            [
-                                # West longitude
-                                pipe(
-                                    input_to_float,
-                                    test_between(-180, 180),
-                                    not_none,
-                                    ),
-                                # South latitude
-                                pipe(
-                                    input_to_float,
-                                    test_between(-90, 90),
-                                    not_none,
-                                    ),
-                                # East longitude
-                                pipe(
-                                    input_to_float,
-                                    test_between(-180, 180),
-                                    not_none,
-                                    ),
-                                # North latitude
-                                pipe(
-                                    input_to_float,
-                                    test_between(-90, 90),
-                                    not_none,
-                                    ),
-                                ],
-                            ),
-                        ),
-                    current = pipe(
-                        input_to_object_id,
-                        id_to_poi,
-                        test(lambda poi: poi.geo is not None, error = N_('POI has no geographical coordinates')),
-                        ),
-                    enable_cluster = pipe(
-                        guess_bool,
-                        default(True),
+    return merge(
+        model.Poi.make_inputs_to_search_data(),
+        struct(
+            dict(
+                bbox = pipe(
+                    function(lambda bbox: bbox.split(u',')),
+                    struct(
+                        [
+                            # West longitude
+                            pipe(
+                                input_to_float,
+                                test_between(-180, 180),
+                                not_none,
+                                ),
+                            # South latitude
+                            pipe(
+                                input_to_float,
+                                test_between(-90, 90),
+                                not_none,
+                                ),
+                            # East longitude
+                            pipe(
+                                input_to_float,
+                                test_between(-180, 180),
+                                not_none,
+                                ),
+                            # North latitude
+                            pipe(
+                                input_to_float,
+                                test_between(-90, 90),
+                                not_none,
+                                ),
+                            ],
                         ),
                     ),
-                default = 'drop',
-                keep_none_values = True,
+                current = pipe(
+                    input_to_object_id,
+                    id_to_poi,
+                    test(lambda poi: poi.geo is not None, error = N_('POI has no geographical coordinates')),
+                    ),
+                enable_cluster = pipe(
+                    guess_bool,
+                    default(True),
+                    ),
                 ),
+            default = 'drop',
+            keep_none_values = True,
             ),
-        set_default_filter,
         )(inputs, state = state)
 
 
@@ -563,7 +518,6 @@ def inputs_to_pois_list_data(inputs, state = None):
                 keep_none_values = True,
                 ),
             ),
-        set_default_filter,
         rename_item('page', 'page_number'),
         )(inputs, state = state)
 
@@ -579,22 +533,18 @@ def layer_data_to_clusters(data, state = None):
     center_latitude_cos = math.cos(math.radians(center_latitude))
     center_latitude_sin = math.sin(math.radians(center_latitude))
     center_longitude = (left + right) / 2.0
-    filter = data['filter']
     territory = data['territory']
-    related_territories_id = ramdb.get_territory_related_territories_id(territory) if territory is not None else None
-    if filter == 'competence':
-        competence_territories_id = related_territories_id
+    if territory is None:
+        related_territories_id = None
         presence_territory = None
-    elif filter == 'presence':
-        competence_territories_id = None
-        presence_territory = territory
     else:
-        competence_territories_id = None
-        presence_territory = None
+        related_territories_id = ramdb.get_territory_related_territories_id(territory)
+        presence_territory = territory if territory.__class__.__name__ not in model.communes_kinds else None
+
     pois_id_iter = model.Poi.iter_ids(state,
-        competence_territories_id = competence_territories_id or (ramdb.get_territory_related_territories_id(
+        competence_territories_id = ramdb.get_territory_related_territories_id(
             data['base_territory'],
-            ) if data.get('base_territory') is not None else None),
+            ) if data.get('base_territory') is not None else None,
         presence_territory = presence_territory,
         **model.Poi.extract_non_territorial_search_data(state, data))
     poi_by_id = model.Poi.instance_by_id
@@ -786,25 +736,6 @@ def postal_distribution_to_territory(postal_distribution, state = None):
     if territory is None:
         return postal_distribution, state._(u'Unknown territory')
     return territory, None
-
-
-def set_default_filter(data, state = None):
-    if data is None:
-        return None, None
-
-    from . import conf, model
-
-    if state is None:
-        state = default_state
-
-    if data.get('filter') is None and conf['default_filter'] is not None:
-        data['filter'] = conf['default_filter']
-    elif data.get('filter') is None and data['territory'] is not None \
-            and data['territory'].__class__.__name__ not in model.communes_kinds:
-        # When no filter is given and territory is not a commune, search only for POIs present on territory instead of
-        # POIs near the territory.
-        data['filter'] = u'presence'
-    return data, None
 
 
 def site_to_bson(subscriber, state = None):
