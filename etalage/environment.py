@@ -107,6 +107,7 @@ def load_environment(global_conf, app_conf):
                 ),
             u'gadget-integration.js': conv.default(urlparse.urljoin('http://localhost:7002/', 'integration.js')),
             u'global_conf': conv.set_value(global_conf),
+            u'handle_competence_territories': conv.pipe(conv.guess_bool, conv.default(True)),
             u'hide_directory': conv.pipe(conv.guess_bool, conv.default(False)),
             u'hide_export': conv.pipe(conv.guess_bool, conv.default(False)),
             u'hide_gadget': conv.pipe(conv.guess_bool, conv.default(False)),

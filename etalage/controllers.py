@@ -558,16 +558,22 @@ def feed(req):
     if errors is not None:
         return wsgihelpers.bad_request(ctx, explanation = ctx._('Error: {0}').format(errors))
     else:
+        base_territory = data['base_territory']
         territory = data['territory']
-        if territory is None:
-            related_territories_id = None
-            presence_territory = None
+        competence_territories_id = None
+        presence_territory = None
+        if conf['handle_competence_territories']:
+            if territory and territory.__class__.__name__ not in model.communes_kinds:
+                presence_territory = territory
+            if territory:
+                competence_territories_id = ramdb.get_territory_related_territories_id(territory)
+            if base_territory and competence_territories_id is None:
+                competence_territories_id = ramdb.get_territory_related_territories_id(base_territory)
         else:
-            related_territories_id = ramdb.get_territory_related_territories_id(territory)
-            presence_territory = territory if territory.__class__.__name__ not in model.communes_kinds else None
-        competence_territories_id = ramdb.get_territory_related_territories_id(
-            data['base_territory'],
-            ) if data.get('base_territory') is not None else None
+            if territory and territory.__class__.__name__ not in model.communes_kinds:
+                presence_territory = territory
+            elif base_territory:
+                presence_territory = data['base_territory']
 
         pois_id_iter = model.Poi.iter_ids(ctx,
             competence_territories_id = competence_territories_id,
@@ -812,10 +818,13 @@ def index_directory(req):
     else:
         territory = data['territory']
         related_territories_id = ramdb.get_territory_related_territories_id(territory)
-        presence_territory = territory if territory.__class__.__name__ not in model.communes_kinds else None
-        competence_territories_id = ramdb.get_territory_related_territories_id(
-            data['base_territory'],
-            ) if data.get('base_territory') is not None else None
+        if conf['handle_competence_territories']:
+            competence_territories_id = ramdb.get_territory_related_territories_id(territory)
+            presence_territory = territory if territory.__class__.__name__ not in model.communes_kinds else None
+        else:
+            # Note: This section should never be called. In directory mode, the incompetent organisms must not be shown.
+            presence_territory = data['base_territory'] if data.get('base_territory') is not None else None
+            competence_territories_id = related_territories_id
 
         pois_id_iter = model.Poi.iter_ids(ctx,
             competence_territories_id = competence_territories_id,
@@ -989,21 +998,28 @@ def index_list(req):
     if errors is not None:
         pager = None
     else:
+        base_territory = data['base_territory']
         territory = data['territory']
-        if territory is None:
-            related_territories_id = None
-            presence_territory = None
+        competence_territories_id = None
+        presence_territory = None
+        if conf['handle_competence_territories']:
+            if territory and territory.__class__.__name__ not in model.communes_kinds:
+                presence_territory = territory
+            if territory:
+                competence_territories_id = ramdb.get_territory_related_territories_id(territory)
+            if base_territory and competence_territories_id is None:
+                competence_territories_id = ramdb.get_territory_related_territories_id(base_territory)
         else:
-            related_territories_id = ramdb.get_territory_related_territories_id(territory)
-            presence_territory = territory if territory.__class__.__name__ not in model.communes_kinds else None
-        competence_territories_id = ramdb.get_territory_related_territories_id(
-            data['base_territory'],
-            ) if data.get('base_territory') is not None else None
+            if territory and territory.__class__.__name__ not in model.communes_kinds:
+                presence_territory = territory
+            elif base_territory:
+                presence_territory = data['base_territory']
 
         pois_id_iter = model.Poi.iter_ids(ctx,
             competence_territories_id = competence_territories_id,
             presence_territory = presence_territory,
             **non_territorial_search_data)
+
         poi_by_id = dict(
             (poi._id, poi)
             for poi in (
@@ -1017,13 +1033,12 @@ def index_list(req):
             ctx,
             pager,
             poi_by_id,
-            related_territories_id = related_territories_id or (
-                ramdb.get_territory_related_territories_id(data['base_territory'])
-                if data.get('base_territory') else None),
+            related_territories_id = competence_territories_id,
             territory = territory or data.get('base_territory'),
             sort_key = data['sort_key'],
             **non_territorial_search_data
             )
+
     return templates.render(ctx, '/list.mako',
         errors = errors,
         inputs = inputs,
