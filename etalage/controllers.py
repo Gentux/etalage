@@ -592,9 +592,7 @@ def feed(req):
             ctx,
             pager,
             poi_by_id,
-            related_territories_id = related_territories_id or (
-                ramdb.get_territory_related_territories_id(data['base_territory'])
-                if data.get('base_territory') else None),
+            related_territories_id = competence_territories_id,
             territory = territory or data.get('base_territory'),
             sort_key = 'last_update_datetime',
             **non_territorial_search_data
