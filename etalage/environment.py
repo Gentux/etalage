@@ -146,6 +146,14 @@ def load_environment(global_conf, app_conf):
             # Whether this application serves its own static files.
             u'static_files': conv.pipe(conv.guess_bool, conv.default(True)),
             u'static_files_dir': conv.default(os.path.join(app_dir, 'static')),
+            u'subscribers.require_subscription': conv.pipe(conv.guess_bool, conv.default(False)),
+            u'subscribers.database': conv.default('souk'),
+            u'subscribers.collection': conv.default('subscribers'),
+            u'subscribers.gadget_valid_domains': conv.pipe(
+                conv.function(lambda hostnames: hostnames.split()),
+                conv.default(['localhost', '127.0.0.1', 'comarquage.fr', 'donnees-libres.fr']),
+                conv.function(lambda hostnames: tuple(hostnames)),
+                ),
             u'territories_database': conv.pipe(
                 conv.default(conf.get('database')),
                 conv.default('souk'),
@@ -259,7 +267,10 @@ def load_environment(global_conf, app_conf):
         errorware['smtp_server'] = conf.get('smtp_server', 'localhost')
 
     # Connect to MongoDB database.
-    monpyjama.Wrapper.db = model.db = pymongo.Connection()[conf['database']]
+    connection = pymongo.Connection()
+    monpyjama.Wrapper.db = model.db = connection[conf['database']]
+    model.Subscriber.db = connection[conf['subscribers.database']]
+    model.Subscriber.collection_name = conf['subscribers.collection']
 
     # Initialize plugins.
     if conf['plugins_conf_file'] is not None:

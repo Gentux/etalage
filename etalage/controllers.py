@@ -32,6 +32,7 @@ import json
 import logging
 import math
 import urllib2
+import urlparse
 import zipfile
 
 from biryani import strings
@@ -1093,57 +1094,46 @@ def init_base(ctx, params):
         territory_kind = params.getall('territory_kind'),
         )
 
-    container_base_url = inputs['container_base_url'] or None
-#    if container_base_url is None:
-#        container_hostname = None
-#    else:
-#        container_hostname = urlparse.urlsplit(container_base_url).hostname or None
-    try:
-        gadget_id = int(inputs['gadget'])
-    except (TypeError, ValueError):
+    ctx.container_base_url = container_base_url = inputs['container_base_url'] or None
+    gadget_id, error = conv.input_to_int(inputs['gadget'])
+    ctx.gadget_id = gadget_id
+    container_hostname = (urlparse.urlsplit(container_base_url).hostname or None) if container_base_url else None
+    if error is not None or gadget_id is None:
         gadget_id = None
-    if gadget_id is None:
         if container_base_url is not None:
             # Ignore container site when no gadget ID is given.
             container_base_url = None
-#             container_hostname = None
-    elif conf['require_subscription']:
-        subscriber = model.Subscriber.find_one({'sites.subscriptions.id': gadget_id})
-        if subscriber is None:
-            raise wsgihelpers.bad_request(ctx,
-                comment = markupsafe.Markup(u'{0}<a href="{1}">{2}</a>{3}').format(
-                    ctx._('Connect to '),
-                    conf['brand_url'],
-                    conf['brand_name'],
-                    ctx._(', rebuild component and copy the generated JavaScript into your website.'),
-                    ),
-                explanation = ctx._('''The gadget ID "{0}" doesn't exist.'''), title = ctx._('Invalid Gadget ID'))
-        for site in subscriber.sites or []:
-            for subscription in (site.subscriptions or []):
-                if subscription.id == gadget_id and subscription.type == u'etalage':
-                    break
+    elif conf['subscribers.require_subscription'] and container_base_url is not None:
+        subscriber = model.Subscriber.find_one({'sites.domain_name': container_hostname})
+        if subscriber is None and (container_hostname is None
+                or not container_hostname.endswith(conf['subscribers.gadget_valid_domains'])):
+            raise wsgihelpers.bad_request(
+                ctx,
+                explanation = ctx._('The gadget ID "{0}" doesn\'t exist.').format(gadget_id),
+                message = ctx._('Rebuild component and copy the generated JavaScript into your website.'),
+                title = ctx._('Invalid Gadget ID'),
+                )
+        elif subscriber is not None:
+            for site in (subscriber.sites or []):
+                for subscription in (site.subscriptions or []):
+                    if subscription.type == 'etalage' and subscription.id == gadget_id:
+                        # Note: We can get some specific options for this subscriber with subscription.options here
+                        break
+                else:
+                    continue
+                break
             else:
-                continue
-            break
-        else:
-            raise wsgihelpers.bad_request(ctx,
-                comment = markupsafe.Markup(u'{0}<a href="{1}">{2}</a>{3}').format(
-                    ctx._('Connect to '),
-                    conf['brand_url'],
-                    conf['brand_name'],
-                    ctx._(', rebuild component and copy the generated JavaScript into your website.'),
-                    ),
-                explanation = ctx._('''The gadget ID "{0}" is used by another component.'''),
-                title = ctx._('Invalid Gadget ID'))
-        ctx.subscriber = subscriber
-        if gadget_id is not None and container_base_url is None and subscription.url is not None:
-            # When in gadget mode but without a container_base_url, we are accessed through the noscript iframe or by a
-            # search engine. We need to retrieve the URL of page containing gadget to do a JavaScript redirection (in
-            # publication.mako).
-            container_base_url = subscription.url or None
-#             container_hostname = urlparse.urlsplit(container_base_url).hostname or None
-    ctx.container_base_url = container_base_url
-    ctx.gadget_id = gadget_id
+                raise wsgihelpers.bad_request(
+                    ctx,
+                    comment = ctx._('Rebuild component and copy the generated JavaScript into your website.'),
+                    explanation = ctx._('The gadget ID "{0}" is used by another component.'),
+                    title = ctx._('Invalid Gadget ID'),
+                    )
+            if gadget_id is not None and container_base_url is None and subscription.url is not None:
+                # When in gadget mode but without a container_base_url, we are accessed through the noscript iframe or by a
+                # search engine. We need to retrieve the URL of page containing gadget to do a JavaScript redirection (in
+                # publication.mako).
+                container_base_url = subscription.url or None
 
     for param_visibility_name in model.Poi.get_visibility_params_names(ctx):
         inputs[param_visibility_name] = conf.get(param_visibility_name) or params.get(param_visibility_name)

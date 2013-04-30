@@ -28,7 +28,7 @@
 
 from suq import monpyjama, representations
 
-from . import conv, ramdb
+from . import conv
 
 
 class Site(representations.UserRepresentable):
@@ -52,6 +52,7 @@ class Subscriber(representations.UserRepresentable, monpyjama.Wrapper):
 
     @property
     def territory(self):
+        from . import ramdb
         if self.territory_kind_code is None:
             return None
         territory_id = ramdb.territory_id_by_kind_code.get((self.territory_kind_code['kind'],
@@ -72,6 +73,7 @@ class Subscription(representations.UserRepresentable):
 
     @property
     def territory(self):
+        from . import ramdb
         if self.territory_kind_code is None:
             return None
         territory_id = ramdb.territory_id_by_kind_code.get((self.territory_kind_code['kind'],
