@@ -559,7 +559,7 @@ def feed(req):
     if errors is not None:
         return wsgihelpers.bad_request(ctx, explanation = ctx._('Error: {0}').format(errors))
     else:
-        base_territory = data['base_territory']
+        base_territory = data.get('base_territory')
         territory = data['territory']
         competence_territories_id = None
         presence_territory = None
@@ -997,7 +997,7 @@ def index_list(req):
     if errors is not None:
         pager = None
     else:
-        base_territory = data['base_territory']
+        base_territory = data.get('base_territory')
         territory = data['territory']
         competence_territories_id = None
         presence_territory = None
