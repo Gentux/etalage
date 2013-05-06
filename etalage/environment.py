@@ -114,7 +114,6 @@ def load_environment(global_conf, app_conf):
             u'hide_list': conv.pipe(conv.guess_bool, conv.default(False)),
             u'hide_map': conv.pipe(conv.guess_bool, conv.default(False)),
             u'hide_minisite': conv.pipe(conv.guess_bool, conv.default(False)),
-
             u'hide_category': conv.pipe(conv.guess_bool, conv.default(False)),
             u'hide_checkboxes': conv.pipe(conv.guess_bool, conv.default(False)),
             u'hide_legend': conv.pipe(conv.guess_bool, conv.default(False)),
@@ -136,6 +135,7 @@ def load_environment(global_conf, app_conf):
                 conv.default('WARNING'),
                 conv.function(lambda log_level: getattr(logging, log_level.upper())),
                 ),
+            u'markers.piwik.id': conv.pipe(conv.input_to_int, conv.default(None)),
             u'organism_types_collection': conv.default('organism_types'),
             u'package_name': conv.default('etalage'),
             u'pois_collection': conv.default('pois'),
