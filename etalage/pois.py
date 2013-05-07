@@ -488,16 +488,19 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
                     yield subfield_ref, subfield
 
     @classmethod
-    def iter_ids(cls, ctx, categories_slug = None, competence_territories_id = None, presence_territory = None,
-            term = None):
+    def iter_ids(cls, ctx, categories_slug = None, competence_territories_id = None, competence_type = None,
+            presence_territory = None, term = None):
         intersected_sets = []
 
         if competence_territories_id is not None:
-            competence_territories_sets = [
-                cls.ids_by_competence_territory_id.get(competence_territory_id)
-                for competence_territory_id in competence_territories_id
-                ]
-            competence_territories_sets.append(cls.ids_by_competence_territory_id.get(None))
+            competence_territories_sets = []
+            if competence_type in (None, 'by_territory'):
+                competence_territories_sets.extend(
+                    cls.ids_by_competence_territory_id.get(competence_territory_id)
+                    for competence_territory_id in competence_territories_id
+                    )
+            if competence_type in (None, 'by_nature'):
+                competence_territories_sets.append(cls.ids_by_competence_territory_id.get(None))
             territory_competent_pois_id = ramdb.union_set(competence_territories_sets)
             if not territory_competent_pois_id:
                 return set()

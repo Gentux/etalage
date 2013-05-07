@@ -238,6 +238,7 @@ def default_pois_layer_data_bbox(data, state = None):
                         ramdb.get_territory_related_territories_id(data['base_territory'])
                         if data.get('base_territory') is not None else None
                         ),
+                    competence_type = 'by_territory',
                     presence_territory = presence_territory,
                     **model.Poi.extract_non_territorial_search_data(state, data))
                 pois = [
@@ -248,6 +249,36 @@ def default_pois_layer_data_bbox(data, state = None):
                         )
                     if poi.geo is not None
                     ]
+                if not pois:
+                    pois_id_iter = model.Poi.iter_ids(state,
+                        competence_territories_id = competence_territories_id or (
+                            ramdb.get_territory_related_territories_id(data['base_territory'])
+                            if data.get('base_territory') is not None else None
+                            ),
+                        competence_type = 'by_nature',
+                        presence_territory = presence_territory,
+                        **model.Poi.extract_non_territorial_search_data(state, data))
+                    territory_latitude_cos = math.cos(math.radians(center_latitude))
+                    territory_latitude_sin = math.sin(math.radians(center_latitude))
+                    distance_poi_couples = sorted(
+                        (
+                            # distance
+                            6372.8 * math.acos(
+                                round(
+                                    math.sin(math.radians(poi.geo[0])) * territory_latitude_sin
+                                    + math.cos(math.radians(poi.geo[0])) * territory_latitude_cos
+                                    * math.cos(math.radians(poi.geo[1] - center_longitude)),
+                                    13,
+                                )),
+                            poi,
+                            )
+                        for poi in (
+                            poi_by_id[poi_id]
+                            for poi_id in pois_id_iter
+                            )
+                        if poi.geo is not None
+                        )[:3]
+                    pois = [poi for distance, poi in distance_poi_couples]
                 if not pois:
                     # When no present nor competent POI has been found, compute bounding box using given distance.
                     delta = math.degrees(state.distance / 6372.8)
