@@ -187,23 +187,23 @@ $(function () {
 
 
 <%def name="trackers()" filter="trim">
-% if conf.get('markers.piwik.id'):
-<!-- Piwik -->
-<script type="text/javascript">
-var pkBaseURL = (("https:" == document.location.protocol) ? "https://webstats.easter-eggs.com/" : "http://webstats.easter-eggs.com/");
+    % if conf.get('markers.piwik.id'):
+    <!-- Piwik -->
+    <script type="text/javascript">
+var pkBaseURL = (("https:" == document.location.protocol) ? ${conf['markers.piwik.ssl_host']} : ${conf['markers.piwik.host']});
 document.write(unescape("%3Cscript src='" + pkBaseURL + "piwik.js' type='text/javascript'%3E%3C/script%3E"));
-</script><script type="text/javascript">
+    </script><script type="text/javascript">
 try {
-var piwikTracker = Piwik.getTracker(pkBaseURL + "piwik.php", ${conf['markers.piwik.id']});
+    var piwikTracker = Piwik.getTracker(pkBaseURL + "piwik.php", ${conf['markers.piwik.id']});
     % if ctx.container_base_url is not None:
-piwikTracker.setCustomVariable(2, "container_base_url", ${ctx.container_base_url | n, js}, "visit");
+    piwikTracker.setCustomVariable(2, "container_base_url", ${ctx.container_base_url | n, js}, "visit");
     % endif
-piwikTracker.trackPageView();
-piwikTracker.enableLinkTracking();
+    piwikTracker.trackPageView();
+    piwikTracker.enableLinkTracking();
 } catch( err ) {}
-</script><noscript><p><img src="http://webstats.easter-eggs.com/piwik.php?idsite=18" style="border:0" alt="" /></p></noscript>
-<!-- End Piwik Tracking Code -->
-% endif
+    </script><noscript><p><img src="${conf['markers.piwik.host']}/piwik.php?idsite=18" style="border:0" alt="" /></p></noscript>
+    <!-- End Piwik Tracking Code -->
+    % endif
 </%def>
 
 

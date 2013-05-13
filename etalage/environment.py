@@ -136,6 +136,8 @@ def load_environment(global_conf, app_conf):
                 conv.function(lambda log_level: getattr(logging, log_level.upper())),
                 ),
             u'markers.piwik.id': conv.pipe(conv.input_to_int, conv.default(None)),
+            u'markers.piwik.host': conv.default('http://localhost/piwik'),
+            u'markers.piwik.ssl_host': conv.default('https://localhost/piwik'),
             u'organism_types_collection': conv.default('organism_types'),
             u'package_name': conv.default('etalage'),
             u'pois_collection': conv.default('pois'),
