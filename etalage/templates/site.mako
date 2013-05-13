@@ -201,7 +201,7 @@ try {
     piwikTracker.trackPageView();
     piwikTracker.enableLinkTracking();
 } catch( err ) {}
-    </script><noscript><p><img src="${conf['markers.piwik.host']}/piwik.php?idsite=18" style="border:0" alt="" /></p></noscript>
+    </script><noscript><p><img src="${conf['markers.piwik.host']}/piwik.php?idsite=${conf['markers.piwik.id']}" style="border:0" alt="" /></p></noscript>
     <!-- End Piwik Tracking Code -->
     % endif
 </%def>
