@@ -190,7 +190,7 @@ $(function () {
     % if conf.get('markers.piwik.id'):
     <!-- Piwik -->
     <script type="text/javascript">
-var pkBaseURL = (("https:" == document.location.protocol) ? ${conf['markers.piwik.ssl_host']} : ${conf['markers.piwik.host']});
+var pkBaseURL = (("https:" == document.location.protocol) ? ${conf['markers.piwik.ssl_host'] | n, js} : ${conf['markers.piwik.host'] | n, js});
 document.write(unescape("%3Cscript src='" + pkBaseURL + "piwik.js' type='text/javascript'%3E%3C/script%3E"));
     </script><script type="text/javascript">
 try {
