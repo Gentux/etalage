@@ -132,8 +132,12 @@ if (!etalage.easyXDM) {
     </script>
     <script src="/js/gadget.js"></script>
     <script>
+var swfUrl = ${conf['easyxdm.swf'] | n, js};
+if (swfUrl.search(/\/\//) === 0) {
+    swfUrl = document.location.protocol + swfUrl;
+}
 etalage.rpc = new etalage.easyXDM.Rpc({
-    swf: "${conf['easyxdm.swf']}"
+    swf: swfUrl
 },
 {
     remote: {
