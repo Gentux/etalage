@@ -388,7 +388,6 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
     def index(self, indexed_poi_id):
         poi_bson = self.bson
         metadata = poi_bson['metadata']
-
         for category_slug in (metadata.get('categories-index') or set()):
             self.ids_by_category_slug.setdefault(category_slug, set()).add(indexed_poi_id)
 
@@ -399,8 +398,20 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
                     date_range_begin = date_range_values.get('date-range-begin', [None])[0]
                     date_range_end = date_range_values.get('date-range-end', [None])[0]
 
-                    self.ids_by_begin_datetime.append((date_range_begin, indexed_poi_id))
-                    self.ids_by_end_datetime.append((date_range_end, indexed_poi_id))
+                    if date_range_begin is not None:
+                        for index, (begin_datetime, poi_id) in enumerate(self.ids_by_begin_datetime):
+                            if begin_datetime is not None and begin_datetime < date_range_begin:
+                                break
+                    else:
+                        index = 0
+                    self.ids_by_begin_datetime.insert(index, (date_range_begin, indexed_poi_id))
+                    if date_range_end is not None:
+                        for index, (end_datetime, poi_id) in enumerate(self.ids_by_end_datetime):
+                            if end_datetime is not None and end_datetime > date_range_end:
+                                break
+                    else:
+                        index = 0
+                    self.ids_by_end_datetime.insert(index, (date_range_end, indexed_poi_id))
             if not metadata.get('date-range'):
                 self.ids_by_begin_datetime.append((None, indexed_poi_id))
                 self.ids_by_end_datetime.append((None, indexed_poi_id))
