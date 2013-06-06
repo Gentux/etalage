@@ -191,7 +191,7 @@ $(function () {
 
 
 <%def name="trackers()" filter="trim">
-    % if conf.get('markers.piwik.id'):
+    % if conf['markers.piwik.id'] is not None:
     <!-- Piwik -->
     <script type="text/javascript">
 var pkBaseURL = (("https:" == document.location.protocol) ? ${conf['markers.piwik.ssl_host'] | n, js} : ${conf['markers.piwik.host'] | n, js});
@@ -199,9 +199,9 @@ document.write(unescape("%3Cscript src='" + pkBaseURL + "piwik.js' type='text/ja
     </script><script type="text/javascript">
 try {
     var piwikTracker = Piwik.getTracker(pkBaseURL + "piwik.php", ${conf['markers.piwik.id']});
-    % if ctx.container_base_url is not None:
+        % if ctx.container_base_url is not None:
     piwikTracker.setCustomVariable(2, "container_base_url", ${ctx.container_base_url | n, js}, "visit");
-    % endif
+        % endif
     piwikTracker.trackPageView();
     piwikTracker.enableLinkTracking();
 } catch( err ) {}
