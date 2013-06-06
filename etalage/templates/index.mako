@@ -68,10 +68,10 @@ def is_category_autocompleter_empty(categories):
 
 
 <%def name="footer_actions()" filter="trim">
-    % if conf.get('petitpois_url'):
+    % if conf['petitpois_url']:
             <p class="pull-right">
-                <a class="label label-info" href="${urlparse.urljoin(conf['petitpois_url'], '/poi/search')}" \
-rel="external">Ajouter une fiche</a>
+                <a class="label label-info" href="${urlparse.urljoin(conf['petitpois_url'][0], '/poi/search')
+                        }" rel="external">Ajouter une fiche</a>
             </p>
     % endif
 </%def>

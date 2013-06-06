@@ -264,8 +264,8 @@ class Field(representations.UserRepresentable):
         return changed
 
 
-class Poi(representations.UserRepresentable, monpyjama.Wrapper):
-    collection_name = 'pois'
+class Poi(representations.UserRepresentable):
+    _id = None
     # IDs of territories for which POI is fully competent. None when POI has no notion of competence territory
     competence_territories_id = None
     fields = None
@@ -284,6 +284,7 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
     last_update_organization = None
     name = None
     parent_id = None
+    petitpois_url = None  # class attribute defined in subclass. URL of Petitpois site
     postal_distribution_str = None
     schema_name = None
     slug_by_id = {}
@@ -651,8 +652,11 @@ class Poi(representations.UserRepresentable, monpyjama.Wrapper):
 
     @classmethod
     def load_pois(cls):
-        for poi_bson in cls.get_collection().find({'metadata.deleted': {'$exists': False}}):
-            cls.load(poi_bson)
+        from . import model
+        for db, petitpois_url in zip(model.dbs, conf['petitpois_url']):
+            subclass = type('PoiWithPetitpois', (cls,), dict(petitpois_url = petitpois_url))
+            for poi_bson in db.pois.find({'metadata.deleted': {'$exists': False}}):
+                subclass.load(poi_bson)
 
     @classmethod
     def make_inputs_to_search_data(cls):

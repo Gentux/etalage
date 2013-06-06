@@ -31,6 +31,7 @@ import logging
 import sys
 
 from biryani import strings
+import pymongo
 import threading2
 
 from . import conf
@@ -100,17 +101,19 @@ def load():
     categories_slug_by_word.clear()
     category_by_slug.clear()
     category_slug_by_pivot_code.clear()
-    for category_bson in model.db[conf['categories_collection']].find(None, ['code', 'tags_code', 'title']):
-        if not strings.slugify(category_bson.get('title')):
-            continue
-        category = model.Category.load(category_bson)
-        category.index()
+    for db in model.dbs:
+        for category_bson in db[conf['categories_collection']].find(None, ['code', 'tags_code', 'title']):
+            if not strings.slugify(category_bson.get('title')):
+                continue
+            category = model.Category.load(category_bson)
+            category.index()
 
-    for organism_type_bson in model.db[conf['organism_types_collection']].find(None, ['code', 'slug']):
-        if organism_type_bson['slug'] not in category_by_slug:
-            log.warning('Ignoring organism type "{0}" without matching category.'.format(organism_type_bson['code']))
-            continue
-        category_slug_by_pivot_code[organism_type_bson['code']] = organism_type_bson['slug']
+    for db in model.dbs:
+        for organism_type_bson in db[conf['organism_types_collection']].find(None, ['code', 'slug']):
+            if organism_type_bson['slug'] not in category_by_slug:
+                log.warning('Ignoring organism type "{0}" without matching category.'.format(organism_type_bson['code']))
+                continue
+            category_slug_by_pivot_code[organism_type_bson['code']] = organism_type_bson['slug']
 
     territories_id_by_ancestor_id.clear()
     territories_id_by_postal_distribution.clear()
@@ -119,7 +122,7 @@ def load():
         )
     territory_by_id.clear()
     territory_id_by_kind_code.clear()
-    territories_collection = model.db.connection[conf['territories_database']][conf['territories_collection']]
+    territories_collection = pymongo.Connection()[conf['territories_database']][conf['territories_collection']]
     territories_fields_list = [
         'ancestors_id',
         'code',
@@ -155,8 +158,9 @@ def load():
             )] = territory_id
 
     schema_title_by_name.clear()
-    for schema in model.db.schemas.find(None, ['name', 'title']):
-        schema_title_by_name[schema['name']] = schema['title']
+    for db in model.dbs:
+        for schema in db.schemas.find(None, ['name', 'title']):
+            schema_title_by_name[schema['name']] = schema['title']
 
     model.Poi.clear_indexes()
     model.Poi.load_pois()
@@ -186,80 +190,81 @@ def ramdb_based(controller):
 
         global last_timestamp
         reset_pois = False
-        for data_update in model.db[conf['data_updates_collection']].find(dict(
-                collection_name = {'$in': ['categories', 'pois', 'organism_types']},
-                timestamp = {'$gt': last_timestamp},
-                )).sort('timestamp').limit(5):
-            if data_update['collection_name'] == 'categories':
-                slug = data_update['document_id']
-                category_bson = model.db[conf['categories_collection']].find_one(dict(code = slug),
-                    ['code', 'tags_code', 'title'])
-                read_write_lock.acquire()
-                try:
-                    # First find changes to do on indexes.
-                    existing = {}
-                    indexes = sys.modules[__name__]
-                    find_existing(indexes, 'categories_slug_by_tag_slug', 'dict_of_sets', slug, existing)
-                    find_existing(indexes, 'categories_slug_by_word', 'dict_of_sets', slug, existing)
-                    find_existing(indexes, 'category_slug_by_pivot_code', 'dict_of_values', slug, existing)
-                    # Then update indexes.
-                    delete_remaining(indexes, existing)
-                    if category_bson is None:
-                        category_by_slug.pop(slug, None)
-                        model.Poi.ids_by_category_slug.pop(slug, None)
-                    else:
-                        category = model.Category.load(category_bson)
-                        category.index()
-                finally:
-                    read_write_lock.release()
-            elif data_update['collection_name'] == 'organism_types':
-                pivot_code = data_update['document_id']
-                organism_type_bson = model.db[conf['organism_types_collection']].find_one(dict(code = pivot_code),
-                    ['code', 'slug'])
-                read_write_lock.acquire()
-                try:
-                    if organism_type_bson is None:
-                        category_slug_by_pivot_code.pop(pivot_code, None)
-                    elif organism_type_bson['slug'] not in category_by_slug:
-                        log.warning('Ignoring organism type "{0}" without matching category.'.format(pivot_code))
-                    else:
-                        category_slug_by_pivot_code[pivot_code] = organism_type_bson['slug']
-                finally:
-                    read_write_lock.release()
-            elif data_update['collection_name'] == 'pois':
-                if conf['reset_on_poi_update']:
-                    reset_pois = True
-                else:
-                    id = data_update['document_id']
-                    poi_bson = model.Poi.get_collection().find_one(id)
+        for db in model.dbs:
+            for data_update in db[conf['data_updates_collection']].find(dict(
+                    collection_name = {'$in': ['categories', 'pois', 'organism_types']},
+                    timestamp = {'$gt': last_timestamp},
+                    )).sort('timestamp').limit(5):
+                if data_update['collection_name'] == 'categories':
+                    slug = data_update['document_id']
+                    category_bson = db[conf['categories_collection']].find_one(dict(code = slug),
+                        ['code', 'tags_code', 'title'])
                     read_write_lock.acquire()
                     try:
-                        # Note: POI's whose parent_id == id are not updated here. They will be updated when publisher
-                        # will publish their change.
                         # First find changes to do on indexes.
                         existing = {}
-                        find_existing(model.Poi, 'ids_by_category_slug', 'dict_of_sets', id, existing)
-                        find_existing(model.Poi, 'ids_by_competence_territory_id', 'dict_of_sets', id, existing)
-                        find_existing(model.Poi, 'ids_by_begin_datetime', 'list_of_tuples', id, existing)
-                        find_existing(model.Poi, 'ids_by_end_datetime', 'list_of_tuples', id, existing)
-                        find_existing(model.Poi, 'ids_by_last_update_datetime', 'list_of_tuples', id, existing)
-                        find_existing(model.Poi, 'ids_by_parent_id', 'dict_of_sets', id, existing)
-                        find_existing(model.Poi, 'ids_by_presence_territory_id', 'dict_of_sets', id, existing)
-                        find_existing(model.Poi, 'ids_by_word', 'dict_of_sets', id, existing)
+                        indexes = sys.modules[__name__]
+                        find_existing(indexes, 'categories_slug_by_tag_slug', 'dict_of_sets', slug, existing)
+                        find_existing(indexes, 'categories_slug_by_word', 'dict_of_sets', slug, existing)
+                        find_existing(indexes, 'category_slug_by_pivot_code', 'dict_of_values', slug, existing)
                         # Then update indexes.
-                        delete_remaining(model.Poi, existing)
-                        if poi_bson is None or poi_bson['metadata'].get('deleted', False):
-                            model.Poi.instance_by_id.pop(id, None)
-                            model.Poi.slug_by_id.pop(id, None)
-                            model.Poi.indexed_ids.discard(id)
+                        delete_remaining(indexes, existing)
+                        if category_bson is None:
+                            category_by_slug.pop(slug, None)
+                            model.Poi.ids_by_category_slug.pop(slug, None)
                         else:
-                            poi = model.Poi.load(poi_bson)
-                            model.Poi.indexed_ids.add(poi._id)
-                            poi.index(poi._id)
-                            del poi.bson
+                            category = model.Category.load(category_bson)
+                            category.index()
                     finally:
                         read_write_lock.release()
-            last_timestamp = data_update['timestamp']
+                elif data_update['collection_name'] == 'organism_types':
+                    pivot_code = data_update['document_id']
+                    organism_type_bson = db[conf['organism_types_collection']].find_one(dict(code = pivot_code),
+                        ['code', 'slug'])
+                    read_write_lock.acquire()
+                    try:
+                        if organism_type_bson is None:
+                            category_slug_by_pivot_code.pop(pivot_code, None)
+                        elif organism_type_bson['slug'] not in category_by_slug:
+                            log.warning('Ignoring organism type "{0}" without matching category.'.format(pivot_code))
+                        else:
+                            category_slug_by_pivot_code[pivot_code] = organism_type_bson['slug']
+                    finally:
+                        read_write_lock.release()
+                elif data_update['collection_name'] == 'pois':
+                    if conf['reset_on_poi_update']:
+                        reset_pois = True
+                    else:
+                        id = data_update['document_id']
+                        poi_bson = db.pois.find_one(id)
+                        read_write_lock.acquire()
+                        try:
+                            # Note: POI's whose parent_id == id are not updated here. They will be updated when publisher
+                            # will publish their change.
+                            # First find changes to do on indexes.
+                            existing = {}
+                            find_existing(model.Poi, 'ids_by_category_slug', 'dict_of_sets', id, existing)
+                            find_existing(model.Poi, 'ids_by_competence_territory_id', 'dict_of_sets', id, existing)
+                            find_existing(model.Poi, 'ids_by_begin_datetime', 'list_of_tuples', id, existing)
+                            find_existing(model.Poi, 'ids_by_end_datetime', 'list_of_tuples', id, existing)
+                            find_existing(model.Poi, 'ids_by_last_update_datetime', 'list_of_tuples', id, existing)
+                            find_existing(model.Poi, 'ids_by_parent_id', 'dict_of_sets', id, existing)
+                            find_existing(model.Poi, 'ids_by_presence_territory_id', 'dict_of_sets', id, existing)
+                            find_existing(model.Poi, 'ids_by_word', 'dict_of_sets', id, existing)
+                            # Then update indexes.
+                            delete_remaining(model.Poi, existing)
+                            if poi_bson is None or poi_bson['metadata'].get('deleted', False):
+                                model.Poi.instance_by_id.pop(id, None)
+                                model.Poi.slug_by_id.pop(id, None)
+                                model.Poi.indexed_ids.discard(id)
+                            else:
+                                poi = model.Poi.load(poi_bson)
+                                model.Poi.indexed_ids.add(poi._id)
+                                poi.index(poi._id)
+                                del poi.bson
+                        finally:
+                            read_write_lock.release()
+                last_timestamp = data_update['timestamp']
         if reset_pois:
             read_write_lock.acquire()
             try:

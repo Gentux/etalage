@@ -477,8 +477,9 @@ etalage.map.singleMarkerMap("map-poi", ${field.value[0]}, ${field.value[1]});
 
 <%def name="footer_actions()" filter="trim">
             <p class="pull-right">
-    % if conf.get('petitpois_url'):
-                <a class="label label-info" href="${urlparse.urljoin(conf['petitpois_url'], '/poi/view/{0}'.format(poi._id))}" rel="external">Modifier la fiche</a>
+    % if poi.petitpois_url is not None:
+                <a class="label label-info" href="${urlparse.urljoin(poi.petitpois_url, '/poi/view/{0}'.format(poi._id))
+                        }" rel="external">Modifier la fiche</a>
                 &mdash;
     % endif
     % if not conf['hide_minisite']:

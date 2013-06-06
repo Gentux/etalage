@@ -98,7 +98,14 @@ def load_environment(global_conf, app_conf):
                     conv.input_to_email,
                     ),
                 ),
-            u'database': conv.default('souk'),
+            u'database': conv.pipe(  # A space-separated list of databases
+                conv.function(lambda databases: databases.split()),
+                conv.uniform_sequence(
+                    conv.noop,
+                    # Remove empty items and remove sequence when it is empty.
+                    ),
+                conv.default(['souk']),
+                ),
             u'debug': conv.pipe(conv.guess_bool, conv.default(False)),
             u'default_tab': conv.pipe(
                 conv.cleanup_line,
@@ -140,7 +147,15 @@ def load_environment(global_conf, app_conf):
             u'markers.piwik.ssl_host': conv.default('https://localhost/piwik'),
             u'organism_types_collection': conv.default('organism_types'),
             u'package_name': conv.default('etalage'),
-            u'pois_collection': conv.default('pois'),
+            u'petitpois_url': conv.pipe(  # A space-separated list of URLs
+                conv.function(lambda urls: urls.split()),
+                conv.uniform_sequence(
+                    conv.make_input_to_url(error_if_fragment = True, error_if_path = True, error_if_query = True,
+                        full = True),
+                    # Remove empty items and remove sequence when it is empty.
+                    ),
+                conv.default(['http://localhost:5000/']),
+                ),
             u'plugins_conf_file': conv.default(None),
             u'realm': conv.default(u'Etalage'),
             u'require_subscription': conv.pipe(conv.guess_bool, conv.default(False)),
@@ -156,10 +171,7 @@ def load_environment(global_conf, app_conf):
                 conv.default(['localhost', '127.0.0.1', 'comarquage.fr', 'donnees-libres.fr']),
                 conv.function(lambda hostnames: tuple(hostnames)),
                 ),
-            u'territories_database': conv.pipe(
-                conv.default(conf.get('database')),
-                conv.default('souk'),
-                ),
+            u'territories_database': conv.noop,  # Done below.
             u'territories_collection': conv.default('territories'),
             u'territories_kinds': conv.pipe(
                 conv.function(lambda kinds: kinds.split()),
@@ -238,6 +250,8 @@ def load_environment(global_conf, app_conf):
                 ),
             u'easyxdm.js': conv.default(urlparse.urljoin(conf['cdn_url'], '/easyxdm/latest/easyXDM.min.js')),
             u'easyxdm.swf': conv.default(urlparse.urljoin(conf['cdn_url'], '/easyxdm/latest/easyxdm.swf')),
+            u'images.markers.url': conv.default(urlparse.urljoin(conf['cdn_url'], '/images/markers/')),
+            u'images.misc.url': conv.default(urlparse.urljoin(conf['cdn_url'], '/images/misc/')),
             u'jquery.js': conv.default(urlparse.urljoin(conf['cdn_url'], '/jquery/jquery-1.7.1.min.js')),
             u'jquery-ui.css': conv.default(
                 urlparse.urljoin(conf['cdn_url'], '/jquery-ui/1.8.16/themes/smoothness/jquery-ui.css')
@@ -249,11 +263,16 @@ def load_environment(global_conf, app_conf):
             u'leaflet.js': conv.default(urlparse.urljoin(conf['cdn_url'], '/leaflet/leaflet-0.5.1/leaflet.js')),
             u'pie.js': conv.default(urlparse.urljoin(conf['cdn_url'], '/css3pie/1.0beta5/PIE.js')),
             u'prettify.js': conv.default(urlparse.urljoin(conf['cdn_url'], '/google-code-prettify/187/prettify.js')),
-            u'images.markers.url': conv.default(urlparse.urljoin(conf['cdn_url'], '/images/markers/')),
-            u'images.misc.url': conv.default(urlparse.urljoin(conf['cdn_url'], '/images/misc/')),
+            u'territories_database': conv.pipe(
+                conv.default(conf['database'][0]),
+                ),
             },
         default = conv.noop,
         ))(conf))
+
+    if len(conf['database']) != len(conf['petitpois_url']):
+        raise Exception("Number of databases and number of Petitpois URLs don't match : {0} , {1}".format(
+            conf['database'], conf['petitpois_url']))
 
     # Configure logging.
     logging.basicConfig(level = conf['log_level'], stream = sys.stdout)
@@ -270,7 +289,10 @@ def load_environment(global_conf, app_conf):
 
     # Connect to MongoDB database.
     connection = pymongo.Connection()
-    monpyjama.Wrapper.db = model.db = connection[conf['database']]
+    model.dbs = [
+        connection[database_name]
+        for database_name in conf['database']
+        ]
     model.Subscriber.db = connection[conf['subscribers.database']]
     model.Subscriber.collection_name = conf['subscribers.collection']
 

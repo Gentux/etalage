@@ -33,4 +33,4 @@ from .pois import *
 from .subscribers import *
 
 
-db = None
+dbs = None  # List of POIs databases
