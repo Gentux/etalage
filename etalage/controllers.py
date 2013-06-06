@@ -101,7 +101,7 @@ def autocomplete_category(req):
                         ],
                     # message will be automatically defined.
                     ),
-                method = req.script_name.decode('utf-8'),
+                method = req.script_name,
                 params = inputs,
                 url = req.url.decode('utf-8'),
                 ),
@@ -153,7 +153,7 @@ def autocomplete_category(req):
                 totalItems = pager.item_count,
                 totalPages = pager.page_count,
                 ),
-            method = req.script_name.decode('utf-8'),
+            method = req.script_name,
             params = inputs,
             url = req.url.decode('utf-8'),
             ),
