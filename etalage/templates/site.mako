@@ -123,8 +123,10 @@ from etalage import conf
     <script src="${conf['bootstrap.js']}"></script>
     % if ctx.container_base_url is not None and ctx.gadget_id is not None:
     <script src="${conf['easyxdm.js']}"></script>
+<!--[if lt IE 8]>
+    <script src="${conf['json2.js']}"></script>
+<![endif]-->
     <script>
-easyXDM.DomHelper.requiresJSON("${conf['json2.js']}");
 var etalage = etalage || {};
 if (!etalage.easyXDM) {
     etalage.easyXDM = easyXDM.noConflict("etalage");
