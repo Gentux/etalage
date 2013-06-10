@@ -289,6 +289,7 @@ class Poi(representations.UserRepresentable):
     schema_name = None
     slug_by_id = {}
     street_address = None
+    subclass_by_database_name = {}
     theme_slug = None
 
     def __init__(self, **attributes):
@@ -305,6 +306,7 @@ class Poi(representations.UserRepresentable):
         cls.ids_by_presence_territory_id.clear()
         cls.ids_by_word.clear()
         cls.slug_by_id.clear()
+        cls.subclass_by_database_name.clear()
 
     @classmethod
     def extract_non_territorial_search_data(cls, ctx, data):
@@ -654,9 +656,11 @@ class Poi(representations.UserRepresentable):
     def load_pois(cls):
         from . import model
         for db, petitpois_url in zip(model.dbs, conf['petitpois_url']):
-            subclass = type('PoiWithPetitpois', (cls,), dict(petitpois_url = petitpois_url))
+            cls.subclass_by_database_name[db.name] = poi_subclass = type('PoiWithPetitpois', (cls,), dict(
+                petitpois_url = petitpois_url,
+                ))
             for poi_bson in db.pois.find({'metadata.deleted': {'$exists': False}}):
-                subclass.load(poi_bson)
+                poi_subclass.load(poi_bson)
 
     @classmethod
     def make_inputs_to_search_data(cls):
