@@ -36,7 +36,6 @@ import urlparse
 import zipfile
 
 from biryani import strings
-import markupsafe
 
 from . import conf, contexts, conv, model, pagers, ramdb, templates, urls, wsgihelpers
 

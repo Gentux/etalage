@@ -37,7 +37,7 @@ import urllib
 
 import bson
 from biryani import strings
-from suq import monpyjama, representations
+from suq import representations
 import webob.multidict
 
 from . import conf, conv, ramdb, urls
