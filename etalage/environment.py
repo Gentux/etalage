@@ -321,6 +321,7 @@ def load_environment(global_conf, app_conf):
         templates_dirs.append(conf['custom_templates_dir'])
     templates_dirs.append(os.path.join(app_dir, 'templates'))
     templates.lookup = mako.lookup.TemplateLookup(
+        cache_enabled = False if conf['debug'] else True,
         default_filters = ['h'],
         directories = templates_dirs,
 #        error_handler = handle_mako_error,

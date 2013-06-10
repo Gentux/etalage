@@ -683,6 +683,7 @@ def geojson(req):
         bbox = params.get('bbox'),
         context = params.get('context'),
         current = params.get('current'),
+        enable_cluster = params.get('enable_cluster'),
         jsonp = params.get('jsonp'),
         ))
 
@@ -718,6 +719,7 @@ def geojson(req):
                 'properties': {
                     'competent': cluster.competent,
                     'count': cluster.count,
+                    'iconUrl': cluster.icon_url,
                     'id': str(cluster.center_pois[0]._id),
                     'centerPois': [
                         {

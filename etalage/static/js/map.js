@@ -29,39 +29,11 @@ etalage.map = (function ($) {
     var leafletMap;
 
     function addFeature(feature, layer) {
-        // Icon settings
-        var blueBlankIcon = createIcon(etalage.map.markersUrl + '/misc/blueblank.png');
-        var blueMultipleIcon = createIcon(etalage.map.markersUrl + '/misc/bluemultiple.png');
-        var greenValidIcon = createIcon(etalage.map.markersUrl + '/misc/greenvalid.png');
-        var greenMultipleIcon = createIcon(etalage.map.markersUrl + '/misc/greenmultiple.png');
-        var homeIcon = createIcon(etalage.map.markersUrl + '/map-icons-collection-2.0/icons/home.png');
-        var redInvalidIcon = createIcon(etalage.map.markersUrl + '/misc/redinvalid.png');
-        var redMultipleIcon = createIcon(etalage.map.markersUrl + '/misc/redmultiple.png');
-
         var properties = feature.properties;
-        etalage.map.layerByPoiId[properties.id] = layer;
 
-        if (properties.home) {
-            layer.setIcon(homeIcon);
-        } else {
-            if (properties.count > 1) {
-                if (properties.competent === true) {
-                    layer.setIcon(greenMultipleIcon);
-                } else if (properties.competent === false) {
-                    layer.setIcon(redMultipleIcon);
-                } else {
-                    layer.setIcon(blueMultipleIcon);
-                }
-            } else {
-                if (properties.competent === true) {
-                    layer.setIcon(greenValidIcon);
-                } else if (properties.competent === false) {
-                    layer.setIcon(redInvalidIcon);
-                } else {
-                    layer.setIcon(blueBlankIcon);
-                }
-            }
+        etalage.map.setFeatureIcon(layer, properties);
 
+        if ( ! properties.home) {
             var nearbyPoiCount = properties.count - properties.centerPois.length;
             var poi;
             var $popupDiv = $('<div/>');
@@ -319,6 +291,41 @@ etalage.map = (function ($) {
         return map;
     }
 
+    function setFeatureIcon(layer, properties) {
+        // Icon settings
+        var blueBlankIcon = createIcon(etalage.map.markersUrl + '/misc/blueblank.png');
+        var blueMultipleIcon = createIcon(etalage.map.markersUrl + '/misc/bluemultiple.png');
+        var greenValidIcon = createIcon(etalage.map.markersUrl + '/misc/greenvalid.png');
+        var greenMultipleIcon = createIcon(etalage.map.markersUrl + '/misc/greenmultiple.png');
+        var homeIcon = createIcon(etalage.map.markersUrl + '/map-icons-collection-2.0/icons/home.png');
+        var redInvalidIcon = createIcon(etalage.map.markersUrl + '/misc/redinvalid.png');
+        var redMultipleIcon = createIcon(etalage.map.markersUrl + '/misc/redmultiple.png');
+
+        etalage.map.layerByPoiId[properties.id] = layer;
+
+        if (properties.home) {
+            layer.setIcon(homeIcon);
+        } else {
+            if (properties.count > 1) {
+                if (properties.competent === true) {
+                    layer.setIcon(greenMultipleIcon);
+                } else if (properties.competent === false) {
+                    layer.setIcon(redMultipleIcon);
+                } else {
+                    layer.setIcon(blueMultipleIcon);
+                }
+            } else {
+                if (properties.competent === true) {
+                    layer.setIcon(greenValidIcon);
+                } else if (properties.competent === false) {
+                    layer.setIcon(redInvalidIcon);
+                } else {
+                    layer.setIcon(blueBlankIcon);
+                }
+            }
+        }
+    }
+
     return {
         center: null,
         createMap: createMap,
@@ -329,6 +336,7 @@ etalage.map = (function ($) {
         geojsonUrl: null,
         layerByPoiId: null,
         markersUrl: null,
+        setFeatureIcon: setFeatureIcon,
         singleMarkerMap: singleMarkerMap,
         tileLayersOptions: null
     };

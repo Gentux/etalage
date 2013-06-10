@@ -42,6 +42,7 @@ categories_slug_by_tag_slug = {}
 categories_slug_by_word = {}
 category_by_slug = {}
 category_slug_by_pivot_code = {}
+icon_classes_by_schema_name = {}
 last_timestamp = None
 read_write_lock = threading2.SHLock()
 log = logging.getLogger(__name__)

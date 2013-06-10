@@ -575,6 +575,7 @@ def layer_data_to_clusters(data, state = None):
     center_latitude_cos = math.cos(math.radians(center_latitude))
     center_latitude_sin = math.sin(math.radians(center_latitude))
     center_longitude = (left + right) / 2.0
+
     base_territory = data['base_territory']
     territory = data['territory']
     related_territories_id = None
@@ -633,12 +634,13 @@ def layer_data_to_clusters(data, state = None):
         pois.insert(0, current)
     horizontal_iota = (right - left) / 20.0
     vertical_iota = (top - bottom) / 15.0
-#    vertical_iota = horizontal_iota = (right - left) / 30.0
     clusters = []
     for poi in pois:
         poi_latitude = poi.geo[0]
         poi_longitude = poi.geo[1]
         for cluster in clusters:
+            if data['enable_cluster'] is False:
+                continue
             if abs(poi_latitude - cluster.center_latitude) <= vertical_iota \
                     and abs(poi_longitude - cluster.center_longitude) <= horizontal_iota:
                 cluster.count += 1
@@ -655,21 +657,23 @@ def layer_data_to_clusters(data, state = None):
                 break
         else:
             cluster = model.Cluster()
+            cluster.bottom = cluster.top = cluster.center_latitude = poi_latitude
+            cluster.center_pois = [poi]
             cluster.competent = False  # changed below
             cluster.count = 1
-            cluster.bottom = cluster.top = cluster.center_latitude = poi_latitude
             cluster.left = cluster.right = cluster.center_longitude = poi_longitude
-            cluster.center_pois = [poi]
+            cluster.icon_url = poi.icon_url
+            if conf['handle_competence_territories']:
+                if cluster.competent is False:
+                    if competence_territories_id is None or poi.competence_territories_id is None:
+                        cluster.competent = None
+                    elif not competence_territories_id.isdisjoint(poi.competence_territories_id):
+                        cluster.competent = True
+                elif cluster.competent is None and competence_territories_id is not None \
+                        and poi.competence_territories_id is not None \
+                        and not competence_territories_id.isdisjoint(poi.competence_territories_id):
+                    cluster.competent = True
             clusters.append(cluster)
-        if cluster.competent is False:
-            if competence_territories_id is None or poi.competence_territories_id is None:
-                cluster.competent = None
-            elif not competence_territories_id.isdisjoint(poi.competence_territories_id):
-                cluster.competent = True
-        elif cluster.competent is None and competence_territories_id is not None \
-                and poi.competence_territories_id is not None \
-                and not competence_territories_id.isdisjoint(poi.competence_territories_id):
-            cluster.competent = True
     return clusters, None
 
 
