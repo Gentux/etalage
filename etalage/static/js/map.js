@@ -43,7 +43,10 @@ etalage.map = (function ($) {
                     $('<a/>', {
                         'class': 'internal',
                         'data-poi-id': poi.id,
-                        href: '/organismes/' + poi.slug + '/' + poi.id + '?bbox=' + etalage.map.bbox
+                        href: '/organismes/' + poi.slug + '/' + poi.id + '?' + $.param(
+                            $.extend({bbox: etalage.map.bbox}, etalage.map.geojsonParams || {}),
+                            true
+                        )
                     }).append($('<strong/>').text(poi.name))
                 );
                 if (poi.streetAddress) {
@@ -61,7 +64,10 @@ etalage.map = (function ($) {
                     $li = $('<li>').append(
                         $('<a/>', {
                             'class': 'internal',
-                            href: '/organismes/' + poi.slug + '/' + poi.id + '?bbox=' + etalage.map.bbox
+                            href: '/organismes/' + poi.slug + '/' + poi.id + '?' + $.param(
+                                $.extend({bbox: etalage.map.bbox}, etalage.map.geojsonParams || {}),
+                                true
+                            )
                         }).append($('<strong/>').text(poi.name))
                     );
                     if (poi.streetAddress) {
