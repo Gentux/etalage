@@ -664,7 +664,7 @@ class Poi(representations.UserRepresentable):
                         'PoiWithPetitpois',
                         (cls,),
                         dict(
-                            icon_url = schema.get('icon_url'),
+                            icon_url = schema.get('icon_url') if schema is not None else None,
                             petitpois_url = petitpois_url,
                             ),
                         )
