@@ -111,7 +111,9 @@ from etalage import conf, conv, model, ramdb, urls
         else:
             fields.insert(fields.index(last_update_field), accessibility_field)
 %>\
+    % if inputs.has_key('poi_index') or inputs.has_key('bbox'):
         <%self:navbar/>
+    % endif
         <%self:poi_header fields="${fields}" poi="${poi}"/>
         <%self:fields fields="${fields}" poi="${poi}"/>
 </%def>
