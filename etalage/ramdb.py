@@ -259,7 +259,8 @@ def ramdb_based(controller):
                                 model.Poi.slug_by_id.pop(id, None)
                                 model.Poi.indexed_ids.discard(id)
                             else:
-                                poi_subclass = model.Poi.subclass_by_database_name[db.name]
+                                poi_subclass = model.Poi.subclass_by_database_and_schema_name[
+                                    (db.name, poi.schema_name)]
                                 poi = poi_subclass.load(poi_bson)
                                 model.Poi.indexed_ids.add(poi._id)
                                 poi.index(poi._id)
