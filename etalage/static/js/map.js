@@ -43,7 +43,7 @@ etalage.map = (function ($) {
                     $('<a/>', {
                         'class': 'internal',
                         'data-poi-id': poi.id,
-                        href: '/organismes/' + poi.slug + '/' + poi.id
+                        href: '/organismes/' + poi.slug + '/' + poi.id + '?bbox=' + etalage.map.bbox
                     }).append($('<strong/>').text(poi.name))
                 );
                 if (poi.streetAddress) {
@@ -61,7 +61,7 @@ etalage.map = (function ($) {
                     $li = $('<li>').append(
                         $('<a/>', {
                             'class': 'internal',
-                            href: '/organismes/' + poi.slug + '/' + poi.id
+                            href: '/organismes/' + poi.slug + '/' + poi.id + '?bbox=' + etalage.map.bbox
                         }).append($('<strong/>').text(poi.name))
                     );
                     if (poi.streetAddress) {
@@ -244,6 +244,7 @@ etalage.map = (function ($) {
             etalage.map.currentPoiId ? {current: etalage.map.currentPoiId} : {},
             leafletMap.getZoom() === leafletMap.getMaxZoom() ? {enable_cluster: false} : {}
         );
+        etalage.map.bbox = geojsonParams.bbox;
         $.ajax({
             url: etalage.map.geojsonUrl,
             dataType: 'json',
@@ -327,6 +328,7 @@ etalage.map = (function ($) {
     }
 
     return {
+        bbox: null,
         center: null,
         createMap: createMap,
         currentPoiId: null,

@@ -551,6 +551,10 @@ def inputs_to_pois_list_data(inputs, state = None):
                         test_greater_or_equal(1),
                         default(1),
                         ),
+                    poi_index = pipe(
+                        input_to_int,
+                        test_greater_or_equal(1),
+                        ),
                     sort_key = pipe(
                         cleanup_line,
                         test_in(['name', 'organism-type', 'postal_distribution_str', 'schema_name', 'street_address']),

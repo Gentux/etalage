@@ -47,7 +47,8 @@ from etalage import conf, conv, model, ramdb, urls
         url_args = dict(
             (model.Poi.rename_input_to_param(name), value)
             for name, value in inputs.iteritems()
-            if name != 'page' and name not in model.Poi.get_visibility_params_names(ctx) and value is not None
+            if name not in ['page', 'poi_index'] and name not in model.Poi.get_visibility_params_names(ctx) \
+                and value is not None
             )
 %>\
                     <li class="prev${' disabled' if pager.page_number <= 1 else ''}">
@@ -118,7 +119,6 @@ from etalage import conf, conv, model, ramdb, urls
         for name, value in inputs.iteritems()
         if name not in model.Poi.get_visibility_params_names(ctx) and value is not None
         )
-    url_args['page'] = '1'
     sort_keys_tuples = [
         (None, ''),
         ('name', 'Name'),
@@ -128,6 +128,7 @@ from etalage import conf, conv, model, ramdb, urls
 %>\
     % for sort_key, sort_key_label in sort_keys_tuples:
 <%
+        url_args['page'] = '1'
         url_args['sort_key'] = sort_key if sort_key != inputs['sort_key'] else None
         icon_class = 'icon-list' if sort_key != inputs['sort_key'] else 'icon-chevron-down'
 %>
@@ -141,7 +142,7 @@ from etalage import conf, conv, model, ramdb, urls
                 </tr>
             </thead>
             <tbody>
-        % for poi in pager.items:
+        % for index, poi in enumerate(pager.items):
                 <tr>
                     <td>
             % if competence_territories_id is None or poi.competence_territories_id is None:
@@ -153,7 +154,14 @@ from etalage import conf, conv, model, ramdb, urls
             % endif
                     </td>
                     <td>
-                        <a class="internal" href="${urls.get_url(ctx, 'organismes', poi.slug, poi._id)}">${poi.name}</a>
+<%
+                if url_args.get('page'):
+                    del url_args['page']
+                url_args['poi_index'] = pager.first_item_number + index
+%>
+                        <a class="internal" href="${urls.get_url(ctx, 'organismes', poi.slug, poi._id, **url_args)}">
+                            ${poi.name}
+                        </a>
                     </td>
                     <td>${markupsafe.Markup(u'<br>').join((poi.street_address or u'').split(u'\n'))}</td>
                     <td>${poi.postal_distribution_str or ''}</td>
@@ -167,4 +175,3 @@ from etalage import conf, conv, model, ramdb, urls
 <%def name="title_content()" filter="trim">
 ${_(u'List')} - ${parent.title_content()}
 </%def>
-

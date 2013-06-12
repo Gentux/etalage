@@ -37,6 +37,42 @@ from etalage import conf, conv, model, ramdb, urls
 <%inherit file="/site.mako"/>
 
 
+<%def name="navbar()" filter="trim">
+<%
+    url_args = dict(
+        (model.Poi.rename_input_to_param(name), value)
+        for name, value in inputs.iteritems()
+        if name not in ['poi_id', 'slug'] and name not in model.Poi.get_visibility_params_names(ctx) and value is not None
+        )
+    if data.get('poi_index') is not None:
+        search_url = urls.get_url(ctx, 'liste', **url_args)
+        url_args['poi_index'] = (data['poi_index'] or 1) - 1
+        previous_poi_url = urls.get_url(ctx, 'organismes', **url_args)
+        url_args['poi_index'] = (data['poi_index'] or 1) + 1
+        next_poi_url = urls.get_url(ctx, 'organismes', **url_args)
+    else:
+        search_url = urls.get_url(ctx, 'carte', **url_args)
+%>
+    <ul class="pager">
+        % if data.get('poi_index'):
+        <li class="previous${' disabled' if (data['poi_index'] or 1) == 1 else ''}">
+            <a class="internal" href="${previous_poi_url}">&larr; Previous</a>
+        </li>
+        % endif
+        <li>
+            <a class="internal" href="${search_url}">
+                <i class="icon-search"></i> ${_('Search')}
+            </a>
+        </li>
+        % if data.get('poi_index'):
+        <li class="next">
+            <a class="internal" href="${next_poi_url}">Next &rarr;</a>
+        </li>
+        % endif
+    </ul>
+</%def>
+
+
 <%def name="container_content()" filter="trim">
 <%
     fields = poi.generate_all_fields()
@@ -75,6 +111,7 @@ from etalage import conf, conv, model, ramdb, urls
         else:
             fields.insert(fields.index(last_update_field), accessibility_field)
 %>\
+        <%self:navbar/>
         <%self:poi_header fields="${fields}" poi="${poi}"/>
         <%self:fields fields="${fields}" poi="${poi}"/>
 </%def>
