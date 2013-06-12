@@ -403,14 +403,14 @@ class Poi(representations.UserRepresentable):
 
                     if date_range_begin is not None:
                         for index, (begin_datetime, poi_id) in enumerate(self.ids_by_begin_datetime):
-                            if begin_datetime is not None and begin_datetime < date_range_begin:
+                            if begin_datetime is not None and begin_datetime > date_range_begin:
                                 break
                     else:
                         index = 0
                     self.ids_by_begin_datetime.insert(index, (date_range_begin, indexed_poi_id))
                     if date_range_end is not None:
                         for index, (end_datetime, poi_id) in enumerate(self.ids_by_end_datetime):
-                            if end_datetime is not None and end_datetime > date_range_end:
+                            if end_datetime is not None and end_datetime < date_range_end:
                                 break
                     else:
                         index = 0
