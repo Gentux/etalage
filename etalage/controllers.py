@@ -1455,7 +1455,7 @@ def poi_embedded(req):
     if error is not None:
         raise wsgihelpers.bad_request(ctx, explanation = ctx._('Encoding Error: {0}').format(error))
 
-    text = templates.render(ctx, '/poi-embedded.mako', poi = poi)
+    text = templates.render(ctx, '/poi-embedded.mako', inputs = inputs, poi = poi)
     if encoding is None:
         req.response.content_type = 'text/plain; charset=utf-8'
         return text
