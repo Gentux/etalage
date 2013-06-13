@@ -38,7 +38,7 @@ from etalage import conf, conv, model, ramdb, urls
 
 
 <%def name="links()" filter="trim">
-<link rel="canonical" href="${urls.get_full_url(ctx, 'organismes', poi.slug, poi._id)}"/>
+<link rel="canonical" href="${urls.get_full_url(ctx, 'organismes', poi.slug, poi._id)}">
 </%def>
 
 
