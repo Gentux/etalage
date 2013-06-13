@@ -37,6 +37,11 @@ from etalage import conf, conv, model, ramdb, urls
 <%inherit file="/site.mako"/>
 
 
+<%def name="links()" filter="trim">
+<link rel="canonical" href="${urls.get_url(ctx, 'organismes', poi.slug, poi._id)}"/>
+</%def>
+
+
 <%def name="navbar()" filter="trim">
 <%
     url_args = dict(

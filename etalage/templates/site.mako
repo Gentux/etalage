@@ -108,6 +108,10 @@ from etalage import conf
 </%def>
 
 
+<%def name="links()" filter="trim">
+</%def>
+
+
 <%def name="metas()" filter="trim">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -218,6 +222,7 @@ try {
 <head>
     <%self:metas/>
     <title>${self.title_content()}</title>
+    <%self:links/>
     <%self:feeds/>
     <%self:css/>
     <%self:scripts/>
