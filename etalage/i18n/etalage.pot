@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Etalage 0.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2013-04-05 10:48+0200\n"
+"POT-Creation-Date: 2013-06-13 10:06+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,151 +17,151 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 0.9.6\n"
 
-#: etalage/controllers.py:169 etalage/controllers.py:203 etalage/controllers.py:228
-#: etalage/controllers.py:282 etalage/controllers.py:336 etalage/controllers.py:390
-#: etalage/controllers.py:444 etalage/controllers.py:498 etalage/controllers.py:620
-#: etalage/controllers.py:654 etalage/controllers.py:899
+#: etalage/controllers.py:170 etalage/controllers.py:204 etalage/controllers.py:229
+#: etalage/controllers.py:283 etalage/controllers.py:337 etalage/controllers.py:391
+#: etalage/controllers.py:445 etalage/controllers.py:499 etalage/controllers.py:621
+#: etalage/controllers.py:655 etalage/controllers.py:896
 msgid "Export disabled by configuration"
 msgstr ""
 
-#: etalage/controllers.py:180 etalage/controllers.py:214 etalage/controllers.py:558
-#: etalage/controllers.py:631 etalage/controllers.py:665 etalage/controllers.py:693
-#: etalage/controllers.py:696 etalage/controllers.py:1236
-#: etalage/controllers.py:1315
+#: etalage/controllers.py:181 etalage/controllers.py:215 etalage/controllers.py:559
+#: etalage/controllers.py:632 etalage/controllers.py:666 etalage/controllers.py:695
+#: etalage/controllers.py:698 etalage/controllers.py:1230
+#: etalage/controllers.py:1310 etalage/controllers.py:1357
 msgid "Error: {0}"
 msgstr ""
 
-#: etalage/controllers.py:258 etalage/controllers.py:312 etalage/controllers.py:366
-#: etalage/controllers.py:420 etalage/controllers.py:474 etalage/controllers.py:528
+#: etalage/controllers.py:259 etalage/controllers.py:313 etalage/controllers.py:367
+#: etalage/controllers.py:421 etalage/controllers.py:475 etalage/controllers.py:529
 msgid "You must accept license to be allowed to download data."
 msgstr ""
 
-#: etalage/controllers.py:267
+#: etalage/controllers.py:268
 msgid "Directory Export in CSV Format"
 msgstr ""
 
-#: etalage/controllers.py:321
+#: etalage/controllers.py:322
 msgid "Directory Export in Excel Format"
 msgstr ""
 
-#: etalage/controllers.py:375
+#: etalage/controllers.py:376
 msgid "Directory Export in GeoJSON Format"
 msgstr ""
 
-#: etalage/controllers.py:429
+#: etalage/controllers.py:430
 msgid "Directory Export in KML Format"
 msgstr ""
 
-#: etalage/controllers.py:483
+#: etalage/controllers.py:484
 msgid "Geographical Coverage Export in CSV Format"
 msgstr ""
 
-#: etalage/controllers.py:537
+#: etalage/controllers.py:538
 msgid "Geographical Coverage Export in Excel Format"
 msgstr ""
 
-#: etalage/controllers.py:802
+#: etalage/controllers.py:805
 msgid "Directory page disabled by configuration"
 msgstr ""
 
-#: etalage/controllers.py:813 etalage/conv.py:475
+#: etalage/controllers.py:816 etalage/conv.py:476
 msgid "In \"directory\" mode, a commune is required"
 msgstr ""
 
-#: etalage/controllers.py:954
+#: etalage/controllers.py:951
 msgid "Missing value"
 msgstr ""
 
-#: etalage/controllers.py:969
+#: etalage/controllers.py:966
 msgid "Gadget page disabled by configuration"
 msgstr ""
 
-#: etalage/controllers.py:1057
+#: etalage/controllers.py:1062
 msgid "Map page disabled by configuration"
 msgstr ""
 
-#: etalage/controllers.py:1106
-msgid "Error for \"{0}\" parameter: {1}"
-msgstr ""
-
-#: etalage/controllers.py:1114
-msgid "Base Categories Error: {0}"
-msgstr ""
-
-#: etalage/controllers.py:1120
-msgid "Category Tags Error: {0}"
-msgstr ""
-
-#: etalage/controllers.py:1141 etalage/controllers.py:1157
-msgid "Connect to "
-msgstr ""
-
-#: etalage/controllers.py:1144 etalage/controllers.py:1160
-msgid ", rebuild component and copy the generated JavaScript into your website."
-msgstr ""
-
-#: etalage/controllers.py:1146
+#: etalage/controllers.py:1119
 msgid "The gadget ID \"{0}\" doesn't exist."
 msgstr ""
 
-#: etalage/controllers.py:1146 etalage/controllers.py:1163
+#: etalage/controllers.py:1120 etalage/controllers.py:1135
+msgid "Rebuild component and copy the generated JavaScript into your website."
+msgstr ""
+
+#: etalage/controllers.py:1121 etalage/controllers.py:1137
 msgid "Invalid Gadget ID"
 msgstr ""
 
-#: etalage/controllers.py:1162
+#: etalage/controllers.py:1136
 msgid "The gadget ID \"{0}\" is used by another component."
 msgstr ""
 
-#: etalage/controllers.py:1179
+#: etalage/controllers.py:1152
+msgid "Error for \"{0}\" parameter: {1}"
+msgstr ""
+
+#: etalage/controllers.py:1160
+msgid "Base Categories Error: {0}"
+msgstr ""
+
+#: etalage/controllers.py:1166
+msgid "Category Tags Error: {0}"
+msgstr ""
+
+#: etalage/controllers.py:1173
 msgid "Base Territory Error: {0}"
 msgstr ""
 
-#: etalage/controllers.py:1183 etalage/controllers.py:1189 etalage/conv.py:784
-#: etalage/conv.py:787
+#: etalage/controllers.py:1177 etalage/controllers.py:1183 etalage/conv.py:787
+#: etalage/conv.py:790
 msgid "Unknown territory"
 msgstr ""
 
-#: etalage/controllers.py:1205
+#: etalage/controllers.py:1199
 msgid "Distance Error: {0}"
 msgstr ""
 
-#: etalage/controllers.py:1284 etalage/controllers.py:1363
+#: etalage/controllers.py:1279 etalage/controllers.py:1431
 msgid "Minisite disabled by configuration"
 msgstr ""
 
-#: etalage/controllers.py:1322
+#: etalage/controllers.py:1317
 msgid "Access to organism failed"
 msgstr ""
 
-#: etalage/controllers.py:1346 etalage/controllers.py:1380
+#: etalage/controllers.py:1359
+msgid "Invalid POI ID"
+msgstr ""
+
+#: etalage/controllers.py:1448
 msgid "POI ID Error: {0}"
 msgstr ""
 
-#: etalage/controllers.py:1388
+#: etalage/controllers.py:1456
 msgid "Encoding Error: {0}"
 msgstr ""
 
-#: etalage/conv.py:311
+#: etalage/conv.py:336
 msgid "POI {0} doesn't exist"
 msgstr ""
 
-#: etalage/conv.py:329 etalage/conv.py:340
+#: etalage/conv.py:348 etalage/conv.py:359
 msgid "Invalid category"
 msgstr ""
 
-#: etalage/conv.py:405 etalage/conv.py:447 etalage/conv.py:459
+#: etalage/conv.py:421 etalage/conv.py:448 etalage/conv.py:460
 msgid "Export is too big. Restrict some search criteria and try again."
 msgstr ""
 
-#: etalage/conv.py:528
+#: etalage/conv.py:527
 msgid "POI has no geographical coordinates"
 msgstr ""
 
-#: etalage/conv.py:850
+#: etalage/conv.py:834
 msgid "Searched territory not located in base territory {0}"
 msgstr ""
 
-#: etalage/conv.py:864
+#: etalage/conv.py:848
 msgid "Territory has no geographical coordinates"
 msgstr ""
 
@@ -169,7 +169,7 @@ msgstr ""
 msgid "Invalid path: {0}"
 msgstr ""
 
-#: etalage/urls.py:119
+#: etalage/urls.py:116
 msgid "Page not found: {0}"
 msgstr ""
 
@@ -250,27 +250,16 @@ msgstr ""
 msgid "Redirection"
 msgstr ""
 
-#: etalage/templates/index.mako:193 etalage/templates/index.mako:222
+#: etalage/templates/index.mako:164 etalage/templates/index.mako:193
+#: etalage/templates/poi.mako:64
 msgid "Search"
 msgstr ""
 
-#: etalage/templates/index.mako:208 etalage/templates/index.mako:225
+#: etalage/templates/index.mako:179 etalage/templates/index.mako:196
 msgid "RSS Feed"
 msgstr ""
 
-#: etalage/templates/list.mako:136
-msgid "Name"
-msgstr ""
-
-#: etalage/templates/list.mako:146
-msgid "Street Address"
-msgstr ""
-
-#: etalage/templates/list.mako:156
-msgid "Commune"
-msgstr ""
-
-#: etalage/templates/list.mako:186
+#: etalage/templates/list.mako:176
 msgid "List"
 msgstr ""
 
@@ -280,6 +269,14 @@ msgstr ""
 
 #: etalage/templates/minisite.mako:72
 msgid "Generate"
+msgstr ""
+
+#: etalage/templates/poi.mako:59
+msgid "Previous"
+msgstr ""
+
+#: etalage/templates/poi.mako:69
+msgid "Next"
 msgstr ""
 
 #: etalage/templates/site.mako:88
