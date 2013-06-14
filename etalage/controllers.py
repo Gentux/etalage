@@ -1410,7 +1410,7 @@ def poi(req):
         slug = data['poi'].slug
         if inputs['slug'] != slug:
             if ctx.container_base_url is None or ctx.gadget_id is None:
-                raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, 'organismes', slug, poi._id))
+                raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, 'organismes', slug, data['poi']._id))
             # In gadget mode, there is no need to redirect.
 
     return templates.render(
