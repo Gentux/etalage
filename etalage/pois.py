@@ -669,6 +669,17 @@ class Poi(representations.UserRepresentable):
                             ),
                         )
                 cls.subclass_by_database_and_schema_name[(db.name, poi_bson['metadata']['schema-name'])].load(poi_bson)
+            # Create subclasses for schema with no POI.
+            for schema in db.schemas.find({}, ['name', 'icon_url']):
+                if (db.name, schema['name']) not in cls.subclass_by_database_and_schema_name:
+                    cls.subclass_by_database_and_schema_name[(db.name, poi_bson['metadata']['schema-name'])] = type(
+                        'PoiWithPetitpois',
+                        (cls,),
+                        dict(
+                            icon_url = schema.get('icon_url') if schema is not None else None,
+                            petitpois_url = petitpois_url,
+                            ),
+                        )
 
     @classmethod
     def make_inputs_to_search_data(cls):
