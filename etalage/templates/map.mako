@@ -81,6 +81,7 @@ src="${conf['images.markers.url'].rstrip('/')}/map-icons-collection-2.0/icons/ho
 <%def name="scripts()" filter="trim">
     <%parent:scripts/>
     <script src="${conf['leaflet.js']}"></script>
+    <script src="${conf['hogan.js']}"></script>
 <!--[if lt IE 10]>
     <script src="${conf['pie.js']}"></script>
 <![endif]-->
@@ -89,14 +90,25 @@ src="${conf['images.markers.url'].rstrip('/')}/map-icons-collection-2.0/icons/ho
     % if territory is not None and territory.geo is not None:
 etalage.map.center = new L.LatLng(${territory.geo[0] | n, js}, ${territory.geo[1] | n, js});
     % endif
-etalage.map.geojsonParams = ${dict(
-    (model.Poi.rename_input_to_param(name), value)
-    for name, value in inputs.iteritems()
-    if name not in ('bbox', 'context', 'jsonp') and value is not None
-    )| n, js};
-etalage.map.geojsonUrl = '/api/v1/annuaire/geojson';
-etalage.map.markersUrl = ${conf['images.markers.url'].rstrip('/') | n, js};
-etalage.map.tileLayersOptions = ${conf['tile_layers'] | n, js};
+etalage.map = $.extend(etalage.map, {
+    geojsonParams: ${dict(
+        (model.Poi.rename_input_to_param(name), value)
+        for name, value in inputs.iteritems()
+        if name not in ('bbox', 'context', 'jsonp') and value is not None
+        )| n, js},
+    geojsonUrl: '/api/v1/annuaire/geojson',
+    markersUrl: ${conf['images.markers.url'].rstrip('/') | n, js},
+    tileLayersOptions: ${conf['tile_layers'] | n, js},
+    poiTemplate: Hogan.compile(
+        '<a class="internal" data-poi-id="{{poi.id}}" href="{{poi.href}}"><strong>{{poi.name}}</strong></a>'
+    ),
+    poiAdresseTemplate: Hogan.compile('<div>{{text}}</div>'),
+    nearbyPoiTemplate: Hogan.compile(
+        '<a class="bbox" data-bbox="[{{bbox}}]" href="{{href}}"><em>{{text}}</em></a>'
+    ),
+    nearbyPoiLinkTextSingular: Hogan.compile('Ainsi qu\'1 autre organisme à proximité'),
+    nearbyPoiLinkTextPlural: Hogan.compile('Ainsi que {{count}} autres organismes à proximité')
+});
     </script>
 </%def>
 

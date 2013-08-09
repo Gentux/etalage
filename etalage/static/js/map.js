@@ -34,72 +34,7 @@ etalage.map = (function ($) {
         etalage.map.setFeatureIcon(layer, properties);
 
         if ( ! properties.home) {
-            var nearbyPoiCount = properties.count - properties.centerPois.length;
-            var poi;
-            var $popupDiv = $('<div/>');
-            if (properties.count == 1 || nearbyPoiCount > 0) {
-                poi = properties.centerPois[0];
-                $popupDiv.append(
-                    $('<a/>', {
-                        'class': 'internal',
-                        'data-poi-id': poi.id,
-                        href: '/organismes/' + poi.slug + '/' + poi.id + '?' + $.param(
-                            $.extend({bbox: etalage.map.bbox}, etalage.map.geojsonParams || {}),
-                            true
-                        )
-                    }).append($('<strong/>').text(poi.name))
-                );
-                if (poi.streetAddress) {
-                    $.each(poi.streetAddress.split('\n'), function (index, line) {
-                        $popupDiv.append($('<div/>').text(line));
-                    });
-                }
-                if (poi.postalDistribution) {
-                    $popupDiv.append($('<div/>').text(poi.postalDistribution));
-                }
-            } else {
-                var $ul = $('<ul/>');
-                var $li;
-                $.each(properties.centerPois, function (index, poi) {
-                    $li = $('<li>').append(
-                        $('<a/>', {
-                            'class': 'internal',
-                            href: '/organismes/' + poi.slug + '/' + poi.id + '?' + $.param(
-                                $.extend({bbox: etalage.map.bbox}, etalage.map.geojsonParams || {}),
-                                true
-                            )
-                        }).append($('<strong/>').text(poi.name))
-                    );
-                    if (poi.streetAddress) {
-                        $.each(poi.streetAddress.split('\n'), function (index, line) {
-                            $li.append($('<div/>').text(line));
-                        });
-                    }
-                    if (poi.postalDistribution) {
-                        $li.append($('<div/>').text(poi.postalDistribution));
-                    }
-                    $ul.append($li);
-                });
-                $popupDiv.append($ul);
-            }
-
-            if (nearbyPoiCount > 0) {
-                var bbox = feature.bbox;
-                var $a = $('<a/>', {
-                    'class': 'bbox',
-                    'data-bbox': "[" + bbox + "]",
-                    href: '/carte?' + $.param($.extend({bbox: bbox.join(",")}, etalage.map.geojsonParams || {}), true)
-                });
-                var $em = $('<em/>');
-                if (properties.count == 2) {
-                    $em.text('Ainsi qu\'1 autre organisme à proximité');
-                } else {
-                    $em.text('Ainsi que ' + (properties.count - 1) + ' autres organismes à proximité');
-                }
-                $popupDiv.append($('<div/>').append($a.append($em)));
-            }
-
-            layer.bindPopup($popupDiv.html());
+            layer.bindPopup(etalage.map.popupContent(feature));
         }
     }
 
@@ -268,6 +203,59 @@ etalage.map = (function ($) {
         });
     }
 
+    function popupContent(feature) {
+        var properties = feature.properties;
+        var nearbyPoiCount = properties.count - properties.centerPois.length;
+        var poi;
+        var $popupDiv = $('<div/>');
+
+        if (properties.count == 1 || nearbyPoiCount > 0) {
+            poi = properties.centerPois[0];
+            poi.href = '/organismes/' + poi.slug + '/' + poi.id + '?' + $.param(
+                $.extend({bbox: etalage.map.bbox}, etalage.map.geojsonParams || {}),
+                true
+                );
+            $popupDiv.append(etalage.map.poiTemplate.render({poi: poi}));
+            if (poi.streetAddress) {
+                $popupDiv.append(etalage.map.poiAdresseTemplate.render({text: poi.streetAddress.split('\n')}));
+            }
+            if (poi.postalDistribution) {
+                $popupDiv.append(etalage.map.poiAdresseTemplate.render({text: poi.postalDistribution}));
+            }
+        } else {
+            var $ul = $('<ul/>');
+            var $li;
+            $.each(properties.centerPois, function (index, poi) {
+                poi = properties.centerPois[0];
+                poi.href = '/organismes/' + poi.slug + '/' + poi.id + '?' + $.param(
+                    $.extend({bbox: etalage.map.bbox}, etalage.map.geojsonParams || {}),
+                        true
+                    );
+                $li = $('<li>').append(etalage.map.poiTemplate.render({poi: poi}));
+                if (poi.streetAddress) {
+                    $li.append(etalage.map.poiAdresseTemplate.render({text: poi.streetAddress.split('\n')}));
+                }
+                if (poi.postalDistribution) {
+                    $li.append(etalage.map.poiAdresseTemplate.render({text: poi.postalDistribution}));
+                }
+                $ul.append($li);
+            });
+            $popupDiv.append($ul);
+        }
+
+        if (nearbyPoiCount > 0) {
+            var bbox = feature.bbox;
+            $popupDiv.append($('<div/>').append(etalage.map.nearbyPoiTemplate.render({
+                "bbox": bbox,
+                "href": '/carte?' + $.param($.extend({bbox: bbox.join(",")}, etalage.map.geojsonParams || {}), true),
+                "text": (properties.count == 2) ? etalage.map.nearbyPoiLinkTextSingular.render() :
+                    etalage.map.nearbyPoiLinkTextPlural.render({count: properties.count - 1})
+            })));
+        }
+
+        return $popupDiv.html();
+    }
+
     function singleMarkerMap(mapDiv, latitude, longitude) {
         var latLng, map, marker, tileLayer, tileLayers;
 
@@ -344,9 +332,9 @@ etalage.map = (function ($) {
         geojsonUrl: null,
         layerByPoiId: null,
         markersUrl: null,
+        popupContent: popupContent,
         setFeatureIcon: setFeatureIcon,
         singleMarkerMap: singleMarkerMap,
         tileLayersOptions: null
     };
 })(jQuery);
-
