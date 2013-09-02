@@ -121,7 +121,7 @@ elif categories_slug:
     ## Note: ``category_slug`` may be a category (and not a slug) when an error has occurred during
     ## categories_slug verification.
     category_tags_slug_set = set([
-        category_slug if isinstance(category_slug, basestring) else category_slug.slug
+        category_slug if isinstance(category_slug, basestring) else (category_slug.slug if category_slug else None)
         for category_slug in categories_slug
         ])
     category_tags_slug = list(category_tags_slug_set.union(ctx.category_tags_slug or []))
@@ -231,7 +231,7 @@ target="_blank" title="${_('RSS Feed')}">
                     # categories_slug verification.
                     category = ramdb.category_by_slug[category_slug] \
                         if isinstance(category_slug, basestring) else category_slug
-                    if category.slug in (ctx.base_categories_slug or []):
+                    if category is None or category.slug in (ctx.base_categories_slug or []):
                         continue
 %>\
                         <label class="checkbox"><input checked name="category" type="checkbox" value="${category.name}">
