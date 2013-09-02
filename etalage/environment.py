@@ -255,6 +255,7 @@ def load_environment(global_conf, app_conf):
                 ),
             u'easyxdm.js': conv.default(urlparse.urljoin(conf['cdn_url'], '/easyxdm/latest/easyXDM.min.js')),
             u'easyxdm.swf': conv.default(urlparse.urljoin(conf['cdn_url'], '/easyxdm/latest/easyxdm.swf')),
+            u'hogan.js': conv.default(urlparse.urljoin(conf['cdn_url'], '/hogan/dist/hogan-3.0.0.js')),
             u'images.markers.url': conv.default(urlparse.urljoin(conf['cdn_url'], '/images/markers/')),
             u'images.misc.url': conv.default(urlparse.urljoin(conf['cdn_url'], '/images/misc/')),
             u'jquery.js': conv.default(urlparse.urljoin(conf['cdn_url'], '/jquery/jquery-1.7.1.min.js')),
