@@ -30,11 +30,11 @@ from cStringIO import StringIO
 import csv
 import math
 
-from biryani.baseconv import *
-from biryani.bsonconv import *
-from biryani.objectconv import *
-from biryani.frconv import *
-from biryani import states, strings
+from biryani1.baseconv import *
+from biryani1.bsonconv import *
+from biryani1.objectconv import *
+from biryani1.frconv import *
+from biryani1 import states, strings
 import bson
 import xlwt
 from territoria2.conv import split_postal_distribution, input_to_postal_distribution
@@ -374,7 +374,7 @@ def inputs_to_atom_feed_data(inputs, state = None):
                     ),
                 ),
             default = 'drop',
-            keep_none_values = True,
+            drop_none_values = False,
             ),
         )(inputs, state = state)
 
@@ -477,7 +477,7 @@ def inputs_to_pois_directory_data(inputs, state = None):
                     ),
                 ),
             default = noop,
-            keep_none_values = True,
+            drop_none_values = False,
             ),
         )(inputs, state = state)
 
@@ -532,7 +532,7 @@ def inputs_to_pois_layer_data(inputs, state = None):
                     ),
                 ),
             default = 'drop',
-            keep_none_values = True,
+            drop_none_values = False,
             ),
         )(inputs, state = state)
 
@@ -561,7 +561,7 @@ def inputs_to_pois_list_data(inputs, state = None):
                         ),
                     ),
                 default = 'drop',
-                keep_none_values = True,
+                drop_none_values = False,
                 ),
             ),
         rename_item('page', 'page_number'),

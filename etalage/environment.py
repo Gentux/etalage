@@ -130,11 +130,15 @@ def load_environment(global_conf, app_conf):
             u'i18n_dir_by_plugin_name': conv.set_value(None),  # set by plugins below
             u'ignored_fields': conv.pipe(
                 conv.function(lambda lines: lines.split(u'\n')),
-                conv.uniform_sequence(conv.pipe(
-                    conv.function(lambda line: line.split(None, 1)),
-                    conv.uniform_sequence(conv.input_to_slug),
-                    conv.function(lambda seq: dict(zip(['id', 'name'], seq))),
-                    )),
+                conv.uniform_sequence(
+                    conv.pipe(
+                        conv.function(lambda line: line.split(None, 1)),
+                        conv.uniform_sequence(conv.input_to_slug),
+                        conv.function(lambda seq: dict(zip(['id', 'name'], seq))),
+                        conv.empty_to_none,
+                        ),
+                    drop_none_items = True,
+                    ),
                 conv.id_name_dict_list_to_ignored_fields,
                 ),
             u'index.date.field': conv.default(None),
@@ -238,7 +242,7 @@ def load_environment(global_conf, app_conf):
                 ),
             },
         default = 'drop',
-        keep_none_values = True,
+        drop_none_values = False,
         ))(conf))
 
     # CDN configuration

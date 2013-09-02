@@ -79,7 +79,7 @@ def autocomplete_category(req):
                 term = conv.make_input_to_slug(separator = u' ', transform = strings.upper),
                 ),
             default = 'drop',
-            keep_none_values = True,
+            drop_none_values = False,
             ),
         conv.rename_item('page', 'page_number'),
         conv.rename_item('tag', 'tags_slug'),
@@ -263,7 +263,7 @@ def export_directory_csv(req):
                     ),
                 ),
             default = 'drop',
-            keep_none_values = True,
+            drop_none_values = False,
             ),
         )(inputs, state = ctx)
     return templates.render(ctx, '/export-accept-license.mako',
@@ -317,7 +317,7 @@ def export_directory_excel(req):
                     ),
                 ),
             default = 'drop',
-            keep_none_values = True,
+            drop_none_values = False,
             ),
         )(inputs, state = ctx)
     return templates.render(ctx, '/export-accept-license.mako',
@@ -371,7 +371,7 @@ def export_directory_geojson(req):
                     ),
                 ),
             default = 'drop',
-            keep_none_values = True,
+            drop_none_values = False,
             ),
         )(inputs, state = ctx)
     return templates.render(ctx, '/export-accept-license.mako',
@@ -425,7 +425,7 @@ def export_directory_kml(req):
                     ),
                 ),
             default = 'drop',
-            keep_none_values = True,
+            drop_none_values = False,
             ),
         )(inputs, state = ctx)
     return templates.render(ctx, '/export-accept-license.mako',
@@ -479,7 +479,7 @@ def export_geographical_coverage_csv(req):
                     ),
                 ),
             default = 'drop',
-            keep_none_values = True,
+            drop_none_values = False,
             ),
         )(inputs, state = ctx)
     return templates.render(ctx, '/export-accept-license.mako',
@@ -533,7 +533,7 @@ def export_geographical_coverage_excel(req):
                     ),
                 ),
             default = 'drop',
-            keep_none_values = True,
+            drop_none_values = False,
             ),
         )(inputs, state = ctx)
     return templates.render(ctx, '/export-accept-license.mako',
@@ -925,7 +925,7 @@ def index_export(req):
                     ),
                 ),
             default = 'drop',
-            keep_none_values = True,
+            drop_none_values = False,
             ),
         )(inputs, state = ctx)
     if errors is None:
@@ -1305,7 +1305,7 @@ def minisite(req):
                     ),
                 ),
             default = 'drop',
-            keep_none_values = True,
+            drop_none_values = False,
             ),
         conv.rename_item('poi_id', 'poi'),
         )(inputs, state = ctx)
@@ -1351,7 +1351,7 @@ def poi(req):
                         ),
                     ),
                 default = 'drop',
-                keep_none_values = True,
+                drop_none_values = False,
                 ),
             ),
         conv.rename_item('poi_id', 'poi'),

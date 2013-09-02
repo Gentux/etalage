@@ -692,7 +692,7 @@ class Poi(representations.UserRepresentable):
                     territory = conv.input_to_postal_distribution_to_geolocated_territory,
                     ),
                 default = 'drop',
-                keep_none_values = True,
+                drop_none_values = False,
                 ),
             conv.test_territory_in_base_territory,
             )
