@@ -172,6 +172,7 @@ def csv(req):
     params = req.GET
     inputs = init_base(ctx, params)
     inputs.update(model.Poi.extract_search_inputs_from_params(ctx, params))
+    inputs['format'] = u'csv'
 
     csv_bytes_by_name, errors = conv.pipe(
         conv.inputs_to_pois_csv_infos,
@@ -206,6 +207,7 @@ def excel(req):
     params = req.GET
     inputs = init_base(ctx, params)
     inputs.update(model.Poi.extract_search_inputs_from_params(ctx, params))
+    inputs['format'] = u'csv'
 
     excel_bytes, errors = conv.pipe(
         conv.inputs_to_pois_csv_infos,
@@ -623,6 +625,7 @@ def geographical_coverage_csv(req):
     params = req.GET
     inputs = init_base(ctx, params)
     inputs.update(model.Poi.extract_search_inputs_from_params(ctx, params))
+    inputs['format'] = u'csv'
 
     csv_bytes_by_name, errors = conv.pipe(
         conv.inputs_to_geographical_coverage_csv_infos,
@@ -657,6 +660,7 @@ def geographical_coverage_excel(req):
     params = req.GET
     inputs = init_base(ctx, params)
     inputs.update(model.Poi.extract_search_inputs_from_params(ctx, params))
+    inputs['format'] = u'excel'
 
     excel_bytes, errors = conv.pipe(
         conv.inputs_to_geographical_coverage_csv_infos,

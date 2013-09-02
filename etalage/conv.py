@@ -416,7 +416,7 @@ def inputs_to_geographical_coverage_csv_infos(inputs, state = None):
                 if commune_pois_id:
                     pois_id_by_commune_id[commune_id] = commune_pois_id
                     rows_count += len(commune_pois_id)
-                    if rows_count > 65535:
+                    if inputs.get('format') == u'excel' and rows_count > 65535:
                         # Excel doesn't support sheets with more than 65535 rows.
                         return None, state._(u'Export is too big. Restrict some search criteria and try again.')
     return pois_id_by_commune_id_to_csv_infos(pois_id_by_commune_id, state = state)
@@ -443,7 +443,7 @@ def inputs_to_pois_csv_infos(inputs, state = None):
         **model.Poi.extract_non_territorial_search_data(state, data)
         ))
 
-    if len(pois_id) > 65535:
+    if inputs.get('format') == u'excel' and len(pois_id) > 65535:
         # Excel doesn't support sheets with more than 65535 rows.
         return None, state._(u'Export is too big. Restrict some search criteria and try again.')
 
@@ -455,7 +455,7 @@ def inputs_to_pois_csv_infos(inputs, state = None):
                 add_children_id(child_id, pois_id)
     for poi_id in pois_id.copy():
         add_children_id(poi_id, pois_id)
-        if len(pois_id) > 65535:
+        if inputs.get('format') == u'excel' and len(pois_id) > 65535:
             # Excel doesn't support sheets with more than 65535 rows.
             return None, state._(u'Export is too big. Restrict some search criteria and try again.')
 
