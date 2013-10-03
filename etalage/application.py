@@ -33,12 +33,24 @@ from beaker.middleware import SessionMiddleware
 from paste.cascade import Cascade
 from paste.urlparser import StaticURLParser
 from weberror.errormiddleware import ErrorMiddleware
+import webob.exc
 
 from . import conf, contexts, controllers, environment, urls, wsgihelpers
 
 
-lang_re = re.compile('^/(?P<lang>en|fr)(?=/|$)')
-percent_encoding_re = re.compile('%[\dA-Fa-f]{2}')
+lang_re = re.compile(r'^/(?P<lang>en|fr)(?=/|$)')
+percent_encoding_re = re.compile(r'%[\dA-Fa-f]{2}')
+
+
+@wsgihelpers.wsgify.middleware
+def ensure_valid_request_encoding(req, app):
+    """WSGI middleware that returns bad request HTTP error if request's attributes are badly encoded."""
+    try:
+        req.path_info
+        req.script_name
+    except UnicodeDecodeError as exc:
+        return webob.exc.HTTPBadRequest(u'The request is badly encoded.')
+    return req.get_response(app)
 
 
 @wsgihelpers.wsgify.middleware
@@ -62,7 +74,7 @@ def language_detector(req, app):
     else:
         ctx.lang = [match.group('lang')]
         req.script_name += req.path_info[:match.end()]
-        req.path_info = req.path_info[match.end():]
+        req.path_info = req.path_info[match.end():] or '/'
     return req.get_response(app)
 
 
@@ -92,7 +104,7 @@ def make_app(global_conf, **app_conf):
     app = language_detector(app)
 
     # Repair badly encoded query in request URL.
-    app = request_query_encoding_fixer(app)
+    app = ensure_valid_request_encoding(app)
 
     # CUSTOM MIDDLEWARE HERE (filtered by error handling middlewares)
 
@@ -110,17 +122,3 @@ def make_app(global_conf, **app_conf):
         app = Cascade(cascaded_apps)
 
     return app
-
-
-@wsgihelpers.wsgify.middleware
-def request_query_encoding_fixer(req, app):
-    """WSGI middleware that repairs a badly encoded query in request URL."""
-    query_string = req.query_string
-    if query_string is not None:
-        try:
-            urllib.unquote(query_string).decode('utf-8')
-        except UnicodeDecodeError:
-            req.query_string = percent_encoding_re.sub(
-                lambda match: urllib.quote(urllib.unquote(match.group(0)).decode('iso-8859-1').encode('utf-8')),
-                query_string)
-    return req.get_response(app)

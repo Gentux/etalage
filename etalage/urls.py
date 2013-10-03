@@ -99,8 +99,7 @@ def make_router(*routings):
             # When path_info doesn't start with a "/" this is an error or a attack => Reject request.
             # An example of an URL with such a invalid path_info: http://127.0.0.1http%3A//127.0.0.1%3A80/result?...
             ctx = contexts.Ctx(req)
-            return wsgihelpers.bad_request(ctx, explanation = ctx._(u"Invalid path: {0}").format(
-                req.path_info))
+            return wsgihelpers.bad_request(ctx, explanation = ctx._(u"Invalid path: {0}").format(req.path_info))
         for methods, regex, app, vars in routes:
             if methods is None or req.method in methods:
                 match = regex.match(req.path_info)
@@ -113,7 +112,6 @@ def make_router(*routings):
                     req.path_info = req.path_info[match.end():]
                     return req.get_response(app)
         ctx = contexts.Ctx(req)
-        return wsgihelpers.not_found(ctx, explanation = ctx._(u"Page not found: {0}").format(
-            req.path_info))
+        return wsgihelpers.not_found(ctx, explanation = ctx._(u"Page not found: {0}").format(req.path_info))
 
     return router
