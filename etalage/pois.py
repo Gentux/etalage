@@ -672,7 +672,7 @@ class Poi(representations.UserRepresentable):
             # Create subclasses for schema with no POI.
             for schema in db.schemas.find({}, ['name', 'icon_url']):
                 if (db.name, schema['name']) not in cls.subclass_by_database_and_schema_name:
-                    cls.subclass_by_database_and_schema_name[(db.name, poi_bson['metadata']['schema-name'])] = type(
+                    cls.subclass_by_database_and_schema_name[(db.name, schema['name'])] = type(
                         'PoiWithPetitpois',
                         (cls,),
                         dict(
