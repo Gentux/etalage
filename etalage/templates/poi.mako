@@ -61,7 +61,9 @@ from etalage import conf, conv, model, ramdb, urls
     <ul class="pager">
         % if data.get('poi_index'):
         <li class="previous${' disabled' if (data['poi_index'] or 1) == 1 else ''}">
-            <a class="internal" href="${previous_poi_url}">&larr; ${_('Previous')}</a>
+            <a class="internal" href="${search_url if (data['poi_index'] or 1) == 1 else previous_poi_url}">
+                &larr; ${_('Previous')}
+            </a>
         </li>
         % endif
         <li>
