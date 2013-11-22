@@ -226,7 +226,6 @@ etalage.map = (function ($) {
             var $ul = $('<ul/>');
             var $li;
             $.each(properties.centerPois, function (index, poi) {
-                poi = properties.centerPois[0];
                 poi.href = '/organismes/' + poi.slug + '/' + poi.id + '?' + $.param(
                     $.extend({bbox: etalage.map.bbox}, etalage.map.geojsonParams || {}),
                         true
