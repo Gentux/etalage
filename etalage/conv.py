@@ -32,6 +32,7 @@ import math
 
 from biryani1.baseconv import *
 from biryani1.bsonconv import *
+from biryani1.datetimeconv import datetime_to_iso8601_str
 from biryani1.objectconv import *
 from biryani1.frconv import *
 from biryani1 import states, strings
@@ -213,8 +214,8 @@ def default_pois_layer_data_bbox(data, state = None):
             # Note: Use the bounding box of the territory (ie the bounding box enclosing every POI present in the
             # territory).
             presence_territory = territory
-            if conf['handle_competence_territories'] and data.get('base_territory'):
-                competence_territories_id = ramdb.get_territory_related_territories_id(data['base_territory'])
+            if conf['handle_competence_territories']:
+                competence_territories_id = ramdb.get_territory_related_territories_id(territory)
             else:
                 competence_territories_id = None
             pois_id_iter = model.Poi.iter_ids(state,
@@ -302,6 +303,36 @@ def default_pois_layer_data_bbox(data, state = None):
             right = poi_longitude
     data['bbox'] = [left, bottom, right, top]
     return data, None
+
+
+def field_to_bson(field, state = None):
+    if state is None:
+        state = default_state
+    if field is None:
+        return None, None
+
+    value_converter = None
+    print field
+    if field.id in ['adr', 'date-range', 'source']:
+        value_converter = uniform_sequence(field_to_bson)
+    elif field.id in ['date-range-begin', 'date-range-end']:
+        value_converter = datetime_to_iso8601_str
+    elif field.id == 'link':
+        value_converter = object_id_to_str
+    elif field.id in ['links', 'territories']:
+        value_converter = uniform_sequence(object_id_to_str)
+    else:
+        return object_to_clean_dict(field, state = state)
+
+    return pipe(
+        object_to_clean_dict,
+        struct(
+            {
+                'value': value_converter,
+                },
+            default = noop,
+            ),
+        )(field, state = state)
 
 
 def id_name_dict_list_to_ignored_fields(value, state = None):
@@ -538,7 +569,7 @@ def inputs_to_pois_layer_data(inputs, state = None):
 
 
 def inputs_to_pois_list_data(inputs, state = None):
-    from . import model
+    from . import conf, model
     if state is None:
         state = default_state
     return pipe(
@@ -550,6 +581,10 @@ def inputs_to_pois_list_data(inputs, state = None):
                         input_to_int,
                         test_greater_or_equal(1),
                         default(1),
+                        ),
+                    page_max_size = pipe(
+                        input_to_int,
+                        default(conf['pager.page_max_size']),
                         ),
                     poi_index = pipe(
                         input_to_int,
@@ -679,6 +714,29 @@ def layer_data_to_clusters(data, state = None):
                     cluster.competent = True
             clusters.append(cluster)
     return clusters, None
+
+
+def poi_to_bson(poi, state = None):
+    if state is None:
+        state = default_state
+    if poi is None:
+        return None, None
+
+    return pipe(
+        object_to_clean_dict,
+        struct(
+            {
+                '_id': object_id_to_str,
+                'competence_territories_id': pipe(
+                    uniform_sequence(object_id_to_str),
+                    function(list),
+                    ),
+                'fields': uniform_sequence(field_to_bson),
+                'last_update_datetime': datetime_to_iso8601_str,
+                },
+            default = noop,
+            ),
+        )(poi, state = state)
 
 
 def pois_id_by_commune_id_to_csv_infos(pois_id_by_commune_id, state = None):
