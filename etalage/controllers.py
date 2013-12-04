@@ -1319,6 +1319,10 @@ def make_router():
         ('GET', '^/api/v1/categories/autocomplete/?$', autocomplete_category),
         ('GET', '^/api/v1/couverture/csv/?$', geographical_coverage_csv),
         ('GET', '^/api/v1/couverture/excel/?$', geographical_coverage_excel),
+        ('GET', '^/api/v1/liste/?$', index_list_api),
+        ('GET', '^/api/v1/organismes/?$', poi_api),
+        ('GET', '^/api/v1/organismes/(?P<poi_id>[a-z0-9]{24})/?$', poi_api),
+        ('GET', '^/api/v1/organismes/(?P<slug>[^/]+)/(?P<poi_id>[a-z0-9]{24})/?$', poi_api),
         ('GET', '^/carte/?$', index_map),
         ('GET', '^/export/?$', index_export),
         ('GET', '^/export/annuaire/csv/?$', export_directory_csv),
@@ -1390,6 +1394,60 @@ def minisite(req):
     return templates.render(ctx, '/minisite.mako', errors = errors, inputs = inputs, **data)
 
 
+def data_to_render_poi(ctx, data, inputs):
+    non_territorial_search_data = model.Poi.extract_non_territorial_search_data(ctx, data)
+    base_territory = data.get('base_territory')
+    territory = data['territory']
+    competence_territories_id = None
+    presence_territory = None
+    if conf['handle_competence_territories']:
+        if territory and territory.__class__.__name__ not in model.communes_kinds:
+            presence_territory = territory
+        if territory:
+            competence_territories_id = ramdb.get_territory_related_territories_id(territory)
+        if base_territory and competence_territories_id is None:
+            competence_territories_id = ramdb.get_territory_related_territories_id(base_territory)
+    else:
+        if territory and territory.__class__.__name__ not in model.communes_kinds:
+            presence_territory = territory
+        elif base_territory:
+            presence_territory = data['base_territory']
+
+    pois_id_iter = model.Poi.iter_ids(
+        ctx,
+        competence_territories_id = competence_territories_id,
+        presence_territory = presence_territory,
+        **non_territorial_search_data
+        )
+
+    poi_by_id = dict(
+        (poi._id, poi)
+        for poi in (
+            model.Poi.instance_by_id.get(poi_id)
+            for poi_id in pois_id_iter
+            )
+        if poi is not None
+        )
+
+    pager = pagers.Pager(
+        item_count = len(poi_by_id),
+        page_number = data['page_number'] if data['poi_index'] is None else (
+            data['poi_index'] / conf['pager.page_max_size']
+            ) + 1,
+        page_max_size = conf['pager.page_max_size'],
+        )
+    pager.items = model.Poi.sort_and_paginate_pois_list(
+        ctx,
+        pager,
+        poi_by_id,
+        related_territories_id = competence_territories_id,
+        territory = territory or data.get('base_territory'),
+        sort_key = data['sort_key'],
+        **non_territorial_search_data
+        )
+    return pager.items[min((data['poi_index'] - 1) % conf['pager.page_max_size'], len(pager.items) - 1)]
+
+
 @wsgihelpers.wsgify
 @ramdb.ramdb_based
 def poi(req):
@@ -1422,60 +1480,13 @@ def poi(req):
             ),
         conv.rename_item('poi_id', 'poi'),
         )(inputs, state = ctx)
-    non_territorial_search_data = model.Poi.extract_non_territorial_search_data(ctx, data)
     if errors is not None:
         return wsgihelpers.bad_request(ctx, explanation = ctx._('Error: {0}').format(errors))
     if data['poi'] is None and data['poi_index'] is None:
         return wsgihelpers.bad_request(ctx, explanation = ctx._('Invalid POI ID'))
 
     if data['poi'] is None:
-        base_territory = data.get('base_territory')
-        territory = data['territory']
-        competence_territories_id = None
-        presence_territory = None
-        if conf['handle_competence_territories']:
-            if territory and territory.__class__.__name__ not in model.communes_kinds:
-                presence_territory = territory
-            if territory:
-                competence_territories_id = ramdb.get_territory_related_territories_id(territory)
-            if base_territory and competence_territories_id is None:
-                competence_territories_id = ramdb.get_territory_related_territories_id(base_territory)
-        else:
-            if territory and territory.__class__.__name__ not in model.communes_kinds:
-                presence_territory = territory
-            elif base_territory:
-                presence_territory = data['base_territory']
-
-        pois_id_iter = model.Poi.iter_ids(ctx,
-            competence_territories_id = competence_territories_id,
-            presence_territory = presence_territory,
-            **non_territorial_search_data)
-
-        poi_by_id = dict(
-            (poi._id, poi)
-            for poi in (
-                model.Poi.instance_by_id.get(poi_id)
-                for poi_id in pois_id_iter
-                )
-            if poi is not None
-            )
-
-        pager = pagers.Pager(
-            item_count = len(poi_by_id),
-            page_number = data['page_number'] \
-                if data['poi_index'] is None else (data['poi_index'] / conf['pager.page_max_size']) + 1,
-            page_max_size = conf['pager.page_max_size'],
-            )
-        pager.items = model.Poi.sort_and_paginate_pois_list(
-            ctx,
-            pager,
-            poi_by_id,
-            related_territories_id = competence_territories_id,
-            territory = territory or data.get('base_territory'),
-            sort_key = data['sort_key'],
-            **non_territorial_search_data
-            )
-        data['poi'] = pager.items[min((data['poi_index'] - 1) % conf['pager.page_max_size'], len(pager.items) - 1)]
+        data['poi'] = data_to_render_poi(ctx, data)
     else:
         slug = data['poi'].slug
         if inputs['slug'] != slug:
@@ -1489,6 +1500,70 @@ def poi(req):
         data = data,
         inputs = inputs,
         poi = data['poi'],
+        )
+
+
+@wsgihelpers.wsgify
+@ramdb.ramdb_based
+def poi_api(req):
+    ctx = contexts.Ctx(req)
+
+    params = req.params
+    inputs = init_base(ctx, params)
+    inputs.update(model.Poi.extract_search_inputs_from_params(ctx, params))
+    inputs.update(dict(
+        bbox = params.get('bbox'),
+        jsonp = params.get('jsonp'),
+        page = params.get('page'),
+        poi_id = req.urlvars.get('poi_id'),
+        poi_index = params.get('poi_index'),
+        slug = req.urlvars.get('slug'),
+        ))
+
+    data, errors = conv.pipe(
+        conv.merge(
+            conv.inputs_to_pois_list_data,
+            conv.struct(
+                dict(
+                    poi_id = conv.pipe(
+                        conv.input_to_object_id,
+                        conv.id_to_poi,
+                        ),
+                    ),
+                default = 'drop',
+                drop_none_values = False,
+                ),
+            ),
+        conv.rename_item('poi_id', 'poi'),
+        )(inputs, state = ctx)
+    if errors is not None:
+        return wsgihelpers.bad_request(ctx, explanation = ctx._('Error: {0}').format(errors))
+    if data['poi'] is None and data['poi_index'] is None:
+        return wsgihelpers.bad_request(ctx, explanation = ctx._('Invalid POI ID'))
+
+    if data['poi'] is None:
+        data['poi'] = data_to_render_poi(ctx, data)
+    else:
+        slug = data['poi'].slug
+        if inputs['slug'] != slug:
+            if ctx.container_base_url is None or ctx.gadget_id is None:
+                raise wsgihelpers.redirect(
+                    ctx,
+                    location = urls.get_url(ctx, 'api/v1/organismes', slug, data['poi']._id),
+                    )
+            # In gadget mode, there is no need to redirect.
+
+    data['poi'] = conv.poi_to_bson(data['poi'], state = ctx)
+    return wsgihelpers.respond_json(
+        ctx,
+        dict(
+            apiVersion = '1.0',
+            data = data,
+            method = req.script_name,
+            params = inputs,
+            url = req.url.decode('utf-8'),
+            ),
+        jsonp = inputs['jsonp'],
         )
 
 
