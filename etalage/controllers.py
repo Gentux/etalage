@@ -64,6 +64,7 @@ def autocomplete_category(req):
         context = params.get('context'),
         jsonp = params.get('jsonp'),
         page = params.get('page'),
+        page_max_size = params.get('page_max_size'),
         tag = params.getall('tag'),
         term = params.get('term'),
         )
@@ -75,6 +76,10 @@ def autocomplete_category(req):
                     conv.test_greater_or_equal(1),
                     conv.default(1),
                     ),
+                page_max_size = conv.pipe(
+                    conv.input_to_int,
+                    conv.default(conf['pager.page_max_size']),
+                    ),
                 tag = conv.uniform_sequence(conv.input_to_tag_slug),
                 term = conv.make_input_to_slug(separator = u' ', transform = strings.upper),
                 ),
@@ -85,7 +90,8 @@ def autocomplete_category(req):
         conv.rename_item('tag', 'tags_slug'),
         )(inputs, state = ctx)
     if errors is not None:
-        return wsgihelpers.respond_json(ctx,
+        return wsgihelpers.respond_json(
+            ctx,
             dict(
                 apiVersion = '1.0',
                 context = inputs['context'],
@@ -131,7 +137,11 @@ def autocomplete_category(req):
                 )
             if count > 0 and count != len(possible_pois_id)
             )
-    pager = pagers.Pager(item_count = len(categories_infos), page_number = data['page_number'])
+    pager = pagers.Pager(
+        item_count = len(categories_infos),
+        page_number = data['page_number'],
+        page_max_size = data.get('page_max_size') or conf['pager.page_max_size'],
+        )
     pager.items = [
         dict(
             count = -category_infos[0],
@@ -139,7 +149,8 @@ def autocomplete_category(req):
             )
         for category_infos in categories_infos[pager.first_item_index:pager.last_item_number]
         ]
-    return wsgihelpers.respond_json(ctx,
+    return wsgihelpers.respond_json(
+        ctx,
         dict(
             apiVersion = '1.0',
             context = inputs['context'],
