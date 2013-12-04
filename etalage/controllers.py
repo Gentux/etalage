@@ -207,6 +207,61 @@ def csv(req):
     return zip_file.getvalue()
 
 
+def data_to_render_list_data(ctx, data, inputs, page_max_size = None):
+    if page_max_size is None:
+        page_max_size = conf['pager.page_max_size']
+    non_territorial_search_data = model.Poi.extract_non_territorial_search_data(ctx, data)
+    base_territory = data.get('base_territory')
+    territory = data['territory']
+    competence_territories_id = None
+    presence_territory = None
+    if conf['handle_competence_territories']:
+        if territory and territory.__class__.__name__ not in model.communes_kinds:
+            presence_territory = territory
+        if territory:
+            competence_territories_id = ramdb.get_territory_related_territories_id(territory)
+        if base_territory and competence_territories_id is None:
+            competence_territories_id = ramdb.get_territory_related_territories_id(base_territory)
+    else:
+        if territory and territory.__class__.__name__ not in model.communes_kinds:
+            presence_territory = territory
+        elif base_territory:
+            presence_territory = data['base_territory']
+
+    pois_id_iter = model.Poi.iter_ids(
+        ctx,
+        competence_territories_id = competence_territories_id,
+        presence_territory = presence_territory,
+        **non_territorial_search_data)
+
+    poi_by_id = dict(
+        (poi._id, poi)
+        for poi in (
+            model.Poi.instance_by_id.get(poi_id)
+            for poi_id in pois_id_iter
+            )
+        if poi is not None
+        )
+    pager = pagers.Pager(
+        item_count = len(poi_by_id),
+        page_number = data['page_number'] if data['poi_index'] is None else (
+            data['poi_index'] / page_max_size
+            ) + 1,
+        page_max_size = page_max_size,
+        )
+    pager.items = model.Poi.sort_and_paginate_pois_list(
+        ctx,
+        pager,
+        poi_by_id,
+        related_territories_id = competence_territories_id,
+        territory = territory or data.get('base_territory'),
+        sort_key = data['sort_key'],
+        **non_territorial_search_data
+        )
+
+    return pager
+
+
 @wsgihelpers.wsgify
 @ramdb.ramdb_based
 def excel(req):
@@ -1014,58 +1069,58 @@ def index_list(req):
     if errors is not None:
         pager = None
     else:
-        base_territory = data.get('base_territory')
-        territory = data['territory']
-        competence_territories_id = None
-        presence_territory = None
-        if conf['handle_competence_territories']:
-            if territory and territory.__class__.__name__ not in model.communes_kinds:
-                presence_territory = territory
-            if territory:
-                competence_territories_id = ramdb.get_territory_related_territories_id(territory)
-            if base_territory and competence_territories_id is None:
-                competence_territories_id = ramdb.get_territory_related_territories_id(base_territory)
-        else:
-            if territory and territory.__class__.__name__ not in model.communes_kinds:
-                presence_territory = territory
-            elif base_territory:
-                presence_territory = data['base_territory']
+        pager = data_to_render_list_data(ctx, data, inputs)
 
-        pois_id_iter = model.Poi.iter_ids(ctx,
-            competence_territories_id = competence_territories_id,
-            presence_territory = presence_territory,
-            **non_territorial_search_data)
-
-        poi_by_id = dict(
-            (poi._id, poi)
-            for poi in (
-                model.Poi.instance_by_id.get(poi_id)
-                for poi_id in pois_id_iter
-                )
-            if poi is not None
-            )
-        pager = pagers.Pager(
-            item_count = len(poi_by_id),
-            page_number = data['page_number'] \
-                if data['poi_index'] is None else (data['poi_index'] / conf['pager.page_max_size']) + 1,
-            page_max_size = conf['pager.page_max_size'],
-            )
-        pager.items = model.Poi.sort_and_paginate_pois_list(
-            ctx,
-            pager,
-            poi_by_id,
-            related_territories_id = competence_territories_id,
-            territory = territory or data.get('base_territory'),
-            sort_key = data['sort_key'],
-            **non_territorial_search_data
-            )
-
-    return templates.render(ctx, '/list.mako',
+    return templates.render(
+        ctx,
+        '/list.mako',
         errors = errors,
         inputs = inputs,
         mode = mode,
         pager = pager,
         **non_territorial_search_data)
+
+
+@wsgihelpers.wsgify
+@ramdb.ramdb_based
+def index_list_api(req):
+    ctx = contexts.Ctx(req)
+
+    params = req.GET
+    inputs = init_base(ctx, params)
+    inputs.update(model.Poi.extract_search_inputs_from_params(ctx, params))
+    inputs.update(dict(
+        jsonp = params.get('jsonp'),
+        page = params.get('page'),
+        page_max_size = params.get('page_max_size'),
+        ))
+
+    data, errors = conv.inputs_to_pois_list_data(inputs, state = ctx)
+    if errors is not None:
+        pager = None
+    else:
+        pager = data_to_render_list_data(ctx, data, inputs, page_max_size = data['page_max_size'])
+
+    return wsgihelpers.respond_json(
+        ctx,
+        dict(
+            apiVersion = '1.0',
+            data = dict(
+                currentItemCount = len(pager.items),
+                items = conv.uniform_sequence(conv.poi_to_bson)(pager.items, state = ctx)[0],
+                itemsPerPage = pager.page_size,
+                pageIndex = pager.page_number,
+                startIndex = pager.first_item_index,
+                totalItems = pager.item_count,
+                totalPages = pager.page_count,
+                ) if pager is not None else None,
+            errors = errors,
+            method = req.script_name,
+            params = inputs,
+            url = req.url.decode('utf-8'),
+            ),
+        jsonp = inputs['jsonp'],
+        )
 
 
 @wsgihelpers.wsgify
