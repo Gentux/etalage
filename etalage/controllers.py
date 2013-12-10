@@ -1540,7 +1540,7 @@ def poi(req):
         return wsgihelpers.bad_request(ctx, explanation = ctx._('Invalid POI ID'))
 
     if data['poi'] is None:
-        data['poi'] = data_to_render_poi(ctx, data)
+        data['poi'] = data_to_render_poi(ctx, data, inputs)
     else:
         slug = data['poi'].slug
         if inputs['slug'] != slug:
@@ -1596,7 +1596,7 @@ def poi_api(req):
         return wsgihelpers.bad_request(ctx, explanation = ctx._('Invalid POI ID'))
 
     if data['poi'] is None:
-        data['poi'] = data_to_render_poi(ctx, data)
+        data['poi'] = data_to_render_poi(ctx, data, inputs)
     else:
         slug = data['poi'].slug
         if inputs['slug'] != slug:
