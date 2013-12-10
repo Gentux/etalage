@@ -733,6 +733,7 @@ def poi_to_bson(poi, state = None):
                     ),
                 'fields': uniform_sequence(field_to_bson),
                 'last_update_datetime': datetime_to_iso8601_str,
+                'parent_id': object_id_to_str,
                 },
             default = noop,
             ),
