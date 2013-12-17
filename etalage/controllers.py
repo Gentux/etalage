@@ -1607,7 +1607,8 @@ def poi_api(req):
                     )
             # In gadget mode, there is no need to redirect.
 
-    data['poi'] = conv.poi_to_bson(data['poi'], state = ctx)
+    data['fields'], errors = conv.uniform_sequence(conv.field_to_bson)(data['poi'].generate_all_fields(), state = ctx)
+    data['poi'], errors = conv.poi_to_bson(data['poi'], state = ctx)
     return wsgihelpers.respond_json(
         ctx,
         dict(

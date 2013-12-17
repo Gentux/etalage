@@ -312,7 +312,6 @@ def field_to_bson(field, state = None):
         return None, None
 
     value_converter = None
-    print field
     if field.id in ['adr', 'date-range', 'source']:
         value_converter = uniform_sequence(field_to_bson)
     elif field.id in ['date-range-begin', 'date-range-end']:

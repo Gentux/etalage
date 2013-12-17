@@ -336,8 +336,7 @@ class Poi(representations.UserRepresentable):
             key = lambda child: (child.schema_name, child.name),
             )
         for child in children:
-            fields.append(Field(id = 'link', label = ramdb.schema_title_by_name[child.schema_name],
-                value = child._id))
+            fields.append(Field(id = 'link', label = ramdb.schema_title_by_name[child.schema_name], value = child._id))
 
         # Add last-update field.
         fields.append(Field(id = 'last-update', label = u"Dernière mise à jour", value = u' par '.join(
