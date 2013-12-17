@@ -721,7 +721,10 @@ def poi_to_bson(poi, state = None):
     if poi is None:
         return None, None
 
-    return pipe(
+    fields, error = uniform_sequence(field_to_bson)(poi.generate_all_fields(), state = state)
+    if error is not None:
+        return fields, error
+    poi_bson, error = pipe(
         object_to_clean_dict,
         struct(
             {
@@ -730,13 +733,17 @@ def poi_to_bson(poi, state = None):
                     uniform_sequence(object_id_to_str),
                     function(list),
                     ),
-                'fields': uniform_sequence(field_to_bson),
+                'fields': noop,
                 'last_update_datetime': datetime_to_iso8601_str,
                 'parent_id': object_id_to_str,
                 },
             default = noop,
             ),
         )(poi, state = state)
+    if error is not None:
+        return poi_bson, error
+    poi_bson['fields'] = fields
+    return poi_bson, None
 
 
 def pois_id_by_commune_id_to_csv_infos(pois_id_by_commune_id, state = None):
