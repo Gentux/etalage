@@ -306,6 +306,7 @@ def default_pois_layer_data_bbox(data, state = None):
 
 
 def field_to_bson(field, state = None):
+    from . import model
     if state is None:
         state = default_state
     if field is None:
@@ -318,6 +319,7 @@ def field_to_bson(field, state = None):
         value_converter = datetime_to_iso8601_str
     elif field.id == 'link':
         value_converter = object_id_to_str
+        field.name = getattr(model.Poi.instance_by_id.get(field.value), 'name', None)
     elif field.id in ['links', 'territories']:
         value_converter = uniform_sequence(object_id_to_str)
     else:
