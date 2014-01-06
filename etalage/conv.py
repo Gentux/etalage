@@ -745,6 +745,7 @@ def poi_to_bson(poi, state = None):
     if error is not None:
         return poi_bson, error
     poi_bson['fields'] = fields
+    poi_bson['petitpois_url'] = poi.petitpois_url
     return poi_bson, None
 
 
