@@ -1547,7 +1547,6 @@ def poi(req):
             if ctx.container_base_url is None or ctx.gadget_id is None:
                 raise wsgihelpers.redirect(ctx, location = urls.get_url(ctx, 'organismes', slug, data['poi']._id))
             # In gadget mode, there is no need to redirect.
-
     return templates.render(
         ctx,
         '/poi.mako',
@@ -1591,9 +1590,45 @@ def poi_api(req):
         conv.rename_item('poi_id', 'poi'),
         )(inputs, state = ctx)
     if errors is not None:
-        return wsgihelpers.bad_request(ctx, explanation = ctx._('Error: {0}').format(errors))
+        return wsgihelpers.respond_json(
+            ctx,
+            dict(
+                apiVersion = '1.0',
+                error = dict(
+                    code = 400,  # Bad Request
+                    errors = [
+                        dict(
+                            location = key,
+                            message = error,
+                            )
+                        for key, error in sorted(errors.iteritems())
+                        ],
+                    # message will be automatically defined.
+                    ),
+                method = req.script_name,
+                params = inputs,
+                url = req.url.decode('utf-8'),
+                ),
+            jsonp = inputs['jsonp'],
+            )
     if data['poi'] is None and data['poi_index'] is None:
-        return wsgihelpers.bad_request(ctx, explanation = ctx._('Invalid POI ID'))
+        return wsgihelpers.respond_json(
+            ctx,
+            dict(
+                apiVersion = '1.0',
+                error = dict(
+                    code = 400,  # Bad Request
+                    errors = dict(
+                        message = ctx._('Invalid POI ID'),
+                        ),
+                    # message will be automatically defined.
+                    ),
+                method = req.script_name,
+                params = inputs,
+                url = req.url.decode('utf-8'),
+                ),
+            jsonp = inputs['jsonp'],
+            )
 
     if data['poi'] is None:
         data['poi'] = data_to_render_poi(ctx, data, inputs)
