@@ -1355,7 +1355,7 @@ def kml(req):
 
 
 def make_router():
-    """Return a WSGI application that dispatches requests to controllers """
+    """Return a WSGI application that dispatches requests to controllers."""
     return urls.make_router(
         ('GET', '^/?$', index),
         ('GET', '^/a-propos/?$', about),
@@ -1441,7 +1441,7 @@ def minisite(req):
         )
     try:
         fragment = urllib2.urlopen(url).read().decode(data['encoding'] or 'utf-8')
-    except:
+    except Exception:
         errors = dict(fragment = ctx._('Access to organism failed'))
     else:
         data['fragment'] = fragment

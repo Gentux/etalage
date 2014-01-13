@@ -27,7 +27,6 @@
 
 
 import re
-import urllib
 
 from beaker.middleware import SessionMiddleware
 from paste.cascade import Cascade

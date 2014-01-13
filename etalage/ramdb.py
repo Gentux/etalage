@@ -112,7 +112,9 @@ def load():
     for db in model.dbs:
         for organism_type_bson in db[conf['organism_types_collection']].find(None, ['code', 'slug']):
             if organism_type_bson['slug'] not in category_by_slug:
-                log.warning('Ignoring organism type "{0}" without matching category.'.format(organism_type_bson['code']))
+                log.warning(
+                    'Ignoring organism type "{0}" without matching category.'.format(organism_type_bson['code'])
+                    )
                 continue
             category_slug_by_pivot_code[organism_type_bson['code']] = organism_type_bson['slug']
 
@@ -240,8 +242,8 @@ def ramdb_based(controller):
                         poi_bson = db.pois.find_one(id)
                         read_write_lock.acquire()
                         try:
-                            # Note: POI's whose parent_id == id are not updated here. They will be updated when publisher
-                            # will publish their change.
+                            # Note: POI's whose parent_id == id are not updated here. They will be updated when
+                            # publisher will publish their change.
                             # First find changes to do on indexes.
                             existing = {}
                             find_existing(model.Poi, 'ids_by_category_slug', 'dict_of_sets', id, existing)
