@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: Etalage 0.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2014-04-18 15:53+0200\n"
-"PO-Revision-Date: 2014-04-18 15:53+0100\n"
+"PO-Revision-Date: 2014-04-18 16:00+0100\n"
 "Last-Translator: Romain Soufflet <romain.soufflet@data.gouv.fr>\n"
 "Language-Team: fr <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
@@ -273,7 +273,7 @@ msgstr "Flux RSS"
 
 #: etalage/templates/list.mako:124
 msgid "Name"
-msgstr ""
+msgstr "Nom"
 
 #: etalage/templates/list.mako:125
 msgid "Street Address"
