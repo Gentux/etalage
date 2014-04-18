@@ -121,9 +121,9 @@ from etalage import conf, conv, model, ramdb, urls
         )
     sort_keys_tuples = [
         (None, ''),
-        ('name', 'Name'),
-        ('street_address', 'Street Address'),
-        ('postal_distribution_str', 'Commune'),
+        ('name', _('Name')),
+        ('street_address', _('Street Address')),
+        ('postal_distribution_str', _('Commune')),
         ]
 %>\
     % for sort_key, sort_key_label in sort_keys_tuples:
