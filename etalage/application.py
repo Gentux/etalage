@@ -42,13 +42,18 @@ percent_encoding_re = re.compile(r'%[\dA-Fa-f]{2}')
 
 
 @wsgihelpers.wsgify.middleware
-def ensure_valid_request_encoding(req, app):
-    """WSGI middleware that returns bad request HTTP error if request's attributes are badly encoded."""
+def reject_misencoded_requests(req, app, exception_class=None):
+    """WSGI middleware that returns an HTTP error (bad request by default) if the request attributes
+    are not encoded in UTF-8.
+    """
+    if exception_class is None:
+        exception_class = webob.exc.HTTPBadRequest
     try:
         req.path_info
         req.script_name
-    except UnicodeDecodeError as exc:
-        return webob.exc.HTTPBadRequest(u'The request is badly encoded.')
+        req.params
+    except UnicodeDecodeError:
+        return exception_class(u'The request URL and its parameters must be encoded in UTF-8.')
     return req.get_response(app)
 
 
@@ -66,7 +71,7 @@ def language_detector(req, app):
     match = lang_re.match(req.path_info)
     if match is None:
         ctx.lang = [
-            #req.accept_language.best_match([('en-US', 1), ('en', 1), ('fr-FR', 1), ('fr', 1)],
+            # req.accept_language.best_match([('en-US', 1), ('en', 1), ('fr-FR', 1), ('fr', 1)],
             #    default_match = 'en').split('-', 1)[0],
             'fr',
             ]
@@ -103,7 +108,7 @@ def make_app(global_conf, **app_conf):
     app = language_detector(app)
 
     # Repair badly encoded query in request URL.
-    app = ensure_valid_request_encoding(app)
+    app = reject_misencoded_requests(app)
 
     # CUSTOM MIDDLEWARE HERE (filtered by error handling middlewares)
 
