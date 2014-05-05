@@ -24,19 +24,27 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
+import argparse
 import base64
 import csv
 import datetime
+import getpass
+import json
+import logging
+import operator
+import os
+import sys
 import urllib
 import urllib2
-import json
-import getpass
-import operator
+
+
+app_name = os.path.splitext(os.path.basename(__file__))[0]
+log = logging.getLogger(app_name)
 
 
 BASE_URL = u'https://webstats.easter-eggs.com/index.php'
 
-params = {
+PARAMS = {
     'module': 'API',
     'method': 'CustomVariables.getCustomVariables',
     'format': 'JSON',
@@ -47,24 +55,35 @@ params = {
     'filter_limit': '100'
     }
 
-CUSTOM_VARS_URL = '{}?{}'.format(BASE_URL, urllib.urlencode(params))
+CUSTOM_VARS_URL = '{}?{}'.format(BASE_URL, urllib.urlencode(PARAMS))
 
-print repr(CUSTOM_VARS_URL)
 
-username = raw_input('username: ')
-password = getpass.getpass('password: ')
-basic_auth = base64.encodestring('{0}:{1}'.format(username, password)).strip()
+def main():
+    parser = argparse.ArgumentParser(description = __doc__)
+    parser.add_argument('-u', '--user', help = 'username used for HTTP authentification')
+    parser.add_argument('-v', '--verbose', action = 'store_true', help = 'increase output verbosity')
 
-request = urllib2.Request(CUSTOM_VARS_URL)
-request.method = 'POST'
-request.add_header('Authorization', 'Basic {0}'.format(basic_auth))
-response = urllib2.urlopen(request)
+    args = parser.parse_args()
 
-json_custom_vars = json.loads(response.read())
-get_urls = operator.itemgetter('label', 'sum_daily_nb_uniq_visitors', 'nb_visits')
-infos = map(get_urls, json_custom_vars[0]['subtable'])
+    if args.user is None:
+        username = raw_input('username: ')
+    password = getpass.getpass('password: ')
+    basic_auth = base64.encodestring('{0}:{1}'.format(username, password)).strip()
 
-f = open('custom_vars_report.csv', 'wb')
-wr = csv.writer(f, quoting=csv.QUOTE_ALL)
-for info in infos:
-    wr.writerow(info)
+    request = urllib2.Request(CUSTOM_VARS_URL)
+    request.method = 'POST'
+    request.add_header('Authorization', 'Basic {0}'.format(basic_auth))
+    response = urllib2.urlopen(request)
+
+    json_custom_vars = json.loads(response.read())
+    get_urls = operator.itemgetter('label', 'sum_daily_nb_uniq_visitors', 'nb_visits')
+    infos = map(get_urls, json_custom_vars[0]['subtable'])
+
+    f = open('custom_vars_report.csv', 'wb')
+    wr = csv.writer(f, quoting=csv.QUOTE_ALL)
+    for info in infos:
+        wr.writerow(info)
+
+
+if __name__ == "__main__":
+    sys.exit(main())
