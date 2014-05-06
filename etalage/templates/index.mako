@@ -138,7 +138,7 @@ etalage.territories.kinds = ${ctx.autocompleter_territories_kinds | n, js};
     % if ctx.base_territory is not None:
 etalage.territories.base_territory = ${ctx.base_territory.main_postal_distribution_str | n, js};
     % endif
-etalage.params = ${inputs | n, js};
+etalage.params = ${data | n, js};
     </script>
 </%def>
 
@@ -167,7 +167,7 @@ etalage.params = ${inputs | n, js};
 <%
     url_args = dict(
         (model.Poi.rename_input_to_param(name), value)
-        for name, value in inputs.iteritems()
+        for name, value in data.iteritems()
         if name != 'page' and name not in model.Poi.get_visibility_params_names(ctx) and value is not None
         )
     url_args.update({
