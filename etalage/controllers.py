@@ -338,6 +338,7 @@ def export_directory_csv(req):
     return templates.render(
         ctx,
         '/export-accept-license.mako',
+        data = data,
         export_title = ctx._(u"Directory Export in CSV Format"),
         errors = errors,
         format = format,
@@ -987,6 +988,7 @@ def index_directory(req):
     return templates.render(
         ctx,
         '/directory.mako',
+        data = data,
         directory = directory,
         errors = errors,
         inputs = inputs,
@@ -1063,6 +1065,7 @@ def index_export(req):
     return templates.render(
         ctx,
         '/export.mako',
+        data = data,
         errors = errors,
         inputs = inputs,
         mode = mode,
@@ -1087,6 +1090,7 @@ def index_gadget(req):
     return templates.render(
         ctx,
         '/gadget.mako',
+        data = data,
         errors = errors,
         inputs = inputs,
         mode = mode,
@@ -1118,6 +1122,7 @@ def index_list(req):
     return templates.render(
         ctx,
         '/list.mako',
+        data = data,
         errors = errors,
         inputs = inputs,
         mode = mode,
@@ -1198,6 +1203,7 @@ def index_map(req):
         ctx,
         '/map.mako',
         bbox = bbox,
+        data = data,
         errors = errors,
         inputs = inputs,
         mode = mode,

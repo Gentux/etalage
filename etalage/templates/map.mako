@@ -93,7 +93,7 @@ etalage.map.center = new L.LatLng(${territory.geo[0] | n, js}, ${territory.geo[1
 etalage.map = $.extend(etalage.map, {
     geojsonParams: ${dict(
         (model.Poi.rename_input_to_param(name), value)
-        for name, value in inputs.iteritems()
+        for name, value in data.iteritems()
         if name not in ('bbox', 'context', 'jsonp') and value is not None
         )| n, js},
     geojsonUrl: '/api/v1/annuaire/geojson',
