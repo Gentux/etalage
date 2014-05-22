@@ -81,6 +81,7 @@ def main():
         stream = sys.stdout,
         )
 
+    global collection
     collection = pymongo.Connection()[args.database][args.collection]
     if collection.count() == 0:
         log.error(u'La base de données {} ou la collection {} n’existe pas'.format(
@@ -115,6 +116,9 @@ def add_website_in_database(subscribers, tracked_urls):
             db_domain_name = get_clean_domain_name(site['domain_name'])
             db_domain_names[db_domain_name] = subscriber
 
+    nb_modifications = 0
+    nb_untouched_urls = 0
+    nb_errors = 0
     tracked_urls_saved = set()
     for tracked_url in tracked_urls:
         tracked_url = get_clean_url(tracked_url)
@@ -126,10 +130,21 @@ def add_website_in_database(subscribers, tracked_urls):
             if tracked_url in tracked_urls_saved:
                 pass  # ignore
             else:
-                save_subscriber_website_to_db(tracked_url, db_domain_names[tracked_domain_name])
+                log.warning('{} not registered. Registering…'.format(tracked_url))
+                url_modified = save_subscriber_website_to_db(tracked_url, db_domain_names[tracked_domain_name])
+                if url_modified is True:
+                    nb_modifications += 1
+                elif url_modified is False:
+                    nb_untouched_urls += 1
+                else:
+                    nb_errors += 1
                 tracked_urls_saved.add(tracked_url)
         else:
             log.error('{} domain not registered'.format(get_clean_domain_name(tracked_url)))
+
+    print '{} url added or modified'.format(nb_modifications)
+    print '{} untouched URLs'.format(nb_untouched_urls)
+    print '{} errors'.format(nb_errors)
 
 
 def get_clean_domain_name(domain_name):
@@ -157,16 +172,19 @@ def save_subscriber_website_to_db(url, subscriber):
         if get_clean_domain_name(site['domain_name']) == get_clean_domain_name(url):
             if 'subscriptions' not in site:
                 log.error('{}: no subscriptions found'.format(subscriber['_id']))
-                return
+                return None
             elif site['subscriptions'] == None:
                 log.error('{}: subscriptions is None'.format(subscriber['_id']))
-                return
+                return None
             for j, subscription in enumerate(site['subscriptions']):
-                if subscription['type'] == 'etalage':
-                    subscription['url'] = url
-                    # edit subscriber to add URL
-                    # collection.save(subscriber)
-                    return
+                if subscription['type'] != 'etalage':
+                    log.error('{}: subscription doesn’t have an “etalage” URL registered'.format(subscriber['_id']))
+                    return None
+                if subscription['url'] == url:
+                    return False  # no modification because URLs are equals
+                subscriber['sites'][i]['subscriptions'][j]['url'] = url
+                collection.save(subscriber)
+                return True
     log.error('{}: no “etalage” subscription site for that URL'.format(url))
 
 
