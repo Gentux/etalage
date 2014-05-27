@@ -208,6 +208,8 @@ try {
         % if ctx.container_base_url is not None:
     piwikTracker.setCustomVariable(2, "container_base_url", ${ctx.container_base_url | n, js}, "visit");
     piwikTracker.setCustomVariable(3, "gadget_id", ${ctx.gadget_id | n, js}, "visit");
+    piwikTracker.setCustomVariable(4, "gadget_id_and_container_base_url", ${
+        u'{}@{}'.format(ctx.gadget_id, ctx.container_base_url) | n, js}, "visit");
         % endif
     piwikTracker.trackPageView();
     piwikTracker.enableLinkTracking();
