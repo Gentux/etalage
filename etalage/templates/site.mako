@@ -207,6 +207,7 @@ try {
     var piwikTracker = Piwik.getTracker(pkBaseURL + "piwik.php", ${conf['markers.piwik.id']});
         % if ctx.container_base_url is not None:
     piwikTracker.setCustomVariable(2, "container_base_url", ${ctx.container_base_url | n, js}, "visit");
+    piwikTracker.setCustomVariable(3, "gadget_id", ${ctx.gadget_id | n, js}, "visit");
         % endif
     piwikTracker.trackPageView();
     piwikTracker.enableLinkTracking();
