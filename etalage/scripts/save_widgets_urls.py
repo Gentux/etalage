@@ -124,11 +124,11 @@ def save_website(subscribers, gadget_id_and_tracked_urls, collection):
     for gadget_id, tracked_url in gadget_id_and_tracked_urls:
         clean_tracked_url = get_clean_url(tracked_url)
         if clean_tracked_url is None:
-            log.error('{}: incorrect URL'.format(tracked_url))
+            log.error(u'{}: incorrect URL'.format(tracked_url))
             continue
         tracked_domain_name = get_clean_domain_name(tracked_url)
         if tracked_domain_name is None:
-            log.error('{}: URL doesn’t contain a valid domain name'.format(clean_tracked_url))
+            log.error(u'{}: URL doesn’t contain a valid domain name'.format(clean_tracked_url))
             continue
         if True in (s in tracked_domain_name for s in DOMAIN_NAME_EXCEPTIONS):
             continue
@@ -152,7 +152,7 @@ def save_website(subscribers, gadget_id_and_tracked_urls, collection):
                     collection.save(subscriber)
                 tracked_urls_saved.add(tracked_url)
         else:
-            log.error('{} domain not registered (url: {})'.format(
+            log.error(u'{} domain not registered (url: {})'.format(
                 get_clean_domain_name(tracked_url),
                 tracked_url
                 ))
@@ -198,10 +198,10 @@ def save_subscriber_url(gadget_id, url, subscriber):
     for i, site in enumerate(subscriber['sites'] or []):
         # errors when there’s no subcriptions
         if 'subscriptions' not in site:
-            log.error('{}: no subscriptions found'.format(subscriber['_id']))
+            log.error(u'{}: no subscriptions found'.format(subscriber['_id']))
             return False
         elif site['subscriptions'] is None:
-            log.error('{}: subscriptions is None'.format(subscriber['_id']))
+            log.error(u'{}: subscriptions is None'.format(subscriber['_id']))
             return False
 
         for j, subscription in enumerate(site['subscriptions']):
@@ -211,11 +211,11 @@ def save_subscriber_url(gadget_id, url, subscriber):
             if subscription['url'] == url:
                 return True  # no modification because URLs are equals
             log.debug(subscriber['_id'])
-            log.debug('DB:  {}\nURL: {}\n\n'.format(subscription['url'], url))
+            log.debug(u'DB:  {}\nURL: {}\n\n'.format(subscription['url'], url))
             subscription['url'] = url
             return subscriber
 
-    log.error('{}, {}: no “etalage” subscription or valid gadget_id'.format(
+    log.error(u'{}, {}: no “etalage” subscription or valid gadget_id'.format(
         subscriber['_id'],
         gadget_id
         ))
