@@ -46,8 +46,6 @@ from urlparse import urlparse
 app_name = os.path.splitext(os.path.basename(__file__))[0]
 log = logging.getLogger(app_name)
 
-collection = None
-
 BASE_URL = u'https://webstats.easter-eggs.com/index.php'
 
 PARAMS = {
@@ -62,6 +60,8 @@ PARAMS = {
     }
 
 CUSTOM_VARS_URL = '{}?{}'.format(BASE_URL, urllib.urlencode(PARAMS))
+
+DOMAIN_NAME_EXCEPTIONS = ('googleusercontent.com', 'justice.fr', 'entrouvert.org')
 
 
 def main():
@@ -79,8 +79,7 @@ def main():
         stream=sys.stdout,
         )
 
-    global collection
-    collection = pymongo.Connection()[args.database][args.collection]
+    collection = pymongo.MongoClient(j=True)[args.database][args.collection]
     if collection.count() == 0:
         log.error(u'La base de données {} ou la collection {} n’existe pas'.format(
             args.database, args.collection).encode('utf-8'))
@@ -104,10 +103,12 @@ def main():
         )
     subscribers_cursor = collection.find()
 
-    add_website_in_database(subscribers_cursor, gadget_id_and_tracked_urls)
+    save_website(subscribers_cursor, gadget_id_and_tracked_urls, collection)
 
 
-def add_website_in_database(subscribers, gadget_id_and_tracked_urls):
+def save_website(subscribers, gadget_id_and_tracked_urls, collection):
+    """The important things happen here: filter and launch registering of URL, report results"""
+
     log.info(u'number of Piwik URLs: {}'.format(len(gadget_id_and_tracked_urls)))
 
     db_domain_names = dict()  # establish domain_name → subscriber correspondance
@@ -129,28 +130,33 @@ def add_website_in_database(subscribers, gadget_id_and_tracked_urls):
         if tracked_domain_name is None:
             log.error('{}: URL doesn’t contain a valid domain name'.format(clean_tracked_url))
             continue
-        if 'googleusercontent.com' in tracked_domain_name:
+        if True in (s in tracked_domain_name for s in DOMAIN_NAME_EXCEPTIONS):
             continue
 
         if tracked_domain_name in db_domain_names:
-            if tracked_url in tracked_urls_saved:
-                pass  # TODO: make useful comment
+            # different tracked_url can lead to the same clean_tracked_url, ignoring saved URL
+            if clean_tracked_url in tracked_urls_saved:
+                continue
             else:
                 log.warning(u'{} not registered. Registering…'.format(tracked_url))
-                url_modified = save_subscriber_url_to_db(
+                new_subscriber = save_subscriber_url(
                     None,
                     tracked_url,
-                    db_domain_names[tracked_domain_name]
+                    db_domain_names[tracked_domain_name],
                     )
-                if url_modified is True:
-                    nb_modifications += 1
-                elif url_modified is False:
+                if new_subscriber is True:
                     nb_untouched_urls += 1
-                else:
+                elif new_subscriber is False:
                     nb_errors += 1
+                else:
+                    collection.save(subscriber)
                 tracked_urls_saved.add(tracked_url)
         else:
-            log.error('{} domain not registered'.format(get_clean_domain_name(tracked_url)))
+            log.error('{} domain not registered (url: {})'.format(
+                get_clean_domain_name(tracked_url),
+                tracked_url
+                ))
+            nb_errors += 1
 
     print '{} url added or modified'.format(nb_modifications)
     print '{} untouched URLs'.format(nb_untouched_urls)
@@ -158,9 +164,7 @@ def add_website_in_database(subscribers, gadget_id_and_tracked_urls):
 
 
 def get_clean_domain_name(url):
-    """
-    Only keep the domain name
-    """
+    """Only keep the domain name"""
 
     url = get_clean_url(url)
     # special case for IP address
@@ -173,6 +177,8 @@ def get_clean_domain_name(url):
 
 
 def get_clean_url(url):
+    """Remove HTML fragments (`#something`) and `;jsessionid`"""
+
     if url in ('Others', 'Autres'):  # depends of the locale
         return None
     if urlparse(url).scheme == '':
@@ -182,30 +188,38 @@ def get_clean_url(url):
     return url
 
 
-def save_subscriber_url_to_db(gadget_id, url, subscriber):
+def save_subscriber_url(gadget_id, url, subscriber):
+    """Return
+    * modified subscriber if an URL has been modified
+    * True if an URL has been untouched
+    * False if we can’t add/check etalage URL
+    """
+
     for i, site in enumerate(subscriber['sites'] or []):
         # errors when there’s no subcriptions
         if 'subscriptions' not in site:
             log.error('{}: no subscriptions found'.format(subscriber['_id']))
-            return None
+            return False
         elif site['subscriptions'] is None:
             log.error('{}: subscriptions is None'.format(subscriber['_id']))
-            return None
+            return False
 
         for j, subscription in enumerate(site['subscriptions']):
             if subscription['type'] != 'etalage' or \
                     (gadget_id is not None and subscription['id'] != gadget_id):
                 continue
             if subscription['url'] == url:
-                return False  # no modification because URLs are equals
-            subscriber['sites'][i]['subscriptions'][j]['url'] = url
-            collection.save(subscriber)
-            return True
+                return True  # no modification because URLs are equals
+            log.debug(subscriber['_id'])
+            log.debug('DB:  {}\nURL: {}\n\n'.format(subscription['url'], url))
+            subscription['url'] = url
+            return subscriber
 
     log.error('{}, {}: no “etalage” subscription or valid gadget_id'.format(
         subscriber['_id'],
         gadget_id
         ))
+    return False
 
 
 if __name__ == "__main__":
