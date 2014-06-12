@@ -176,6 +176,7 @@ def load_environment(global_conf, app_conf):
                 conv.default(['localhost', '127.0.0.1', 'comarquage.fr', 'donnees-libres.fr']),
                 conv.function(lambda hostnames: tuple(hostnames)),
                 ),
+            u'subscribers.gadget_type': conv.default('etalage'),
             u'territories_database': conv.noop,  # Done below.
             u'territories_collection': conv.default('territories'),
             u'territories_kinds': conv.pipe(

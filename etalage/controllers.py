@@ -1246,7 +1246,7 @@ def init_base(ctx, params):
         elif subscriber is not None:
             for site in (subscriber.sites or []):
                 for subscription in (site.subscriptions or []):
-                    if subscription.type == 'etalage' and subscription.id == gadget_id:
+                    if subscription.type == conf['subscribers.gadget_type'] and subscription.id == gadget_id:
                         # Note: We can get some specific options for this subscriber with subscription.options here
                         break
                 else:
@@ -1256,7 +1256,7 @@ def init_base(ctx, params):
                 raise wsgihelpers.bad_request(
                     ctx,
                     comment = ctx._('Rebuild component and copy the generated JavaScript into your website.'),
-                    explanation = ctx._('The gadget ID "{0}" is used by another component.'),
+                    explanation = ctx._('The gadget ID "{0}" is used by another component.').format(gadget_id),
                     title = ctx._('Invalid Gadget ID'),
                     )
             if gadget_id is not None and container_base_url is None and subscription.url is not None:
