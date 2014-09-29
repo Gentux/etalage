@@ -9,8 +9,15 @@ Welcome to Etalage's documentation!
 Contents:
 
 .. toctree::
-   :maxdepth: 2
+    :maxdepth: 2
 
+    presentation
+    databases
+    plugins
+    external_projects
+    data_export
+    directory_and_minisite
+    translation
 
 
 Indices and tables
@@ -19,4 +26,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
