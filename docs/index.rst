@@ -14,7 +14,6 @@ Contents:
     presentation
     databases
     plugins
-    external_projects
     data_export
     directory_and_minisite
     translation
