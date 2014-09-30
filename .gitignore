@@ -1,6 +1,7 @@
 build
 cache
 data
+docs/_build
 development-*local*.ini
 plugins-*local*.ini
 dist
