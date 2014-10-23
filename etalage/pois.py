@@ -779,6 +779,7 @@ class Poi(representations.UserRepresentable):
                 (
                     # is not competent
                     poi.competence_territories_id is not None
+                        and related_territories_id is not None
                         and related_territories_id.isdisjoint(poi.competence_territories_id),
                     # distance
                     6372.8 * math.acos(
